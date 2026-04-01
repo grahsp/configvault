@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Domain", "KeyVault.Domain\KeyVault.Domain.csproj", "{16456876-EB17-41C8-80F6-12DE987890B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Application", "KeyVault.Application\KeyVault.Application.csproj", "{04A87346-DBB5-4953-8DE9-5079E3795BF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Infrastructure", "KeyVault.Infrastructure\KeyVault.Infrastructure.csproj", "{F00A75DD-0740-49D2-BCB0-42561076EF19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Api", "KeyVault.Api\KeyVault.Api.csproj", "{F997061D-6C54-4381-B2CE-556CB4E8C33F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E552AA17-4EBD-47CA-B811-FE1E8D567EFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Tests.Unit", "KeyVault.Tests.Unit\KeyVault.Tests.Unit.csproj", "{D00B24DB-6798-401F-9447-F166C17B41BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVault.Tests.Integration", "KeyVault.Tests.Integration\KeyVault.Tests.Integration.csproj", "{494DE081-D066-49A1-89E7-540EA4FCAD14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16456876-EB17-41C8-80F6-12DE987890B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16456876-EB17-41C8-80F6-12DE987890B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16456876-EB17-41C8-80F6-12DE987890B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16456876-EB17-41C8-80F6-12DE987890B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A87346-DBB5-4953-8DE9-5079E3795BF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A87346-DBB5-4953-8DE9-5079E3795BF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A87346-DBB5-4953-8DE9-5079E3795BF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A87346-DBB5-4953-8DE9-5079E3795BF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F00A75DD-0740-49D2-BCB0-42561076EF19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F00A75DD-0740-49D2-BCB0-42561076EF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F00A75DD-0740-49D2-BCB0-42561076EF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F00A75DD-0740-49D2-BCB0-42561076EF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F997061D-6C54-4381-B2CE-556CB4E8C33F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F997061D-6C54-4381-B2CE-556CB4E8C33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F997061D-6C54-4381-B2CE-556CB4E8C33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F997061D-6C54-4381-B2CE-556CB4E8C33F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D00B24DB-6798-401F-9447-F166C17B41BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00B24DB-6798-401F-9447-F166C17B41BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00B24DB-6798-401F-9447-F166C17B41BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00B24DB-6798-401F-9447-F166C17B41BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{494DE081-D066-49A1-89E7-540EA4FCAD14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{494DE081-D066-49A1-89E7-540EA4FCAD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{494DE081-D066-49A1-89E7-540EA4FCAD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{494DE081-D066-49A1-89E7-540EA4FCAD14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D00B24DB-6798-401F-9447-F166C17B41BA} = {E552AA17-4EBD-47CA-B811-FE1E8D567EFA}
+		{494DE081-D066-49A1-89E7-540EA4FCAD14} = {E552AA17-4EBD-47CA-B811-FE1E8D567EFA}
+	EndGlobalSection
+EndGlobal
