@@ -23,5 +23,7 @@ public static class InfrastructureModule
 			var database = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 			options.UseNpgsql(database.ConnectionString);
 		});
+
+		services.AddSingleton<TimeProvider>();
 	}
 }
