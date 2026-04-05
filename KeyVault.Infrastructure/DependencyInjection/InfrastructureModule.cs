@@ -1,5 +1,9 @@
+using KeyVault.Application;
+using KeyVault.Application.Persistence;
+using KeyVault.Application.Users;
 using KeyVault.Infrastructure.Configuration;
 using KeyVault.Infrastructure.Persistence;
+using KeyVault.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +13,7 @@ namespace KeyVault.Infrastructure.DependencyInjection;
 
 public static class InfrastructureModule
 {
-	public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+	public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddOptions<DatabaseOptions>()
 			.Bind(configuration.GetSection(DatabaseOptions.Section))
@@ -24,6 +28,9 @@ public static class InfrastructureModule
 			options.UseNpgsql(database.ConnectionString);
 		});
 
-		services.AddSingleton<TimeProvider>();
+		services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+		services.AddScoped<IUserRepository, EfUserRepository>();
+
+		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 	}
 }
