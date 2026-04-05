@@ -1,3 +1,7 @@
+using KeyVault.Api.DependencyInjection;
+using KeyVault.Application;
+using KeyVault.Application.Authentication;
+using KeyVault.Application.DependencyInjection;
 using KeyVault.Infrastructure.DependencyInjection;
 
 namespace KeyVault.Api;
@@ -11,10 +15,15 @@ public class Program
 		if (builder.Environment.IsDevelopment())
 		{
 			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+			builder.Services.AddSwaggerGen(options =>
+			{
+				options.OperationFilter<DevSubjectHeaderFilter>();
+			});
 		}
 		
-		builder.Services.AddInfrastructure(builder.Configuration);
+		builder.Services.AddApiServices();
+		builder.Services.AddApplicationServices();
+		builder.Services.AddInfrastructureServices(builder.Configuration);
 
 		var app = builder.Build();
 
@@ -23,6 +32,9 @@ public class Program
 			app.UseSwagger();
 			app.UseSwaggerUI();
 		}
+
+		app.UseAuthentication();
+		app.UseAuthorization();
 
 		app.UseHttpsRedirection();
 
