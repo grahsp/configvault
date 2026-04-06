@@ -4,7 +4,11 @@ using KeyVault.Domain.Users;
 
 namespace KeyVault.Application.Users;
 
-public class UserProvisioner(IUserRepository users, IUnitOfWork uow, TimeProvider time)
+public class UserProvisioner(
+	IUserRepository users,
+	IUnitOfWork uow,
+	TimeProvider time)
+	: IUserProvisioner
 {
 	public async Task<User> GetOrProvisionUserAsync(UserContext context, CancellationToken ct)
 	{

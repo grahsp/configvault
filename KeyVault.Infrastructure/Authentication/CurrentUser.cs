@@ -8,7 +8,7 @@ namespace KeyVault.Infrastructure.Authentication;
 public class CurrentUser(
 	IHttpContextAccessor accessor,
 	UserContextFactory factory,
-	UserProvisioner provisioner)
+	IUserProvisioner provisioner)
 	: ICurrentUser
 {
 	public Guid UserId

@@ -7,6 +7,6 @@ public static class ApplicationModule
 {
 	public static void AddApplicationServices(this IServiceCollection services)
 	{
-		services.AddScoped<UserProvisioner>();
+		services.AddScoped<IUserProvisioner, UserProvisioner>();
 	}
 }
