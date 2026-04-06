@@ -1,6 +1,7 @@
-using KeyVault.Application;
+using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Users;
+using KeyVault.Infrastructure.Authentication;
 using KeyVault.Infrastructure.Configuration;
 using KeyVault.Infrastructure.Persistence;
 using KeyVault.Infrastructure.Persistence.Repositories;
@@ -30,6 +31,7 @@ public static class InfrastructureModule
 
 		services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 		services.AddScoped<IUserRepository, EfUserRepository>();
+		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 	}
