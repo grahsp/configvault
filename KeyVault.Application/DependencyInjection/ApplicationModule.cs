@@ -1,3 +1,4 @@
+using KeyVault.Application.Authentication;
 using KeyVault.Application.Users;
 using Microsoft.Extensions.DependencyInjection;
 
