@@ -4,26 +4,29 @@ public sealed class User
 {
 	public Guid Id { get; private init; }
 	
-	private List<ExternalLogin> _externalLogins = [];
+	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
 	
-	public string? Email { get; private set; } = null!;
 	public string? Name { get; private set; }
 	
+	public UserStatus Status { get; private set; } = UserStatus.PendingOnBoarding;
 	public DateTimeOffset CreatedAt { get; private init; }
 
 	private User() {}
 
-	private User(Guid id, string? email, string? name, DateTimeOffset now)
+	private User(Guid id, DateTimeOffset now)
 	{ 
 		Id = id;
-		Email = email;
-		Name = name;
 		CreatedAt = now;
 	}
 
-	public static User Create(string? email, string? name, DateTimeOffset now)
-		=> new User(Guid.NewGuid(), email, name, now);
+	public static User Create(string issuer, string subject, DateTimeOffset now)
+	{
+		var user = new User(Guid.NewGuid(), now);
+		user.AddExternalLogin(issuer, subject);
+
+		return user;
+	}
 	
 	public void AddExternalLogin(string issuer, string subject)
 	{

@@ -8,38 +8,32 @@ public sealed class UserTests
 	private readonly FakeTimeProvider _time = new FakeTimeProvider();
 
 	[Fact]
-	public void Create_ShouldCreateUserWithProvidedValues()
+	public void Create_ShouldCreateUserWithInitialExternalLogin()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("user@example.com", "Test User", now);
+		var user = User.Create("github", "123", now);
 
 		Assert.NotEqual(Guid.Empty, user.Id);
-		Assert.Equal("user@example.com", user.Email);
-		Assert.Equal("Test User", user.Name);
-		Assert.Equal(now, user.CreatedAt);
-		Assert.Empty(user.ExternalLogins);
-	}
-
-	[Fact]
-	public void Create_ShouldCreateUser_WhenNullEmailAndName()
-	{
-		var now = _time.GetUtcNow();
-		var user = User.Create(null, null, now);
-
-		Assert.Null(user.Email);
 		Assert.Null(user.Name);
+		Assert.Equal(UserStatus.PendingOnBoarding, user.Status);
 		Assert.Equal(now, user.CreatedAt);
+
+		var login = Assert.Single(user.ExternalLogins);
+		Assert.Equal("github", login.Issuer);
+		Assert.Equal("123", login.Subject);
+		Assert.Equal(user.Id, login.UserId);
 	}
 
 	[Fact]
 	public void AddExternalLogin_ShouldAddLogin()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("user@example.com", "Test User", now);
+		var user = User.Create("entra", "user-123", now);
 
 		user.AddExternalLogin("github", "123");
 
-		var login = Assert.Single(user.ExternalLogins);
+		Assert.Equal(2, user.ExternalLogins.Count);
+		var login = Assert.Single(user.ExternalLogins, l => l.Issuer == "github" && l.Subject == "123");
 		Assert.Equal("github", login.Issuer);
 		Assert.Equal("123", login.Subject);
 		Assert.Equal(user.Id, login.UserId);
@@ -49,7 +43,7 @@ public sealed class UserTests
 	public void AddExternalLogin_ShouldThrow_WhenLoginAlreadyExists()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("user@example.com", "Test User", now);
+		var user = User.Create("entra", "user-123", now);
 		user.AddExternalLogin("github", "123");
 
 		var exception = Assert.Throws<Exception>(() => user.AddExternalLogin("github", "123"));

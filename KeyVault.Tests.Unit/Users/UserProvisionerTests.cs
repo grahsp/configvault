@@ -60,7 +60,7 @@ public sealed class UserProvisionerTests
 			
 			Service = new UserProvisioner(Users, Uow, Time);
 
-			_context = new UserContext(Issuer, Subject, "email", "name");
+			_context = new UserContext(Issuer, Subject);
 		}
 		
 		public Task<User> GetOrProvisionUserAsync(UserContext? context = null, CancellationToken ct = default)
@@ -68,7 +68,7 @@ public sealed class UserProvisionerTests
 
 		public User GivenExistingUser(User? existingUser = null)
 		{
-			var user = existingUser ?? User.Create(_context.Email, _context.Name, Time.GetUtcNow());
+			var user = existingUser ?? User.Create(_context.Issuer, _context.Subject, Time.GetUtcNow());
 			Users.SetUserToReturn(user);
 			
 			return user;

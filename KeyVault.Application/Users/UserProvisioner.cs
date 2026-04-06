@@ -17,8 +17,7 @@ public class UserProvisioner(
 		if (user is not null)
 			return user;
 
-		user = User.Create(context.Email, context.Name, time.GetUtcNow());
-		user.AddExternalLogin(context.Issuer, context.Subject);
+		user = User.Create(context.Issuer, context.Subject, time.GetUtcNow());
 
 		users.Add(user);
 		await uow.SaveChangesAsync(ct);
