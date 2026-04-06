@@ -5,10 +5,12 @@ namespace KeyVault.Api.Authentication;
 
 public class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
-	public User User => accessor.HttpContext?.GetCurrentUser()
-	    ?? throw new InvalidOperationException("Current user not resolved");
+	private AuthenticatedUser? User => accessor.HttpContext?.GetCurrentUser();
+	public bool IsAuthenticated => User is not null;
 
-	public Guid UserId => User.Id;
-	public UserStatus Status => User.Status;
-	public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated == true;
+	public Guid UserId => RequireUser().Id;
+	public UserStatus Status => RequireUser().Status;
+
+	private AuthenticatedUser RequireUser()
+		=> User ?? throw new InvalidOperationException("No authenticated user available for the current request.");
 }
