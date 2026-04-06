@@ -18,11 +18,11 @@ public class Program
 			.AddUserSecrets<Program>(true)
 			.AddEnvironmentVariables();
 		
+		builder.Services.AddApiModule(builder.Environment);
 		builder.Services.AddAuthenticationModule(builder.Environment);
 		
-		builder.Services.AddApiServices();
-		builder.Services.AddApplicationServices();
-		builder.Services.AddInfrastructureServices(builder.Configuration);
+		builder.Services.AddApplicationModule();
+		builder.Services.AddInfrastructureModule(builder.Configuration);
 
 		var app = builder.Build();
 

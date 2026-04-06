@@ -1,5 +1,7 @@
+using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Users;
+using KeyVault.Infrastructure.Authentication;
 using KeyVault.Infrastructure.Configuration;
 using KeyVault.Infrastructure.Persistence;
 using KeyVault.Infrastructure.Persistence.Repositories;
@@ -12,7 +14,7 @@ namespace KeyVault.Infrastructure.DependencyInjection;
 
 public static class InfrastructureModule
 {
-	public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+	public static void AddInfrastructureModule(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddOptions<DatabaseOptions>()
 			.Bind(configuration.GetSection(DatabaseOptions.Section))
