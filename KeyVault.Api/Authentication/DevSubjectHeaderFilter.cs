@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace KeyVault.Api.DependencyInjection;
+namespace KeyVault.Api.Authentication;
 
 public class DevSubjectHeaderFilter : IOperationFilter
 {
