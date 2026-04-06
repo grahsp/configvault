@@ -1,11 +1,10 @@
 using KeyVault.Application.Authentication;
-using KeyVault.Application.Users;
 
 namespace KeyVault.Api.Authentication;
 
 public class CurrentUserMiddleware(RequestDelegate next)
 {
-	public async Task InvokeAsync(HttpContext context, IUserProvisioner provisioner, UserContextFactory factory)
+	public async Task InvokeAsync(HttpContext context, IUserProvisioner provisioner, IUserContextFactory factory)
 	{
 		var principal = context.User;
 
