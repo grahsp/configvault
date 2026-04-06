@@ -16,7 +16,7 @@ public sealed class UserProvisionerTests
 		
 		var result = await sut.GetOrProvisionUserAsync();
 
-		Assert.Same(existing, result);
+		Assert.Equal(existing, result);
 		Assert.Null(sut.Users.AddedUser);
 		Assert.False(sut.Uow.SaveChangesCalled);
 	}
@@ -29,23 +29,24 @@ public sealed class UserProvisionerTests
 
 		var result = await sut.GetOrProvisionUserAsync();
 
-		Assert.Equal(sut.Users.AddedUser, result);
-		Assert.Equal(now, result.CreatedAt);
+		Assert.NotNull(sut.Users.AddedUser);
+		var addedUser = sut.Users.AddedUser!;
+		Assert.Equal(new AuthenticatedUser(addedUser.Id, addedUser.Status), result);
+		Assert.Equal(now, addedUser.CreatedAt);
 		Assert.True(sut.Uow.SaveChangesCalled);
 		
-		var login = Assert.Single(result.ExternalLogins);
+		var login = Assert.Single(addedUser.ExternalLogins);
 		Assert.Equal(sut.Issuer, login.Issuer);
 		Assert.Equal(sut.Subject, login.Subject);
 	}
 
 	private sealed class Sut
 	{
+		public FakeUserIdentityResolver Resolver { get; }
 		public FakeUserRepository Users { get; }
 		public FakeUnitOfWork Uow { get; }
 		public FakeTimeProvider Time { get; }
-		
 		public UserProvisioner Service { get; }
-
 		
 		public string Issuer => "issuer";
 		public string Subject => "subject";
@@ -54,44 +55,43 @@ public sealed class UserProvisionerTests
 
 		public Sut()
 		{
+			Resolver = new FakeUserIdentityResolver();
 			Users = new FakeUserRepository();
 			Uow = new FakeUnitOfWork();
 			Time = new FakeTimeProvider();
 			
-			Service = new UserProvisioner(Users, Uow, Time);
+			Service = new UserProvisioner(Resolver, Users, Uow, Time);
 
 			_context = new UserContext(Issuer, Subject);
 		}
 		
-		public Task<User> GetOrProvisionUserAsync(UserContext? context = null, CancellationToken ct = default)
+		public Task<AuthenticatedUser> GetOrProvisionUserAsync(UserContext? context = null, CancellationToken ct = default)
 			=> Service.GetOrProvisionUserAsync(context ?? _context, ct);
 
-		public User GivenExistingUser(User? existingUser = null)
+		public AuthenticatedUser GivenExistingUser(AuthenticatedUser? existingUser = null)
 		{
-			var user = existingUser ?? User.Create(_context.Issuer, _context.Subject, Time.GetUtcNow());
-			Users.SetUserToReturn(user);
+			var user = existingUser ?? new AuthenticatedUser(Guid.NewGuid(), UserStatus.Active);
+			Resolver.SetUserToReturn(user);
 			
 			return user;
 		}
 	}
 
+	private sealed class FakeUserIdentityResolver : IUserIdentityResolver
+	{
+		private AuthenticatedUser? UserToReturn { get; set; }
+
+		public void SetUserToReturn(AuthenticatedUser user) => UserToReturn = user;
+
+		public Task<AuthenticatedUser?> GetUserAsync(string issuer, string subject, CancellationToken ct)
+			=> Task.FromResult(UserToReturn);
+	}
+
 	private sealed class FakeUserRepository : IUserRepository
 	{
 		public User? AddedUser { get; private set; }
-		private User? UserToReturn { get; set; }
-		
-		public void SetUserToReturn(User user) => UserToReturn = user;
 
-		public Task<User?> GetByExternalIdentityAsync(string issuer, string subject, CancellationToken ct)
-		{
-			return Task.FromResult(UserToReturn);
-		}
-
-		public void Add(User user)
-		{
-			AddedUser = user;
-		}
-
+		public void Add(User user) => AddedUser = user;
 		public void Remove(User user) => throw new NotImplementedException();
 	}
 
