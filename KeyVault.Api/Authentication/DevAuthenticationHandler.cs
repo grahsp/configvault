@@ -11,6 +11,8 @@ public class DevAuthenticationHandler(
 	UrlEncoder urlEncoder)
 	: AuthenticationHandler<AuthenticationSchemeOptions>(monitor, logger, urlEncoder)
 {
+	public static string AuthenticationScheme => "Dev";
+	
 	protected override Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
 		if (!Request.Headers.TryGetValue("X-Dev-Sub", out var subject))

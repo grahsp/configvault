@@ -2,6 +2,7 @@ using KeyVault.Api.Authentication;
 using KeyVault.Application.Authentication;
 using KeyVault.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace KeyVault.Api.DependencyInjection;
 
@@ -11,14 +12,15 @@ public static class AuthenticationModule
 	{
 		if (environment.IsDevelopment())
 		{
-			services.AddAuthentication("Dev")
-				.AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>("Dev", null);
+			services.AddAuthentication(DevAuthenticationHandler.AuthenticationScheme)
+				.AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(
+					DevAuthenticationHandler.AuthenticationScheme, null);
 		}
 
 		if (environment.IsProduction())
 		{
-			services.AddAuthentication("Bearer")
-				.AddJwtBearer("Bearer", options =>
+			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 				{
 					options.Authority = "https://dev-80amfbvnreq8wgr1.us.auth0.com/";
 					options.Audience = "https://keyvault.com";
@@ -26,6 +28,7 @@ public static class AuthenticationModule
 		}
 
 		services.AddAuthorization();
+		
 		
 		services.AddScoped<CurrentUserMiddleware>();
 		
