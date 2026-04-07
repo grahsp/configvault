@@ -1,8 +1,10 @@
 using KeyVault.Api.Authentication;
+using KeyVault.Api.Authorization;
 using KeyVault.Application.Authentication;
 using KeyVault.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace KeyVault.Api.DependencyInjection;
@@ -51,10 +53,17 @@ public static class AuthenticationModule
 				});
 		}
 
-		services.AddAuthorization();
+		services.AddAuthorization(options =>
+		{
+			options.FallbackPolicy = new AuthorizationPolicyBuilder()
+				.RequireAuthenticatedUser()
+				.AddRequirements(new ActiveUserRequirement())
+				.Build();
+		});
 		
 		
 		services.AddScoped<CurrentUserMiddleware>();
+		services.AddScoped<IAuthorizationHandler, ActiveUserHandler>();
 		
 		services.AddScoped<IUserProvisioner, UserProvisioner>();
 		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();

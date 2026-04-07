@@ -10,6 +10,7 @@ public class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 
 	public Guid UserId => RequireUser().Id;
 	public UserStatus Status => RequireUser().Status;
+	public bool IsActive => Status == UserStatus.Active;
 
 	private AuthenticatedUser RequireUser()
 		=> User ?? throw new InvalidOperationException("No authenticated user available for the current request.");
