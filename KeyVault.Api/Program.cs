@@ -19,7 +19,7 @@ public class Program
 			.AddEnvironmentVariables();
 		
 		builder.Services.AddApiModule(builder.Environment);
-		builder.Services.AddAuthenticationModule(builder.Environment);
+		builder.Services.AddAuthenticationModule(builder.Configuration, builder.Environment);
 		
 		builder.Services.AddApplicationModule();
 		builder.Services.AddInfrastructureModule(builder.Configuration);

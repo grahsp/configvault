@@ -3,12 +3,13 @@ using KeyVault.Application.Authentication;
 using KeyVault.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 
 namespace KeyVault.Api.DependencyInjection;
 
 public static class AuthenticationModule
 {
-	public static void AddAuthenticationModule(this IServiceCollection services, IWebHostEnvironment environment)
+	public static void AddAuthenticationModule(this IServiceCollection services, IConfiguration config, IWebHostEnvironment environment)
 	{
 		if (environment.IsDevelopment())
 		{
@@ -19,11 +20,34 @@ public static class AuthenticationModule
 
 		if (environment.IsProduction())
 		{
+			services.Configure<IdentityProviderOptions>(
+				config.GetRequiredSection(IdentityProviderOptions.Section));
+		
 			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-				.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+				.AddJwtBearer();
+
+			services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+				.Configure<IOptions<IdentityProviderOptions>>((options, idp) =>
 				{
-					options.Authority = "https://dev-80amfbvnreq8wgr1.us.auth0.com/";
-					options.Audience = "https://keyvault.com";
+					options.RequireHttpsMetadata = true;
+					
+					options.Authority = idp.Value.Authority;
+					options.Audience = idp.Value.Audience;
+
+					Console.WriteLine(idp.Value.Authority);
+					Console.WriteLine(idp.Value.Audience);
+					Console.WriteLine(idp.Value.Issuer);
+					
+					options.TokenValidationParameters.ValidateAudience = true;
+					options.TokenValidationParameters.ValidAudience = idp.Value.Audience;
+
+					options.TokenValidationParameters.ValidateIssuer = true;
+					options.TokenValidationParameters.ValidIssuer = idp.Value.Issuer;
+					
+					options.TokenValidationParameters.ValidateLifetime = true;
+					options.TokenValidationParameters.ClockSkew = TimeSpan.FromMinutes(2);
+					
+					options.TokenValidationParameters.ValidateIssuerSigningKey = true;
 				});
 		}
 
