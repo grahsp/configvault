@@ -62,7 +62,6 @@ public static class AuthenticationModule
 		});
 		
 		
-		services.AddScoped<CurrentUserMiddleware>();
 		services.AddScoped<IAuthorizationHandler, ActiveUserHandler>();
 		
 		services.AddScoped<IUserProvisioner, UserProvisioner>();
