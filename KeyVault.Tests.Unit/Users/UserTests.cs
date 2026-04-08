@@ -14,7 +14,7 @@ public sealed class UserTests
 		var user = User.Create("github", "123", now);
 
 		Assert.NotEqual(Guid.Empty, user.Id);
-		Assert.Null(user.Name);
+		Assert.Null(user.DisplayName);
 		Assert.Equal(UserStatus.PendingOnBoarding, user.Status);
 		Assert.Equal(now, user.CreatedAt);
 

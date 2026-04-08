@@ -15,7 +15,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(x => x.Id)
 			.ValueGeneratedNever();
 
-		builder.Property(x => x.Name)
+		builder.Property(x => x.DisplayName)
 			.HasMaxLength(256);
 		
 		builder.Property(x => x.CreatedAt)

@@ -93,6 +93,7 @@ public sealed class UserProvisionerTests
 
 		public void Add(User user) => AddedUser = user;
 		public void Remove(User user) => throw new NotImplementedException();
+		public Task<User?> GetByIdAsync(Guid id, CancellationToken ct) => throw new NotImplementedException();
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork

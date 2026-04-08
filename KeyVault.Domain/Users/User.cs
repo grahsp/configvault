@@ -7,10 +7,11 @@ public sealed class User
 	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
 	
-	public string? Name { get; private set; }
+	public string? DisplayName { get; private set; }
 	
 	public UserStatus Status { get; private set; } = UserStatus.PendingOnBoarding;
 	public DateTimeOffset CreatedAt { get; private init; }
+	public DateTimeOffset? ActivatedAt { get; private set; }
 
 	private User() {}
 
@@ -35,5 +36,17 @@ public sealed class User
 		
 		var login = new ExternalLogin(issuer, subject, Id);
 		_externalLogins.Add(login);
+	}
+
+	public void Activate(string displayName, DateTimeOffset now)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(displayName);
+		
+		if (Status != UserStatus.PendingOnBoarding)
+			throw new Exception("User already has an already been activated");
+		
+		DisplayName = displayName;
+		Status = UserStatus.Active;
+		ActivatedAt = now;
 	}
 }
