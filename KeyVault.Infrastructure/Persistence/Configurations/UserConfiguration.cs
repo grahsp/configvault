@@ -20,6 +20,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		
 		builder.Property(x => x.CreatedAt)
 			.IsRequired();
+		
+		builder.Property(x => x.ActivatedAt)
+			.IsRequired(false);
 
 		builder.HasMany<ExternalLogin>(x => x.ExternalLogins)
 			.WithOne()
