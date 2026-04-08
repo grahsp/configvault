@@ -51,7 +51,7 @@ public sealed class UserProvisionerTests
 		public string Issuer => "issuer";
 		public string Subject => "subject";
 		
-		private readonly UserContext _context;
+		private readonly ExternalIdentity _context;
 
 		public Sut()
 		{
@@ -62,10 +62,10 @@ public sealed class UserProvisionerTests
 			
 			Service = new UserProvisioner(Resolver, Users, Uow, Time);
 
-			_context = new UserContext(Issuer, Subject);
+			_context = new ExternalIdentity(Issuer, Subject);
 		}
 		
-		public Task<AuthenticatedUser> GetOrProvisionUserAsync(UserContext? context = null, CancellationToken ct = default)
+		public Task<AuthenticatedUser> GetOrProvisionUserAsync(ExternalIdentity? context = null, CancellationToken ct = default)
 			=> Service.GetOrProvisionUserAsync(context ?? _context, ct);
 
 		public AuthenticatedUser GivenExistingUser(AuthenticatedUser? existingUser = null)

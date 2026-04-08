@@ -11,14 +11,14 @@ public class UserProvisioner(
 	TimeProvider time)
 	: IUserProvisioner
 {
-	public async Task<AuthenticatedUser> GetOrProvisionUserAsync(UserContext context, CancellationToken ct)
+	public async Task<AuthenticatedUser> GetOrProvisionUserAsync(ExternalIdentity identity, CancellationToken ct)
 	{
-		var data = await resolver.GetUserAsync(context.Issuer, context.Subject, ct);
+		var data = await resolver.GetUserAsync(identity.Issuer, identity.Subject, ct);
 
 		if (data is not null)
 			return data;
 
-		var user = User.Create(context.Issuer, context.Subject, time.GetUtcNow());
+		var user = User.Create(identity.Issuer, identity.Subject, time.GetUtcNow());
 
 		users.Add(user);
 		await uow.SaveChangesAsync(ct);

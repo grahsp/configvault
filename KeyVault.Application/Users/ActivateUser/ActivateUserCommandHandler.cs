@@ -5,7 +5,7 @@ using KeyVault.Application.Persistence;
 namespace KeyVault.Application.Users.ActivateUser;
 
 public class ActivateUserCommandHandler(
-	ICurrentUser currentUser,
+	IUserContext userContext,
 	IUserRepository repository,
 	IUnitOfWork persistence,
 	TimeProvider time)
@@ -13,7 +13,7 @@ public class ActivateUserCommandHandler(
 {
 	public async Task HandleAsync(ActivateUserCommand command, CancellationToken ct)
 	{
-		var user = await repository.GetByIdAsync(currentUser.UserId, ct)
+		var user = await repository.GetByIdAsync(userContext.UserId, ct)
 			?? throw new InvalidOperationException("User not found");
 
 		user.Activate(command.DisplayName, time.GetUtcNow());

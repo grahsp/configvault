@@ -38,10 +38,10 @@ public class Program
 
 		app.UseHttpsRedirection();
 
-		app.MapGet("/me", (ICurrentUser user) => Results.Ok(new
+		app.MapGet("/me", (IUserContext userContext) => Results.Ok(new
 		{
-			Id = user.UserId,
-			Status = user.Status
+			Id = userContext.UserId,
+			Status = userContext.Status
 		}));
 
 		app.Run();

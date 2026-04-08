@@ -68,6 +68,6 @@ public static class AuthenticationModule
 		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();
 		
 		services.AddScoped<IUserContextFactory, UserContextFactory>();
-		services.AddScoped<ICurrentUser, CurrentUser>();
+		services.AddScoped<IUserContext, UserContextContext>();
 	}
 }

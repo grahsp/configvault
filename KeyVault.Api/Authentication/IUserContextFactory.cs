@@ -5,5 +5,5 @@ namespace KeyVault.Api.Authentication;
 
 public interface IUserContextFactory
 {
-	UserContext Create(ClaimsPrincipal principal);
+	ExternalIdentity Create(ClaimsPrincipal principal);
 }
