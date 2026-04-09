@@ -33,5 +33,29 @@ public static class InfrastructureModule
 		services.AddScoped<IUserRepository, EfUserRepository>();
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
+
+		services.RegisterHandlers();
+		services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+	}
+
+	private static void RegisterHandlers(this IServiceCollection services)
+	{
+		var assembly = typeof(ICommandHandler<>).Assembly;
+		
+		var handlers = assembly.GetTypes()
+			.Where(t => !t.IsAbstract && !t.IsInterface);
+
+		foreach (var handler in handlers)
+		{
+			var interfaces = handler.GetInterfaces()
+				.Where(i => i.IsGenericType &&
+				             (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
+				             i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
+
+			foreach (var @interface in interfaces)
+			{
+				services.AddScoped(@interface, handler);
+			}
+		}
 	}
 }
