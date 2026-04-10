@@ -12,7 +12,7 @@ public sealed class GetCurrentUserQueryHandler(IUserContext currentUser, IReadDb
 	{
 		return db.Users
 			.Where(x => x.Id == currentUser.UserId)
-			.Select(x => new UserView(x.Id, x.DisplayName, x.CreatedAt))
+			.Select(x => new UserView(x.Id, x.DisplayName, x.Status.ToString(), x.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 	}
 }

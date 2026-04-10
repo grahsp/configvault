@@ -2,7 +2,6 @@ namespace KeyVault.Domain.Users;
 
 public enum UserStatus
 {
-	PendingOnBoarding,
+	Pending,
 	Active,
-	Disabled
 }

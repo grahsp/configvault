@@ -15,7 +15,7 @@ public sealed class UserTests
 
 		Assert.NotEqual(Guid.Empty, user.Id);
 		Assert.Null(user.DisplayName);
-		Assert.Equal(UserStatus.PendingOnBoarding, user.Status);
+		Assert.Equal(UserStatus.Pending, user.Status);
 		Assert.Equal(now, user.CreatedAt);
 
 		var login = Assert.Single(user.ExternalLogins);

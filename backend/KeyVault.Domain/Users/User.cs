@@ -9,7 +9,7 @@ public sealed class User
 	
 	public string? DisplayName { get; private set; }
 	
-	public UserStatus Status { get; private set; } = UserStatus.PendingOnBoarding;
+	public UserStatus Status { get; private set; } = UserStatus.Pending;
 	public DateTimeOffset CreatedAt { get; private init; }
 	public DateTimeOffset? ActivatedAt { get; private set; }
 
@@ -42,7 +42,7 @@ public sealed class User
 	{
 		ArgumentException.ThrowIfNullOrEmpty(displayName);
 		
-		if (Status != UserStatus.PendingOnBoarding)
+		if (Status != UserStatus.Pending)
 			throw new Exception("User already has an already been activated");
 		
 		DisplayName = displayName;
