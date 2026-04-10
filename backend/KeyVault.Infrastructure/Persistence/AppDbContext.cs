@@ -1,4 +1,5 @@
 using KeyVault.Application.Persistence;
+using KeyVault.Domain.Projects;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
 	public DbSet<User> Users { get; set; }
 	IQueryable<User> IReadDbContext.Users => Users;
+	
+	public DbSet<Project> Projects { get; set; }
 	
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
