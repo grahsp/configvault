@@ -1,8 +1,9 @@
-using KeyVault.Application.Authentication;
+using System.Reflection;
+using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Users;
-using KeyVault.Infrastructure.Authentication;
 using KeyVault.Infrastructure.Configuration;
+using KeyVault.Infrastructure.Dispatchers;
 using KeyVault.Infrastructure.Persistence;
 using KeyVault.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -40,17 +41,24 @@ public static class InfrastructureModule
 
 	private static void RegisterHandlers(this IServiceCollection services)
 	{
-		var assembly = typeof(ICommandHandler<>).Assembly;
-		
-		var handlers = assembly.GetTypes()
-			.Where(t => !t.IsAbstract && !t.IsInterface);
+		var handlers = GetHandlerTypes(typeof(ICommandHandler<,>).Assembly);
 
 		foreach (var handler in handlers)
 		{
+			RegisterHandler(handler);
+		}
+
+		IEnumerable<Type> GetHandlerTypes(Assembly assembly) =>
+			assembly.GetTypes()
+				.Where(t => t is { IsAbstract: false, IsInterface: false })
+				.Where(t => t.GetInterfaces()
+					.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
+
+		void RegisterHandler(Type handler)
+		{
 			var interfaces = handler.GetInterfaces()
 				.Where(i => i.IsGenericType &&
-				             (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) ||
-				             i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
+				            i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
 
 			foreach (var @interface in interfaces)
 			{
