@@ -37,6 +37,7 @@ public static class InfrastructureModule
 
 		services.RegisterHandlers();
 		services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+		services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 	}
 
 	private static void RegisterHandlers(this IServiceCollection services)
@@ -53,13 +54,17 @@ public static class InfrastructureModule
 			assembly.GetTypes()
 				.Where(t => t is { IsAbstract: false, IsInterface: false })
 				.Where(t => t.GetInterfaces()
-					.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
+					.Any(IsHandler));
+
+		bool IsHandler(Type i) =>
+			i.IsGenericType &&
+			(i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>) ||
+			 i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>));
 
 		void RegisterHandler(Type handler)
 		{
 			var interfaces = handler.GetInterfaces()
-				.Where(i => i.IsGenericType &&
-				            i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+				.Where(IsHandler);
 
 			foreach (var @interface in interfaces)
 			{
@@ -70,17 +75,23 @@ public static class InfrastructureModule
 		void RegisterWrapper(Type handler)
 		{
 			var interfaces = handler.GetInterfaces()
-				.Where(i => i.IsGenericType &&
-				            i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+				.Where(IsHandler);
 
 			foreach (var @interface in interfaces)
 			{
 				var args = @interface.GetGenericArguments();
 
-				var wrapperType = typeof(CommandHandlerWrapper<,>)
-					.MakeGenericType(args[0], args[1]);
+				var wrapperType =
+					@interface.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)
+						? typeof(CommandHandlerWrapper<,>).MakeGenericType(args[0], args[1])
+						: typeof(QueryHandlerWrapper<,>).MakeGenericType(args[0], args[1]);
 
-				services.AddScoped(typeof(ICommandHandlerWrapper), wrapperType);
+				var wrapperInterface =
+					@interface.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)
+						? typeof(ICommandHandlerWrapper)
+						: typeof(IQueryHandlerWrapper);
+
+				services.AddScoped(wrapperInterface, wrapperType);
 			}
 		}
 	}
