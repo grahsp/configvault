@@ -35,16 +35,12 @@ public static class AuthenticationModule
 					
 					options.Authority = idp.Value.Authority;
 					options.Audience = idp.Value.Audience;
-
-					Console.WriteLine(idp.Value.Authority);
-					Console.WriteLine(idp.Value.Audience);
-					Console.WriteLine(idp.Value.Issuer);
 					
 					options.TokenValidationParameters.ValidateAudience = true;
 					options.TokenValidationParameters.ValidAudience = idp.Value.Audience;
 
 					options.TokenValidationParameters.ValidateIssuer = true;
-					options.TokenValidationParameters.ValidIssuer = idp.Value.Issuer;
+					options.TokenValidationParameters.ValidIssuer = idp.Value.Authority;
 					
 					options.TokenValidationParameters.ValidateLifetime = true;
 					options.TokenValidationParameters.ClockSkew = TimeSpan.FromMinutes(2);
