@@ -1,8 +1,10 @@
-import { useAuth } from '../../auth/useAuth'
-import type { User } from '@auth0/auth0-react'
+import {
+  useCurrentUserContext,
+} from '../../auth/currentUserContext'
+import type { CurrentUserContextValue } from '../../auth/currentUserContext'
 
-export function useCurrentUser(): User | undefined {
-  const { user } = useAuth()
+export type UseCurrentUserResult = CurrentUserContextValue
 
-  return user
+export function useCurrentUser(): UseCurrentUserResult {
+  return useCurrentUserContext()
 }
