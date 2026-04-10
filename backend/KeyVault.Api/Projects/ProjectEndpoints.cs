@@ -12,8 +12,9 @@ public static class ProjectEndpoints
 			.WithTags("Projects");
 
 		group.MapPost("", CreateProject.CreateProject.Handle);
+		group.MapDelete("/{id}", DeleteProject.DeleteProject.Handle);
 		group.MapGet("", GetProjects.Handle);
 		group.MapGet("/{id}", GetProjectDetails.GetProjectDetails.Handle)
-			.WithName(nameof(GetProjectDetails.GetProjectDetails));
+			.WithName(nameof(GetProjectDetails));
 	}
 }

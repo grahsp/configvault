@@ -11,4 +11,7 @@ public class EfProjectRepository(AppDbContext db) : IProjectRepository
 
 	public void Add(Project project)
 		=> db.Projects.Add(project);
+	
+	public void Remove(Project project)
+		=> db.Projects.Remove(project);
 }
