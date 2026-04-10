@@ -1,6 +1,6 @@
 using KeyVault.Api.Authentication;
 using KeyVault.Api.DependencyInjection;
-using KeyVault.Application.Authentication;
+using KeyVault.Api.Users;
 using KeyVault.Application.DependencyInjection;
 using KeyVault.Infrastructure.DependencyInjection;
 
@@ -38,11 +38,7 @@ public class Program
 
 		app.UseHttpsRedirection();
 
-		app.MapGet("/me", (IUserContext userContext) => Results.Ok(new
-		{
-			Id = userContext.UserId,
-			Status = userContext.Status
-		}));
+		app.AddUserEndpoints();
 
 		app.Run();
 	}

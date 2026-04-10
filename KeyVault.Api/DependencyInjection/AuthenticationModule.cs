@@ -55,9 +55,11 @@ public static class AuthenticationModule
 
 		services.AddAuthorization(options =>
 		{
+			options.AddPolicy("ActiveUser", policy =>
+				policy.Requirements.Add(new ActiveUserRequirement()));
+			
 			options.FallbackPolicy = new AuthorizationPolicyBuilder()
 				.RequireAuthenticatedUser()
-				.AddRequirements(new ActiveUserRequirement())
 				.Build();
 		});
 		
