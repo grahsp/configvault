@@ -46,6 +46,7 @@ public static class InfrastructureModule
 		foreach (var handler in handlers)
 		{
 			RegisterHandler(handler);
+			RegisterWrapper(handler);
 		}
 
 		IEnumerable<Type> GetHandlerTypes(Assembly assembly) =>
@@ -63,6 +64,23 @@ public static class InfrastructureModule
 			foreach (var @interface in interfaces)
 			{
 				services.AddScoped(@interface, handler);
+			}
+		}
+		
+		void RegisterWrapper(Type handler)
+		{
+			var interfaces = handler.GetInterfaces()
+				.Where(i => i.IsGenericType &&
+				            i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+
+			foreach (var @interface in interfaces)
+			{
+				var args = @interface.GetGenericArguments();
+
+				var wrapperType = typeof(CommandHandlerWrapper<,>)
+					.MakeGenericType(args[0], args[1]);
+
+				services.AddScoped(typeof(ICommandHandlerWrapper), wrapperType);
 			}
 		}
 	}

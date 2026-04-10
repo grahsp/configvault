@@ -1,18 +1,18 @@
 using KeyVault.Application.Abstractions.Messaging;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace KeyVault.Infrastructure.Dispatchers;
 
-public sealed class CommandDispatcher(IServiceProvider provider)
+public sealed class CommandDispatcher(IEnumerable<ICommandHandlerWrapper> handlers)
 	: ICommandDispatcher
 {
+	private readonly Dictionary<Type, ICommandHandlerWrapper> _handlers =
+		handlers.ToDictionary(x => x.CommandType);
+	
 	public async Task<TResponse> DispatchAsync<TResponse>(ICommand<TResponse> command, CancellationToken ct = default)
 	{
-		var handlerType = typeof(ICommandHandler<,>)
-			.MakeGenericType(command.GetType(), typeof(TResponse));
+		var handler = _handlers[command.GetType()];
+		var result = await handler.HandleAsync(command, ct);
 
-		dynamic handler = provider.GetRequiredService(handlerType);
-
-		return await handler.HandleAsync((dynamic)command, ct);
+		return (TResponse)result!;
 	}
 }
