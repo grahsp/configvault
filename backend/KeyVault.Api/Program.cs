@@ -1,6 +1,7 @@
 using KeyVault.Api.Authentication;
 using KeyVault.Api.Configuration;
 using KeyVault.Api.DependencyInjection;
+using KeyVault.Api.Projects;
 using KeyVault.Api.Users;
 using KeyVault.Application.DependencyInjection;
 using KeyVault.Infrastructure.DependencyInjection;
@@ -41,6 +42,7 @@ public class Program
 		app.UseAuthorization();
 
 		app.AddUserEndpoints();
+		app.AddProjectEndpoints();
 
 		app.Run();
 	}
