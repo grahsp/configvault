@@ -31,6 +31,8 @@ public static class InfrastructureModule
 		});
 
 		services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+		services.AddScoped<IReadDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+		
 		services.AddScoped<IUserRepository, EfUserRepository>();
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);

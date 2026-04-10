@@ -1,13 +1,13 @@
-using KeyVault.Application;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Infrastructure.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IUnitOfWork
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IUnitOfWork, IReadDbContext
 {
 	public DbSet<User> Users { get; set; }
+	IQueryable<User> IReadDbContext.Users => Users;
 	
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
