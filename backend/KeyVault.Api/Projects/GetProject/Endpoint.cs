@@ -1,9 +1,9 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Projects.GetProjectDetails;
 
-namespace KeyVault.Api.Projects.GetProjectDetails;
+namespace KeyVault.Api.Projects.GetProject;
 
-internal static class GetProjectDetails
+internal static class Endpoint
 {
 	internal static async Task<IResult> Handle(
 		IQueryDispatcher dispatcher,

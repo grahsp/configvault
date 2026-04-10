@@ -3,7 +3,7 @@ using KeyVault.Application.Projects.DeleteProject;
 
 namespace KeyVault.Api.Projects.DeleteProject;
 
-internal static class DeleteProject
+internal static class Endpoint
 {
 	internal static async Task<IResult> Handle(ICommandDispatcher dispatcher, Guid id, CancellationToken ct)
 	{

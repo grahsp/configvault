@@ -1,5 +1,4 @@
 using KeyVault.Api.Authorization;
-using KeyVault.Api.Projects.GetProjectList;
 
 namespace KeyVault.Api.Projects;
 
@@ -11,10 +10,11 @@ public static class ProjectEndpoints
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Projects");
 
-		group.MapPost("", CreateProject.CreateProject.Handle);
-		group.MapDelete("/{id}", DeleteProject.DeleteProject.Handle);
-		group.MapGet("", GetProjects.Handle);
-		group.MapGet("/{id}", GetProjectDetails.GetProjectDetails.Handle)
-			.WithName(nameof(GetProjectDetails));
+		group.MapPost("", CreateProject.Endpoint.Handle);
+		group.MapDelete("/{id}", DeleteProject.Endpoint.Handle);
+		
+		group.MapGet("", GetProjects.Endpoint.Handle);
+		group.MapGet("/{id}", GetProject.Endpoint.Handle)
+			.WithName(nameof(GetProject));
 	}
 }
