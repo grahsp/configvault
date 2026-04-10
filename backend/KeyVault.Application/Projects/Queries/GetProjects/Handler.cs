@@ -3,12 +3,12 @@ using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace KeyVault.Application.Projects.GetProjectList;
+namespace KeyVault.Application.Projects.Queries.GetProjects;
 
-public class GetProjectListQueryHandler(IUserContext user, IReadDbContext db)
-	: IQueryHandler<GetProjectListQuery, IReadOnlyList<ProjectListItem>>
+public class Handler(IUserContext user, IReadDbContext db)
+	: IQueryHandler<Query, IReadOnlyList<ProjectListItem>>
 {
-	public async Task<IReadOnlyList<ProjectListItem>> HandleAsync(GetProjectListQuery getProjectListQuery, CancellationToken ct)
+	public async Task<IReadOnlyList<ProjectListItem>> HandleAsync(Query query, CancellationToken ct)
 	{
 		return await db.Projects
 			.Where(x => x.OwnerId == user.UserId)

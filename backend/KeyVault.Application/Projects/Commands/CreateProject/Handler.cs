@@ -3,12 +3,12 @@ using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.Projects;
 
-namespace KeyVault.Application.Projects.CreateProject;
+namespace KeyVault.Application.Projects.Commands.CreateProject;
 
-public sealed class CreateProjectCommandHandler(IUserContext user, IProjectRepository repository, IUnitOfWork uow, TimeProvider time)
-	: ICommandHandler<CreateProjectCommand, Guid>
+public sealed class Handler(IUserContext user, IProjectRepository repository, IUnitOfWork uow, TimeProvider time)
+	: ICommandHandler<Command, Guid>
 {
-	public async Task<Guid> HandleAsync(CreateProjectCommand command, CancellationToken ct)
+	public async Task<Guid> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = Project.Create(user.UserId, command.Name, time.GetUtcNow());
 		

@@ -2,11 +2,11 @@ using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 
-namespace KeyVault.Application.Projects.DeleteProject;
+namespace KeyVault.Application.Projects.Commands.DeleteProject;
 
-public sealed class DeleteProjectCommandHandler(IUserContext user, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<DeleteProjectCommand, Unit>
+public sealed class Handler(IUserContext user, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
 {
-	public async Task<Unit> HandleAsync(DeleteProjectCommand command, CancellationToken ct)
+	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = await repository.GetByIdAsync(command.Id, ct);
 		
