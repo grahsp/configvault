@@ -1,4 +1,5 @@
 using KeyVault.Api.Authentication;
+using KeyVault.Api.Configuration;
 using KeyVault.Api.DependencyInjection;
 using KeyVault.Api.Users;
 using KeyVault.Application.DependencyInjection;
@@ -18,7 +19,7 @@ public class Program
 			.AddUserSecrets<Program>(true)
 			.AddEnvironmentVariables();
 		
-		builder.Services.AddApiModule(builder.Environment);
+		builder.Services.AddApiModule(builder.Configuration, builder.Environment);
 		builder.Services.AddAuthenticationModule(builder.Configuration, builder.Environment);
 		
 		builder.Services.AddApplicationModule();
@@ -32,11 +33,12 @@ public class Program
 			app.UseSwaggerUI();
 		}
 
+		app.UseHttpsRedirection();
+		app.UseCors(CorsOptions.PolicyName);
+
 		app.UseAuthentication();
 		app.UseMiddleware<CurrentUserMiddleware>();
 		app.UseAuthorization();
-
-		app.UseHttpsRedirection();
 
 		app.AddUserEndpoints();
 
