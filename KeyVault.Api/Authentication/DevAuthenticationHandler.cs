@@ -21,7 +21,7 @@ public class DevAuthenticationHandler(
 		var claims = new[]
 		{
 			new Claim("iss", "https://localhost"),
-			new Claim("sub", subject!),
+			new Claim(ClaimTypes.NameIdentifier, subject!),
 			new Claim(ClaimTypes.Name, "dev-username"),
 			new Claim(ClaimTypes.Email, "dev-email")
 		};
