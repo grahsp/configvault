@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Projects.GetProjectList;
 
-namespace KeyVault.Api.Projects.GetProjects;
+namespace KeyVault.Api.Projects.GetProjectList;
 
 internal static class GetProjects
 {

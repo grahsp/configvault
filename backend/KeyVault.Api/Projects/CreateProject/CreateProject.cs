@@ -10,6 +10,9 @@ internal static class CreateProject
 		var command = new CreateProjectCommand(request.Name);
 		var id = await dispatcher.DispatchAsync(command, ct);
 		
-		return Results.Ok(id);
+		return Results.CreatedAtRoute(
+			nameof(GetProjectDetails.GetProjectDetails),
+			new RouteValueDictionary { ["id"] = id },
+			new { id });
 	}
 }
