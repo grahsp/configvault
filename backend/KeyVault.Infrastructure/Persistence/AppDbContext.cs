@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	IQueryable<User> IReadDbContext.Users => Users;
 	
 	public DbSet<Project> Projects { get; set; }
+	IQueryable<Project> IReadDbContext.Projects => Projects;
 	
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
