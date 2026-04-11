@@ -1,40 +1,57 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../features/auth/hooks/useAuth'
+import styles from './AppLayout.module.css'
+
+function cx(...classes: string[]) {
+  return classes.join(' ')
+}
 
 export function AppLayout() {
   const { isAuthenticated, isLoading, login, logout, signup } = useAuth()
 
   return (
-    <div className="app-shell">
-      <header className="app-navbar">
-        <div className="app-navbar__inner">
-          <div className="app-navbar__start">
-            <Link className="app-navbar__brand" to={isAuthenticated ? '/projects' : '/'}>
+    <div className={styles.shell}>
+      <header className={styles.navbar}>
+        <div className={styles.navbarInner}>
+          <div className={styles.navbarStart}>
+            <Link className={styles.brand} to={isAuthenticated ? '/projects' : '/'}>
               KeyVault
             </Link>
-            <nav className="app-navbar__nav" aria-label="Primary">
-              <Link className="app-navbar__link" to="/projects">
+            <nav className={styles.nav} aria-label="Primary">
+              <Link className={styles.navLink} to="/projects">
                 Projects
               </Link>
             </nav>
           </div>
 
-          <nav className="app-navbar__actions" aria-label="Account">
+          <nav className={styles.actions} aria-label="Account">
             {!isLoading && isAuthenticated ? (
               <>
-                <Link className="button button--secondary" to="/profile">
+                <Link className={cx(styles.button, styles.buttonSecondary)} to="/profile">
                   Profile
                 </Link>
-                <button className="button button--primary" onClick={logout} type="button">
+                <button
+                  className={cx(styles.button, styles.buttonPrimary)}
+                  onClick={logout}
+                  type="button"
+                >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button className="button button--secondary" onClick={login} type="button">
+                <button
+                  className={cx(styles.button, styles.buttonSecondary)}
+                  onClick={login}
+                  type="button"
+                >
                   Log in
                 </button>
-                <button className="button button--primary" onClick={signup} type="button">
+                <button
+                  className={cx(styles.button, styles.buttonPrimary)}
+                  onClick={signup}
+                  type="button"
+                >
                   Register
                 </button>
               </>
@@ -43,8 +60,8 @@ export function AppLayout() {
         </div>
       </header>
 
-      <div className="app-content">
-        <div className="app-content__inner">
+      <div className={styles.content}>
+        <div className={styles.contentInner}>
           <Outlet />
         </div>
       </div>

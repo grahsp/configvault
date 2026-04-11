@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import styles from './HomePage.module.css'
 
 export function HomePage() {
   const { error, isAuthenticated, isLoading } = useAuth()
@@ -9,10 +10,10 @@ export function HomePage() {
   }
 
   return (
-    <main className="home-page">
+    <main className={styles.page}>
       {error ? (
-        <section className="home-shell">
-          <p className="hero-card__error" role="alert">
+        <section className={styles.shell}>
+          <p className={styles.error} role="alert">
             Error: {error.message}
           </p>
         </section>

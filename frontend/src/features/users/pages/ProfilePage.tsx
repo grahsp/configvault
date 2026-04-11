@@ -1,14 +1,15 @@
 import { useCurrentUser } from '../hooks/useCurrentUser'
+import styles from './ProfilePage.module.css'
 
 export function ProfilePage() {
   const { user, isLoading, error } = useCurrentUser()
 
   return (
-    <main className="profile-page">
-      <section className="profile-card">
-        <div className="profile-card__header">
+    <main className={styles.page}>
+      <section className={styles.card}>
+        <div className={styles.header}>
           <div>
-            <p className="profile-card__eyebrow">Profile</p>
+            <p className={styles.eyebrow}>Profile</p>
             <h1>User Profile</h1>
           </div>
         </div>
@@ -20,20 +21,20 @@ export function ProfilePage() {
         ) : null}
 
         {!isLoading && !error && user ? (
-          <dl className="profile-details">
-            <div className="profile-details__row">
+          <dl className={styles.details}>
+            <div className={styles.detailsRow}>
               <dt>User ID</dt>
               <dd>{user.id}</dd>
             </div>
-            <div className="profile-details__row">
+            <div className={styles.detailsRow}>
               <dt>Email</dt>
               <dd>{user.email}</dd>
             </div>
-            <div className="profile-details__row">
+            <div className={styles.detailsRow}>
               <dt>Display name</dt>
               <dd>{user.displayName}</dd>
             </div>
-            <div className="profile-details__row">
+            <div className={styles.detailsRow}>
               <dt>Status</dt>
               <dd>{user.status}</dd>
             </div>

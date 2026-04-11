@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { createApiClient } from '../../../api/apiClient'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCurrentUser } from '../hooks/useCurrentUser'
+import styles from './ActivatePage.module.css'
 
 export function ActivatePage() {
   const { getAccessTokenSilently } = useAuth()
@@ -48,17 +49,17 @@ export function ActivatePage() {
   }
 
   return (
-    <main className="activation-page">
-      <section className="activation-card">
-        <p className="activation-card__eyebrow">Activation</p>
+    <main className={styles.page}>
+      <section className={styles.card}>
+        <p className={styles.eyebrow}>Activation</p>
         <h1>Finish setting up your account</h1>
-        <p className="activation-card__copy">
+        <p className={styles.copy}>
           Choose the display name you want to use in KeyVault, then submit your
           activation request.
         </p>
 
-        <form className="activation-form" onSubmit={handleSubmit}>
-          <label className="activation-form__field" htmlFor="displayName">
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.field} htmlFor="displayName">
             <span>Display name</span>
             <input
               autoComplete="nickname"

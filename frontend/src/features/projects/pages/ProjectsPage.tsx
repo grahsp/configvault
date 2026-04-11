@@ -12,6 +12,11 @@ import {
   normalizeProjectName,
   PROJECT_NAME_MAX_LENGTH,
 } from '../validation/projectValidation'
+import styles from './ProjectsPage.module.css'
+
+function cx(...classes: Array<string | false | undefined>) {
+  return classes.filter(Boolean).join(' ')
+}
 
 function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
@@ -154,15 +159,15 @@ export function ProjectsPage() {
   }
 
   return (
-    <main className="projects-page projects-page--top">
-      <section className="projects-card" aria-labelledby="projects-title">
-        <div className="projects-card__header">
+    <main className={cx(styles.page, styles.pageTop)}>
+      <section className={styles.card} aria-labelledby="projects-title">
+        <div className={styles.cardHeader}>
           <div>
-            <p className="projects-card__eyebrow">Workspace</p>
+            <p className={styles.eyebrow}>Workspace</p>
             <h1 id="projects-title">Projects</h1>
           </div>
           <button
-            className="button button--primary"
+            className={cx(styles.button, styles.buttonPrimary)}
             onClick={openCreateModal}
             type="button"
           >
@@ -171,20 +176,20 @@ export function ProjectsPage() {
         </div>
 
         {projectsQuery.isPending ? (
-          <div className="projects-state" role="status">
-            <p className="projects-state__title">Loading projects</p>
-            <p className="projects-state__copy">
+          <div className={styles.state} role="status">
+            <p className={styles.stateTitle}>Loading projects</p>
+            <p className={styles.stateCopy}>
               Your workspace list is being prepared.
             </p>
           </div>
         ) : projectsQuery.isError ? (
-          <div className="projects-state projects-state--error" role="alert">
-            <p className="projects-state__title">Projects could not load</p>
-            <p className="projects-state__copy">
+          <div className={cx(styles.state, styles.stateError)} role="alert">
+            <p className={styles.stateTitle}>Projects could not load</p>
+            <p className={styles.stateCopy}>
               {getErrorMessage(projectsQuery.error)}
             </p>
             <button
-              className="button button--secondary"
+              className={cx(styles.button, styles.buttonSecondary)}
               onClick={() => projectsQuery.refetch()}
               type="button"
             >
@@ -192,13 +197,13 @@ export function ProjectsPage() {
             </button>
           </div>
         ) : sortedProjects.length === 0 ? (
-          <div className="projects-state">
-            <p className="projects-state__title">No projects yet</p>
-            <p className="projects-state__copy">
+          <div className={styles.state}>
+            <p className={styles.stateTitle}>No projects yet</p>
+            <p className={styles.stateCopy}>
               Create a project to start organizing vault entries.
             </p>
             <button
-              className="button button--secondary"
+              className={cx(styles.button, styles.buttonSecondary)}
               onClick={openCreateModal}
               type="button"
             >
@@ -206,17 +211,20 @@ export function ProjectsPage() {
             </button>
           </div>
         ) : (
-          <ul className="project-list" aria-label="Projects">
+          <ul className={styles.projectList} aria-label="Projects">
             {sortedProjects.map((project) => (
-              <li className="project-list__item" key={project.id}>
-                <Link className="project-list__link" to={`/projects/${project.id}`}>
-                  <span className="project-list__name">{project.name}</span>
-                  <span className="project-list__meta">
+              <li className={styles.projectListItem} key={project.id}>
+                <Link
+                  className={styles.projectListLink}
+                  to={`/projects/${project.id}`}
+                >
+                  <span className={styles.projectListName}>{project.name}</span>
+                  <span className={styles.projectListMeta}>
                     Created {formatCreatedDate(project.createdAt)}
                   </span>
                 </Link>
                 <button
-                  className="project-list__delete"
+                  className={styles.projectListDelete}
                   disabled={deleteProjectMutation.isPending}
                   onClick={() => {
                     deleteProjectMutation.reset()
@@ -233,18 +241,18 @@ export function ProjectsPage() {
       </section>
 
       {isCreateModalOpen ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className={styles.modalBackdrop} role="presentation">
           <div
             aria-labelledby="create-project-title"
             aria-modal="true"
-            className="modal"
+            className={styles.modal}
             role="dialog"
           >
-            <div className="modal__header">
+            <div className={styles.modalHeader}>
               <h2 id="create-project-title">Create project</h2>
               <button
                 aria-label="Close create project"
-                className="modal__close"
+                className={styles.modalClose}
                 disabled={createProjectMutation.isPending}
                 onClick={closeCreateModal}
                 type="button"
@@ -253,8 +261,8 @@ export function ProjectsPage() {
               </button>
             </div>
 
-            <form className="project-form" onSubmit={handleCreateProject}>
-              <label className="project-form__field">
+            <form className={styles.projectForm} onSubmit={handleCreateProject}>
+              <label className={styles.projectFormField}>
                 Project name
                 <input
                   autoFocus
@@ -272,7 +280,7 @@ export function ProjectsPage() {
                 />
               </label>
 
-              <label className="project-form__field">
+              <label className={styles.projectFormField}>
                 Description
                 <textarea
                   disabled={createProjectMutation.isPending}
@@ -286,7 +294,7 @@ export function ProjectsPage() {
 
               {createProjectMutation.isError ? (
                 <p
-                  className="project-form__error"
+                  className={styles.projectFormError}
                   id={visibleProjectNameError ? 'project-name-error' : undefined}
                   role="alert"
                 >
@@ -295,7 +303,7 @@ export function ProjectsPage() {
                 </p>
               ) : projectNameValidationError && projectName ? (
                 <p
-                  className="project-form__error"
+                  className={styles.projectFormError}
                   id="project-name-error"
                   role="alert"
                 >
@@ -303,9 +311,9 @@ export function ProjectsPage() {
                 </p>
               ) : null}
 
-              <div className="project-form__actions">
+              <div className={styles.projectFormActions}>
                 <button
-                  className="button button--secondary"
+                  className={cx(styles.button, styles.buttonSecondary)}
                   disabled={createProjectMutation.isPending}
                   onClick={closeCreateModal}
                   type="button"
@@ -313,7 +321,7 @@ export function ProjectsPage() {
                   Cancel
                 </button>
                 <button
-                  className="button button--primary"
+                  className={cx(styles.button, styles.buttonPrimary)}
                   disabled={
                     createProjectMutation.isPending ||
                     Boolean(projectNameValidationError)
@@ -329,27 +337,27 @@ export function ProjectsPage() {
       ) : null}
 
       {projectPendingDelete ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className={styles.modalBackdrop} role="presentation">
           <div
             aria-labelledby="delete-project-title"
             aria-modal="true"
-            className="modal modal--compact"
+            className={cx(styles.modal, styles.modalCompact)}
             role="dialog"
           >
             <h2 id="delete-project-title">Delete project</h2>
-            <p className="modal__copy">
+            <p className={styles.modalCopy}>
               Delete {projectPendingDelete.name}? This cannot be undone.
             </p>
 
             {deleteProjectMutation.isError ? (
-              <p className="project-form__error" role="alert">
+              <p className={styles.projectFormError} role="alert">
                 {getErrorMessage(deleteProjectMutation.error)}
               </p>
             ) : null}
 
-            <div className="project-form__actions">
+            <div className={styles.projectFormActions}>
               <button
-                className="button button--secondary"
+                className={cx(styles.button, styles.buttonSecondary)}
                 disabled={deleteProjectMutation.isPending}
                 onClick={() => {
                   deleteProjectMutation.reset()
@@ -360,7 +368,7 @@ export function ProjectsPage() {
                 Cancel
               </button>
               <button
-                className="button button--danger"
+                className={cx(styles.button, styles.buttonDanger)}
                 disabled={deleteProjectMutation.isPending}
                 onClick={confirmDeleteProject}
                 type="button"
