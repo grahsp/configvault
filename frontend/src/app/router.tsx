@@ -3,6 +3,7 @@ import { AppLayout } from './AppLayout'
 import { ActivationRoute, ProtectedRoute } from '../auth/ProtectedRoute'
 import { ActivatePage } from '../pages/ActivatePage'
 import { HomePage } from '../pages/HomePage'
+import { ProjectDetailPage } from '../pages/ProjectDetailPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { ProjectsPage } from '../pages/ProjectsPage'
 
@@ -20,6 +21,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProjectsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'projects/:projectId',
+        element: (
+          <ProtectedRoute>
+            <ProjectDetailPage />
           </ProtectedRoute>
         ),
       },
