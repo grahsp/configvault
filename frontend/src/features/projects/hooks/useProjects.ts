@@ -12,8 +12,8 @@ import {
   deleteProject,
   getProject,
   listProjects,
-  projectQueryKeys,
 } from '../api/projectApi'
+import { projectQueryKeys } from './projectQueryKeys'
 
 function isProjectDetails(
   project: CreateProjectResponse,
