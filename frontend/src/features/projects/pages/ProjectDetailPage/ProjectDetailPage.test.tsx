@@ -106,10 +106,16 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1/members',
         body: [
           {
-            userId: 'user-owner',
+            userId: 'current-user',
             displayName: 'Olivia Owner',
             role: 'owner',
             isCurrentUser: true,
+          },
+          {
+            userId: 'user-owner',
+            displayName: 'Oscar Owner',
+            role: 'owner',
+            isCurrentUser: false,
           },
           {
             userId: 'user-admin',
@@ -146,6 +152,9 @@ describe('ProjectDetailPage', () => {
     const ownerRow = within(membersTable).getByRole('row', {
       name: /Olivia OwnerYou Owner No actions available/,
     })
+    const otherOwnerRow = within(membersTable).getByRole('row', {
+      name: /Oscar Owner Role for Oscar OwnerOwner Remove/,
+    })
     const adminRow = within(membersTable).getByRole('row', {
       name: /Alex Admin Role for Alex AdminAdmin Remove/,
     })
@@ -155,6 +164,16 @@ describe('ProjectDetailPage', () => {
 
     expect(ownerRow).toBeInTheDocument()
     expect(within(ownerRow).queryByRole('button')).not.toBeInTheDocument()
+    expect(
+      within(otherOwnerRow).getByRole('combobox', {
+        name: 'Role for Oscar Owner',
+      }),
+    ).toBeDisabled()
+    expect(
+      within(otherOwnerRow).getByRole('button', {
+        name: 'Remove Oscar Owner',
+      }),
+    ).toBeDisabled()
     expect(
       within(adminRow).getByRole('combobox', {
         name: 'Role for Alex Admin',
@@ -192,7 +211,7 @@ describe('ProjectDetailPage', () => {
           {
             userId: 'current-user',
             displayName: 'Alex Admin',
-            role: 'member',
+            role: 'admin',
             isCurrentUser: true,
           },
           {
@@ -210,11 +229,23 @@ describe('ProjectDetailPage', () => {
     const addMemberForm = await screen.findByRole('form', {
       name: 'Add member',
     })
+    const currentUserRow = await screen.findByRole('row', {
+      name: /Alex AdminYou Admin No actions available/,
+    })
     const memberRow = await screen.findByRole('row', {
       name: /Morgan Member Role for Morgan MemberMember Remove/,
     })
 
     expect(addMemberForm).toBeInTheDocument()
+    expect(
+      within(currentUserRow).queryByRole('combobox', {
+        name: 'Role for Alex Admin',
+      }),
+    ).not.toBeInTheDocument()
+    expect(within(currentUserRow).queryByRole('button')).not.toBeInTheDocument()
+    expect(
+      within(currentUserRow).getByText('No actions available'),
+    ).toBeInTheDocument()
     expect(
       within(memberRow).getByRole('combobox', {
         name: 'Role for Morgan Member',

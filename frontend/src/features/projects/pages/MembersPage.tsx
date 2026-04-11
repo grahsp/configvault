@@ -173,6 +173,8 @@ function MemberRow({
 }) {
   const displayName = getMemberDisplayName(member)
   const isOwner = member.role === 'owner'
+  const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
+  const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
 
   return (
     <tr>
@@ -183,11 +185,11 @@ function MemberRow({
         ) : null}
       </th>
       <td>
-        {isOwner ? (
+        {member.isCurrentUser ? (
           roleLabels[member.role]
         ) : (
           <RoleSelector
-            canEdit={canManageMembers}
+            canEdit={canEditRole}
             displayName={displayName}
             projectId={projectId}
             role={member.role}
@@ -196,7 +198,7 @@ function MemberRow({
         )}
       </td>
       <td>
-        {isOwner ? (
+        {member.isCurrentUser ? (
           <span className={styles.memberActionUnavailable}>
             No actions available
           </span>
@@ -204,7 +206,7 @@ function MemberRow({
           <button
             aria-label={`Remove ${displayName}`}
             className={styles.memberAction}
-            disabled={!canManageMembers || isRemovePending}
+            disabled={!canRemoveMember || isRemovePending}
             onClick={() => onRemove(member)}
             type="button"
           >
