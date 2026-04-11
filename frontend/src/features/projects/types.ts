@@ -9,6 +9,8 @@ export interface ProjectListItem {
 export interface ProjectDetails {
   id: string
   name: string
+  role?: ProjectAccessRole
+  currentUserRole?: ProjectAccessRole
   description?: string
   createdAt?: string
   updatedAt?: string
@@ -28,6 +30,14 @@ export interface CreateProjectResponse {
 }
 
 export type ProjectRole = 'owner' | 'admin' | 'member'
+export type ProjectAccessRole =
+  | ProjectRole
+  | 'Owner'
+  | 'Admin'
+  | 'Member'
+  | 'OWNER'
+  | 'ADMIN'
+  | 'MEMBER'
 
 export interface ProjectMember {
   userId: string

@@ -7,6 +7,7 @@ import {
   useDeleteProject,
   useProject,
 } from '../hooks/useProjects'
+import type { ProjectDetails } from '../types'
 import {
   formatCreatedDate,
   getErrorMessage,
@@ -154,7 +155,7 @@ export function ProjectLayout() {
             ) : null}
 
             <ProjectSubNav projectId={project.id} />
-            <Outlet />
+            <Outlet context={{ project }} />
           </>
         ) : null}
       </section>
@@ -171,6 +172,10 @@ export function ProjectLayout() {
       ) : null}
     </main>
   )
+}
+
+export interface ProjectLayoutContext {
+  project: ProjectDetails
 }
 
 function ProjectNotFoundState() {

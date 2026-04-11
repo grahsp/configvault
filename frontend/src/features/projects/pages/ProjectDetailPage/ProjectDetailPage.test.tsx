@@ -20,6 +20,7 @@ describe('ProjectDetailPage', () => {
   const projectDetails = {
     id: 'project-1',
     name: 'Production secrets',
+    role: 'owner',
     description: 'Credentials for production services',
     createdAt: '2025-02-01T10:00:00Z',
   }
@@ -176,19 +177,72 @@ describe('ProjectDetailPage', () => {
     ).toBeEnabled()
   })
 
-  it('disables member controls for read-only members', async () => {
+  it('shows the add member form for admins', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
-        body: projectDetails,
+        body: {
+          ...projectDetails,
+          role: 'admin',
+        },
       },
       {
         path: '/projects/project-1/members',
         body: [
           {
             userId: 'current-user',
+            displayName: 'Alex Admin',
+            role: 'member',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
             displayName: 'Morgan Member',
             role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const addMemberForm = await screen.findByRole('form', {
+      name: 'Add member',
+    })
+    const memberRow = await screen.findByRole('row', {
+      name: /Morgan Member Role for Morgan MemberMember Remove/,
+    })
+
+    expect(addMemberForm).toBeInTheDocument()
+    expect(
+      within(memberRow).getByRole('combobox', {
+        name: 'Role for Morgan Member',
+      }),
+    ).toBeEnabled()
+    expect(
+      within(memberRow).getByRole('button', {
+        name: 'Remove Morgan Member',
+      }),
+    ).toBeEnabled()
+  })
+
+  it('disables member controls for read-only members', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: {
+          ...projectDetails,
+          role: 'member',
+        },
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
             isCurrentUser: true,
           },
           {

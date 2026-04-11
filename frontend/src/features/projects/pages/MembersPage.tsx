@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useOutletContext, useParams } from 'react-router-dom'
 import { cx } from '../../../shared/utils/cx'
 import { AddMemberForm } from '../components/AddMemberForm'
 import { RoleSelector } from '../components/RoleSelector'
@@ -7,7 +7,8 @@ import {
   useProjectMembers,
   useRemoveProjectMember,
 } from '../hooks/useProjects'
-import type { ProjectMember, ProjectRole } from '../types'
+import type { ProjectAccessRole, ProjectMember, ProjectRole } from '../types'
+import type { ProjectLayoutContext } from './ProjectLayout'
 import { getErrorMessage } from './projectPageUtils'
 import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
 
@@ -19,14 +20,15 @@ const roleLabels: Record<ProjectRole, string> = {
 
 export function MembersPage() {
   const { projectId } = useParams()
+  const { project } = useOutletContext<ProjectLayoutContext>()
   const membersQuery = useProjectMembers(projectId ?? '')
   const [memberPendingRemoval, setMemberPendingRemoval] =
     useState<ProjectMember | null>(null)
   const removeMemberMutation = useRemoveProjectMember(projectId ?? '')
   const members = membersQuery.data ?? []
-  const currentUserRole = members.find((member) => member.isCurrentUser)?.role
-  const canManageMembers =
-    currentUserRole === 'owner' || currentUserRole === 'admin'
+  const canManageMembers = canRoleManageMembers(
+    project.role ?? project.currentUserRole,
+  )
 
   function openRemoveDialog(member: ProjectMember) {
     removeMemberMutation.reset()
@@ -60,7 +62,10 @@ export function MembersPage() {
         </h2>
       </div>
 
-      {canManageMembers ? <AddMemberForm projectId={projectId ?? ''} /> : null}
+      <AddMemberForm
+        canManageMembers={canManageMembers}
+        projectId={projectId ?? ''}
+      />
 
       {membersQuery.isPending ? (
         <div className={styles.sectionState} role="status">
@@ -145,6 +150,12 @@ export function MembersPage() {
       ) : null}
     </section>
   )
+}
+
+function canRoleManageMembers(role: ProjectAccessRole | undefined) {
+  const normalizedRole = role?.toLowerCase()
+
+  return normalizedRole === 'owner' || normalizedRole === 'admin'
 }
 
 function MemberRow({

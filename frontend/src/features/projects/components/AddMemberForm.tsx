@@ -4,10 +4,14 @@ import { getErrorMessage } from '../pages/projectPageUtils'
 import styles from '../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 interface AddMemberFormProps {
+  canManageMembers: boolean
   projectId: string
 }
 
-export function AddMemberForm({ projectId }: AddMemberFormProps) {
+export function AddMemberForm({
+  canManageMembers,
+  projectId,
+}: AddMemberFormProps) {
   const inputId = useId()
   const errorId = useId()
   const [userId, setUserId] = useState('')
@@ -42,6 +46,10 @@ export function AddMemberForm({ projectId }: AddMemberFormProps) {
     addMemberMutation.mutate(trimmedUserId, {
       onSuccess: () => setUserId(''),
     })
+  }
+
+  if (!canManageMembers) {
+    return null
   }
 
   return (
