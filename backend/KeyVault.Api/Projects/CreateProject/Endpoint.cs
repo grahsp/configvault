@@ -11,7 +11,7 @@ internal static class Endpoint
 		var id = await dispatcher.DispatchAsync(command, ct);
 		
 		return Results.CreatedAtRoute(
-			nameof(GetProject.Endpoint),
+			nameof(GetProject),
 			new RouteValueDictionary { ["id"] = id },
 			new { id });
 	}
