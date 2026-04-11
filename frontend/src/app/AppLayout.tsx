@@ -1,10 +1,7 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../shared/hooks/useAuth'
+import { cx } from '../shared/utils/cx'
 import styles from './AppLayout.module.css'
-
-function cx(...classes: string[]) {
-  return classes.join(' ')
-}
 
 export function AppLayout() {
   const { isAuthenticated, isLoading, login, logout, signup } = useAuth()

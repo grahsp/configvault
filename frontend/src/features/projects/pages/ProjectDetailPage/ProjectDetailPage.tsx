@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { cx } from '../../../../shared/utils/cx'
 import { ProjectDeleteDialog } from '../../components/ProjectDeleteDialog'
 import {
   useDeleteProject,
   useProject,
 } from '../../hooks/useProjects'
-import {
-  cx,
-  isAuthError,
-  isNotFoundError,
-} from '../projectPageUtils'
+import { isAuthError, isNotFoundError } from '../projectPageUtils'
 import { ProjectDetailContent } from './ProjectDetailContent'
 import styles from './ProjectDetailPage.module.css'
 
