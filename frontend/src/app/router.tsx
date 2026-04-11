@@ -1,11 +1,14 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
-import { ActivationRoute, ProtectedRoute } from '../auth/ProtectedRoute'
-import { ActivatePage } from '../pages/ActivatePage'
-import { HomePage } from '../pages/HomePage'
-import { ProjectDetailPage } from '../pages/ProjectDetailPage'
-import { ProfilePage } from '../pages/ProfilePage'
-import { ProjectsPage } from '../pages/ProjectsPage'
+import {
+  ActivationRoute,
+  ProtectedRoute,
+} from '../features/auth/components/ProtectedRoute'
+import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage'
+import { ProjectsPage } from '../features/projects/pages/ProjectsPage'
+import { ActivatePage } from '../features/users/pages/ActivatePage'
+import { ProfilePage } from '../features/users/pages/ProfilePage'
+import { HomePage } from './pages/HomePage'
 
 export const router = createBrowserRouter([
   {

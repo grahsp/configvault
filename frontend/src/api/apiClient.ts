@@ -1,5 +1,3 @@
-import { authConfig } from '../auth/authConfig'
-
 type AccessTokenGetter = () => Promise<string>
 
 interface ApiClientOptions {
@@ -235,7 +233,7 @@ export type ApiClient = ReturnType<typeof createApiClient>
 export const apiClient = createApiClient({
   getAccessTokenSilently: () => {
     throw new Error(
-      `apiClient requires an Auth0 token getter. Use createApiClient() with getAccessTokenSilently for audience "${authConfig.audience ?? 'default'}".`,
+      'apiClient requires an Auth0 token getter. Use createApiClient() with getAccessTokenSilently.',
     )
   },
 })

@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ProjectDetailPage } from './ProjectDetailPage'
 import { ProjectsPage } from './ProjectsPage'
 
-vi.mock('../auth/useAuth', () => ({
+vi.mock('../../auth/hooks/useAuth', () => ({
   useAuth: () => ({
     getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
   }),

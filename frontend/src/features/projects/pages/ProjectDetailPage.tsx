@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ApiError } from '../api/apiClient'
+import { ApiError } from '../../../api/apiClient'
 import {
   useDeleteProject,
   useProject,
-} from '../features/projects/useProjects'
+} from '../hooks/useProjects'
 
 function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
