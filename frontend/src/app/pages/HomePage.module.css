@@ -1,0 +1,12 @@
+.page {
+  min-height: 100%;
+}
+
+.shell {
+  width: 100%;
+}
+
+.error {
+  margin: 0;
+  color: #b91c1c;
+}

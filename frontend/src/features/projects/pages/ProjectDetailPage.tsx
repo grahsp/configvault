@@ -5,6 +5,11 @@ import {
   useDeleteProject,
   useProject,
 } from '../hooks/useProjects'
+import styles from './ProjectDetailPage.module.css'
+
+function cx(...classes: Array<string | false | undefined>) {
+  return classes.filter(Boolean).join(' ')
+}
 
 function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
@@ -67,19 +72,22 @@ export function ProjectDetailPage() {
 
   if (!projectId) {
     return (
-      <main className="projects-page projects-page--top">
+      <main className={cx(styles.page, styles.pageTop)}>
         <section
-          className="projects-card"
+          className={styles.card}
           aria-labelledby="project-not-found-title"
         >
-          <div className="projects-state">
-            <p className="projects-state__title" id="project-not-found-title">
+          <div className={styles.state}>
+            <p className={styles.stateTitle} id="project-not-found-title">
               Project not found
             </p>
-            <p className="projects-state__copy">
+            <p className={styles.stateCopy}>
               Check the project link or return to your workspace.
             </p>
-            <Link className="button button--secondary" to="/projects">
+            <Link
+              className={cx(styles.button, styles.buttonSecondary)}
+              to="/projects"
+            >
               Back to projects
             </Link>
           </div>
@@ -94,43 +102,49 @@ export function ProjectDetailPage() {
     projectQuery.isError && isAuthError(projectQuery.error)
 
   return (
-    <main className="projects-page projects-page--top">
-      <section className="projects-card" aria-labelledby="project-detail-title">
+    <main className={cx(styles.page, styles.pageTop)}>
+      <section className={styles.card} aria-labelledby="project-detail-title">
         {projectQuery.isPending ? (
-          <div className="projects-state" role="status">
-            <p className="projects-state__title">Loading project</p>
-            <p className="projects-state__copy">
+          <div className={styles.state} role="status">
+            <p className={styles.stateTitle}>Loading project</p>
+            <p className={styles.stateCopy}>
               Project details are being prepared.
             </p>
           </div>
         ) : isProjectNotFound ? (
-          <div className="projects-state">
-            <p className="projects-state__title">Project not found</p>
-            <p className="projects-state__copy">
+          <div className={styles.state}>
+            <p className={styles.stateTitle}>Project not found</p>
+            <p className={styles.stateCopy}>
               This project is missing or your account cannot access it.
             </p>
-            <Link className="button button--secondary" to="/projects">
+            <Link
+              className={cx(styles.button, styles.buttonSecondary)}
+              to="/projects"
+            >
               Back to projects
             </Link>
           </div>
         ) : isProjectAuthError ? (
-          <div className="projects-state projects-state--error" role="alert">
-            <p className="projects-state__title">Project access denied</p>
-            <p className="projects-state__copy">
+          <div className={cx(styles.state, styles.stateError)} role="alert">
+            <p className={styles.stateTitle}>Project access denied</p>
+            <p className={styles.stateCopy}>
               Your account is not authorized to open this project.
             </p>
-            <Link className="button button--secondary" to="/projects">
+            <Link
+              className={cx(styles.button, styles.buttonSecondary)}
+              to="/projects"
+            >
               Back to projects
             </Link>
           </div>
         ) : projectQuery.isError ? (
-          <div className="projects-state projects-state--error" role="alert">
-            <p className="projects-state__title">Project could not load</p>
-            <p className="projects-state__copy">
+          <div className={cx(styles.state, styles.stateError)} role="alert">
+            <p className={styles.stateTitle}>Project could not load</p>
+            <p className={styles.stateCopy}>
               {getErrorMessage(projectQuery.error)}
             </p>
             <button
-              className="button button--secondary"
+              className={cx(styles.button, styles.buttonSecondary)}
               onClick={() => projectQuery.refetch()}
               type="button"
             >
@@ -139,17 +153,17 @@ export function ProjectDetailPage() {
           </div>
         ) : project ? (
           <>
-            <div className="projects-card__header project-detail__header">
+            <div className={cx(styles.cardHeader, styles.detailHeader)}>
               <div>
-                <Link className="project-detail__back-link" to="/projects">
+                <Link className={styles.backLink} to="/projects">
                   Back to projects
                 </Link>
                 <h1 id="project-detail-title">{project.name}</h1>
               </div>
 
-              <div className="project-detail__actions">
+              <div className={styles.actions}>
                 <button
-                  className="button button--danger"
+                  className={cx(styles.button, styles.buttonDanger)}
                   disabled={deleteProjectMutation.isPending}
                   onClick={() => {
                     deleteProjectMutation.reset()
@@ -159,33 +173,36 @@ export function ProjectDetailPage() {
                 >
                   Delete project
                 </button>
-                <p className="project-detail__meta">
+                <p className={styles.meta}>
                   Created {formatCreatedDate(project.createdAt)}
                 </p>
               </div>
             </div>
 
             {project.description ? (
-              <p className="projects-card__copy">{project.description}</p>
+              <p className={styles.cardCopy}>{project.description}</p>
             ) : null}
 
-            <div className="project-detail__placeholder">
-              <p className="project-detail__placeholder-title">
+            <div className={styles.placeholder}>
+              <p className={styles.placeholderTitle}>
                 Vault content will appear here
               </p>
-              <p className="project-detail__placeholder-copy">
+              <p className={styles.placeholderCopy}>
                 This space is reserved for the entries and controls that will be
                 added next.
               </p>
             </div>
           </>
         ) : (
-          <div className="projects-state">
-            <p className="projects-state__title">Project not found</p>
-            <p className="projects-state__copy">
+          <div className={styles.state}>
+            <p className={styles.stateTitle}>Project not found</p>
+            <p className={styles.stateCopy}>
               This project is missing or your account cannot access it.
             </p>
-            <Link className="button button--secondary" to="/projects">
+            <Link
+              className={cx(styles.button, styles.buttonSecondary)}
+              to="/projects"
+            >
               Back to projects
             </Link>
           </div>
@@ -193,27 +210,27 @@ export function ProjectDetailPage() {
       </section>
 
       {isDeleteModalOpen && project ? (
-        <div className="modal-backdrop" role="presentation">
+        <div className={styles.modalBackdrop} role="presentation">
           <div
             aria-labelledby="delete-project-title"
             aria-modal="true"
-            className="modal modal--compact"
+            className={cx(styles.modal, styles.modalCompact)}
             role="dialog"
           >
             <h2 id="delete-project-title">Delete project</h2>
-            <p className="modal__copy">
+            <p className={styles.modalCopy}>
               Delete {project.name}? This cannot be undone.
             </p>
 
             {deleteProjectMutation.isError ? (
-              <p className="project-form__error" role="alert">
+              <p className={styles.formError} role="alert">
                 {getErrorMessage(deleteProjectMutation.error)}
               </p>
             ) : null}
 
-            <div className="project-form__actions">
+            <div className={styles.formActions}>
               <button
-                className="button button--secondary"
+                className={cx(styles.button, styles.buttonSecondary)}
                 disabled={deleteProjectMutation.isPending}
                 onClick={closeDeleteModal}
                 type="button"
@@ -221,7 +238,7 @@ export function ProjectDetailPage() {
                 Cancel
               </button>
               <button
-                className="button button--danger"
+                className={cx(styles.button, styles.buttonDanger)}
                 disabled={deleteProjectMutation.isPending}
                 onClick={confirmDeleteProject}
                 type="button"
