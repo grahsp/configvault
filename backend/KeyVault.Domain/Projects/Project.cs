@@ -53,7 +53,7 @@ public sealed class Project
 	public ProjectMember RequireMember(Guid id)
 	{
 		return Members.SingleOrDefault(m => m.UserId == id)
-			?? throw new ProjectMemberNotFoundException();
+		       ?? throw new ProjectMemberNotFoundException();
 	}
 
 	public bool TryGetMember(Guid id, [NotNullWhen(true)] out ProjectMember? member)
@@ -122,5 +122,31 @@ public sealed class Project
 			throw new InsufficientProjectRoleException();
 		
 		member.SetRole(role);
+	}
+
+
+	private static string NormalizeEnvironmentName(string name)
+		=> name.Trim().ToLowerInvariant();
+	
+	public bool TryGetEnvironment(string normalizedName, [NotNullWhen(true)] out Environment? environment)
+	{
+		environment = _environments.SingleOrDefault(e => e.Name == normalizedName);
+		return environment != null;
+	}
+
+	public Environment AddEnvironment(Guid actorId, string name, DateTimeOffset now)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(name);
+		RequireMemberWithRole(actorId, ProjectRole.Admin);
+		
+		var normalizedName = NormalizeEnvironmentName(name);
+		
+		if (TryGetEnvironment(normalizedName, out _))
+			throw new EnvironmentAlreadyExists(normalizedName);
+		
+		var environment = Environment.Create(Id, normalizedName, now);
+		_environments.Add(environment);
+		
+		return environment;
 	}
 }

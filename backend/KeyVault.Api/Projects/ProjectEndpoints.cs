@@ -25,5 +25,11 @@ public static class ProjectEndpoints
 		members.MapPost("", AddMember.Endpoint.Handle);
 		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
 		members.MapDelete("/{userId}", RemoveMember.Endpoint.Handle);
+
+		var environments = builder.MapGroup("/projects/{projectId}/environments")
+			.RequireAuthorization(Policies.ActiveUser)
+			.WithTags("Environments");
+		
+		environments.MapPost("", AddEnvironment.Endpoint.Handle);
 	}
 }

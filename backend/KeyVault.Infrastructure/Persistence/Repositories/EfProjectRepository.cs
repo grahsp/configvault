@@ -8,6 +8,7 @@ public class EfProjectRepository(AppDbContext db) : IProjectRepository
 {
 	public Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
 		=> db.Projects
+			.Include(x => x.Environments)
 			.Include(x => x.Members)
 			.SingleOrDefaultAsync(x => x.Id == id, ct);
 
