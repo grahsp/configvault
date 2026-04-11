@@ -5,4 +5,6 @@ export const projectQueryKeys = {
   details: () => [...projectQueryKeys.all, 'detail'] as const,
   detail: (projectId: string) =>
     [...projectQueryKeys.details(), projectId] as const,
+  members: (projectId: string) =>
+    [...projectQueryKeys.detail(projectId), 'members'] as const,
 }

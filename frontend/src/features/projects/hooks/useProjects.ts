@@ -13,6 +13,7 @@ import {
   getProject,
   listProjects,
 } from '../api/projectApi'
+import { getMembers } from '../api/projectMembersApi'
 import { projectQueryKeys } from './projectQueryKeys'
 
 function isProjectDetails(
@@ -21,7 +22,7 @@ function isProjectDetails(
   return Boolean(project.name)
 }
 
-function useAuthenticatedProjectClient() {
+export function useAuthenticatedProjectClient() {
   const { getAccessTokenSilently } = useAuth()
 
   return useMemo(
@@ -45,6 +46,16 @@ export function useProject(projectId: string) {
   return useQuery({
     queryKey: projectQueryKeys.detail(projectId),
     queryFn: () => getProject(client, projectId),
+    enabled: Boolean(projectId),
+  })
+}
+
+export function useProjectMembers(projectId: string) {
+  const client = useAuthenticatedProjectClient()
+
+  return useQuery({
+    queryKey: projectQueryKeys.members(projectId),
+    queryFn: () => getMembers(client, projectId),
     enabled: Boolean(projectId),
   })
 }

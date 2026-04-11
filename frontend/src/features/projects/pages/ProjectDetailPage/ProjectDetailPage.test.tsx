@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -75,6 +75,10 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1',
         body: projectDetails,
       },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -88,9 +92,99 @@ describe('ProjectDetailPage', () => {
       'aria-current',
       'page',
     )
+    expect(await screen.findByText('No members yet')).toBeInTheDocument()
+  })
+
+  it('shows loaded project members', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'user-owner',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-admin',
+            displayName: 'Alex Admin',
+            role: 'admin',
+            isCurrentUser: false,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const membersTable = await screen.findByRole('table', {
+      name: 'Project members',
+    })
+
     expect(
-      screen.getByText('Project access and role controls will appear here.'),
+      within(membersTable).getByRole('columnheader', { name: 'Name' }),
     ).toBeInTheDocument()
+    expect(
+      within(membersTable).getByRole('columnheader', { name: 'Role' }),
+    ).toBeInTheDocument()
+    expect(
+      within(membersTable).getByRole('columnheader', { name: 'Actions' }),
+    ).toBeInTheDocument()
+
+    const ownerRow = within(membersTable).getByRole('row', {
+      name: /Olivia OwnerYou Owner No actions available/,
+    })
+    const adminRow = within(membersTable).getByRole('row', {
+      name: /Alex Admin Admin Manage role/,
+    })
+    const memberRow = within(membersTable).getByRole('row', {
+      name: /user-member Member Manage role/,
+    })
+
+    expect(ownerRow).toBeInTheDocument()
+    expect(within(ownerRow).queryByRole('button')).not.toBeInTheDocument()
+    expect(
+      within(adminRow).getByRole('button', {
+        name: 'Manage role for Alex Admin',
+      }),
+    ).toBeDisabled()
+    expect(
+      within(memberRow).getByRole('button', {
+        name: 'Manage role for user-member',
+      }),
+    ).toBeDisabled()
+  })
+
+  it('shows an error state when project members cannot load', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: { message: 'Members service failed.' },
+        status: 500,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Members could not load',
+    )
+    expect(screen.getByText('Members service failed.')).toBeInTheDocument()
   })
 
   it('shows the active project section after navigating tabs', async () => {
@@ -100,6 +194,10 @@ describe('ProjectDetailPage', () => {
       {
         path: '/projects/project-1',
         body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
       },
     ])
 
