@@ -6,14 +6,23 @@ using Microsoft.EntityFrameworkCore;
 namespace KeyVault.Application.Projects.Queries.GetProject;
 
 public sealed class Handler(IUserContext user, IReadDbContext db)
-	: IQueryHandler<Query, ProjectDetails?>
+	: IQueryHandler<Query, Response?>
 {
-	public Task<ProjectDetails?> HandleAsync(Query query, CancellationToken ct)
+	public Task<Response?> HandleAsync(Query query, CancellationToken ct)
 	{
 		return db.Projects
-			.Where(x => x.Id == query.Id)
-			.Where(x => x.Members.Any(m => m.UserId == user.UserId))
-			.Select(x => new ProjectDetails(x.Id, x.Name, x.CreatedAt))
+			.Where(p => p.Id == query.Id)
+			.Select(p => new
+			{
+				Project = p,
+				Membership = p.Members.SingleOrDefault(m => m.UserId == user.UserId)
+			})
+			.Where(x => x.Membership != null)
+			.Select(x => new Response(
+				x.Project.Id,
+				x.Project.Name,
+				x.Membership!.Role,
+				x.Project.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 	}
 }
