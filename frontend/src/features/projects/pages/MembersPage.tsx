@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { cx } from '../../../shared/utils/cx'
+import { RoleSelector } from '../components/RoleSelector'
 import { useProjectMembers } from '../hooks/useProjects'
 import type { ProjectMember, ProjectRole } from '../types'
 import { getErrorMessage } from './projectPageUtils'
@@ -15,6 +16,9 @@ export function MembersPage() {
   const { projectId } = useParams()
   const membersQuery = useProjectMembers(projectId ?? '')
   const members = membersQuery.data ?? []
+  const currentUserRole = members.find((member) => member.isCurrentUser)?.role
+  const canManageMembers =
+    currentUserRole === 'owner' || currentUserRole === 'admin'
 
   return (
     <section className={styles.membersSection} aria-labelledby="members-title">
@@ -79,7 +83,12 @@ export function MembersPage() {
             </thead>
             <tbody>
               {members.map((member) => (
-                <MemberRow key={member.userId} member={member} />
+                <MemberRow
+                  canManageMembers={canManageMembers}
+                  key={member.userId}
+                  member={member}
+                  projectId={projectId ?? ''}
+                />
               ))}
             </tbody>
           </table>
@@ -89,7 +98,15 @@ export function MembersPage() {
   )
 }
 
-function MemberRow({ member }: { member: ProjectMember }) {
+function MemberRow({
+  canManageMembers,
+  member,
+  projectId,
+}: {
+  canManageMembers: boolean
+  member: ProjectMember
+  projectId: string
+}) {
   const displayName = getMemberDisplayName(member)
   const isOwner = member.role === 'owner'
 
@@ -101,7 +118,19 @@ function MemberRow({ member }: { member: ProjectMember }) {
           <span className={styles.memberMeta}>You</span>
         ) : null}
       </th>
-      <td>{roleLabels[member.role]}</td>
+      <td>
+        {isOwner ? (
+          roleLabels[member.role]
+        ) : (
+          <RoleSelector
+            canEdit={canManageMembers}
+            displayName={displayName}
+            projectId={projectId}
+            role={member.role}
+            userId={member.userId}
+          />
+        )}
+      </td>
       <td>
         {isOwner ? (
           <span className={styles.memberActionUnavailable}>

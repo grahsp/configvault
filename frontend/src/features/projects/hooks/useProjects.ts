@@ -6,6 +6,7 @@ import type {
   CreateProjectRequest,
   CreateProjectResponse,
   ProjectDetails,
+  ProjectRole,
 } from '../types'
 import {
   createProject,
@@ -13,7 +14,7 @@ import {
   getProject,
   listProjects,
 } from '../api/projectApi'
-import { getMembers } from '../api/projectMembersApi'
+import { getMembers, setRole } from '../api/projectMembersApi'
 import { projectQueryKeys } from './projectQueryKeys'
 
 function isProjectDetails(
@@ -96,5 +97,24 @@ export function useDeleteProject() {
           queryKey: projectQueryKeys.detail(projectId),
         }),
       ]),
+  })
+}
+
+export function useSetProjectMemberRole(projectId: string) {
+  const client = useAuthenticatedProjectClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      role,
+      userId,
+    }: {
+      role: ProjectRole
+      userId: string
+    }) => setRole(client, projectId, userId, role),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: projectQueryKeys.members(projectId),
+      }),
   })
 }

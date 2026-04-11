@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -146,24 +146,181 @@ describe('ProjectDetailPage', () => {
       name: /Olivia OwnerYou Owner No actions available/,
     })
     const adminRow = within(membersTable).getByRole('row', {
-      name: /Alex Admin Admin Manage role/,
+      name: /Alex Admin Role for Alex AdminAdmin Manage role/,
     })
     const memberRow = within(membersTable).getByRole('row', {
-      name: /user-member Member Manage role/,
+      name: /user-member Role for user-memberMember Manage role/,
     })
 
     expect(ownerRow).toBeInTheDocument()
     expect(within(ownerRow).queryByRole('button')).not.toBeInTheDocument()
+    expect(
+      within(adminRow).getByRole('combobox', {
+        name: 'Role for Alex Admin',
+      }),
+    ).toBeEnabled()
     expect(
       within(adminRow).getByRole('button', {
         name: 'Manage role for Alex Admin',
       }),
     ).toBeDisabled()
     expect(
+      within(memberRow).getByRole('combobox', {
+        name: 'Role for user-member',
+      }),
+    ).toBeEnabled()
+    expect(
       within(memberRow).getByRole('button', {
         name: 'Manage role for user-member',
       }),
     ).toBeDisabled()
+  })
+
+  it('disables role selectors for read-only members', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Morgan Member',
+            role: 'member',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-admin',
+            displayName: 'Alex Admin',
+            role: 'admin',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    expect(
+      await screen.findByRole('combobox', { name: 'Role for Alex Admin' }),
+    ).toBeDisabled()
+  })
+
+  it('updates a member role and refreshes the member list', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+      {
+        method: 'PUT',
+        path: '/projects/project-1/members/user-member',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'admin',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const roleSelector = await screen.findByRole('combobox', {
+      name: 'Role for user-member',
+    })
+
+    await user.selectOptions(roleSelector, 'admin')
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/members/user-member'),
+        expect.objectContaining({
+          body: JSON.stringify({ role: 'admin' }),
+          method: 'PUT',
+        }),
+      ),
+    )
+    await waitFor(() => expect(roleSelector).toHaveValue('admin'))
+  })
+
+  it('shows role update errors without changing the displayed role', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+      {
+        method: 'PUT',
+        path: '/projects/project-1/members/user-member',
+        body: { message: 'Role change rejected.' },
+        status: 403,
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const roleSelector = await screen.findByRole('combobox', {
+      name: 'Role for user-member',
+    })
+
+    await user.selectOptions(roleSelector, 'admin')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Role change rejected.',
+    )
+    expect(roleSelector).toHaveValue('member')
+    expect(roleSelector).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('shows an error state when project members cannot load', async () => {
