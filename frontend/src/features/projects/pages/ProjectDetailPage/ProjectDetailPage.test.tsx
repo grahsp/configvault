@@ -5,7 +5,7 @@ import {
   renderProjectDetail,
 } from '../testUtils/projectPageTestUtils'
 
-vi.mock('../../../auth/hooks/useAuth', () => ({
+vi.mock('../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({
     getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
   }),

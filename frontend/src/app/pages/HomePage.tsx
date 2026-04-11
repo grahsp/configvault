@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../../features/auth/hooks/useAuth'
+import { useAuth } from '../../shared/hooks/useAuth'
 import styles from './HomePage.module.css'
 
 export function HomePage() {

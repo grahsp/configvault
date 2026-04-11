@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '../../../api/apiClient'
-import { useAuth } from '../../auth/hooks/useAuth'
+import { useAuth } from '../../../shared/hooks/useAuth'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
