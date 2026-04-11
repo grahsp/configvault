@@ -6,6 +6,33 @@ interface ApiClientOptions {
   getAccessTokenSilently: AccessTokenGetter
 }
 
+export type ApiErrorDetails = Record<string, unknown> | unknown[] | string | null
+
+interface ParsedErrorBody {
+  message?: string
+  details?: ApiErrorDetails
+}
+
+export class ApiError extends Error {
+  status: number
+  details?: ApiErrorDetails
+
+  constructor({
+    details,
+    message,
+    status,
+  }: {
+    details?: ApiErrorDetails
+    message: string
+    status: number
+  }) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.details = details
+  }
+}
+
 function buildApiUrl(path: string) {
   const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
 
@@ -14,6 +41,82 @@ function buildApiUrl(path: string) {
   }
 
   return new URL(path, `${baseUrl.replace(/\/+$/, '')}/`).toString()
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function readStringField(
+  value: Record<string, unknown>,
+  field: string,
+): string | undefined {
+  const fieldValue = value[field]
+
+  return typeof fieldValue === 'string' && fieldValue.trim()
+    ? fieldValue
+    : undefined
+}
+
+function toApiErrorDetails(value: unknown): ApiErrorDetails | undefined {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    Array.isArray(value) ||
+    isRecord(value)
+  ) {
+    return value
+  }
+
+  return undefined
+}
+
+function parseErrorBody(responseText: string): ParsedErrorBody {
+  const trimmedResponseText = responseText.trim()
+
+  if (!trimmedResponseText) {
+    return {}
+  }
+
+  try {
+    const parsedBody = JSON.parse(trimmedResponseText) as unknown
+
+    if (!isRecord(parsedBody)) {
+      return {
+        details: toApiErrorDetails(parsedBody),
+      }
+    }
+
+    const message =
+      readStringField(parsedBody, 'message') ??
+      readStringField(parsedBody, 'title') ??
+      readStringField(parsedBody, 'error') ??
+      readStringField(parsedBody, 'detail')
+
+    return {
+      message,
+      details:
+        toApiErrorDetails(parsedBody.errors) ?? toApiErrorDetails(parsedBody),
+    }
+  } catch {
+    return {
+      message: trimmedResponseText,
+      details: trimmedResponseText,
+    }
+  }
+}
+
+async function buildApiError(response: Response, path: string) {
+  const responseText = await response.text()
+  const parsedError = parseErrorBody(responseText)
+
+  return new ApiError({
+    status: response.status,
+    message:
+      parsedError.message ??
+      `API request failed with status ${response.status} for ${path}`,
+    details: parsedError.details,
+  })
 }
 
 export function createApiClient({
@@ -36,9 +139,7 @@ export function createApiClient({
       })
 
       if (!response.ok) {
-        throw new Error(
-          `API request failed with status ${response.status} for ${path}`,
-        )
+        throw await buildApiError(response, path)
       }
 
       if (response.status === 204) {
