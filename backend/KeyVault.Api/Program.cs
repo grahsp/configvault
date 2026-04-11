@@ -1,6 +1,7 @@
 using KeyVault.Api.Authentication;
 using KeyVault.Api.Configuration;
 using KeyVault.Api.DependencyInjection;
+using KeyVault.Api.Middleware;
 using KeyVault.Api.Projects;
 using KeyVault.Api.Users;
 using KeyVault.Application.DependencyInjection;
@@ -40,6 +41,8 @@ public class Program
 		app.UseAuthentication();
 		app.UseMiddleware<CurrentUserMiddleware>();
 		app.UseAuthorization();
+
+		app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 		app.AddUserEndpoints();
 		app.AddProjectEndpoints();
