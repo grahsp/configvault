@@ -16,6 +16,15 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+function createDeferredResponse() {
+  let resolve: (response: Response) => void = () => undefined
+  const response = new Promise<Response>((next) => {
+    resolve = next
+  })
+
+  return { response, resolve }
+}
+
 describe('ProjectDetailPage', () => {
   const projectDetails = {
     id: 'project-1',
@@ -93,7 +102,49 @@ describe('ProjectDetailPage', () => {
       'aria-current',
       'page',
     )
-    expect(await screen.findByText('No members yet')).toBeInTheDocument()
+    expect(await screen.findByText('No members found.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('form', { name: 'Add member' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the members loading state before member data is available', async () => {
+    const membersResponse = createDeferredResponse()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        response: membersResponse.response,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    expect(await screen.findByText('Loading members...')).toBeInTheDocument()
+    expect(
+      screen.getByText('Project access details are being prepared.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('form', { name: 'Add member' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Remove / }),
+    ).not.toBeInTheDocument()
+
+    membersResponse.resolve(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 200,
+      }),
+    )
   })
 
   it('shows loaded project members', async () => {
@@ -790,9 +841,14 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Members could not load',
+      'Failed to load members.',
     )
     expect(screen.getByText('Members service failed.')).toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Remove / }),
+    ).not.toBeInTheDocument()
   })
 
   it('shows the active project section after navigating tabs', async () => {

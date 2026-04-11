@@ -69,7 +69,7 @@ export function MembersPage() {
 
       {membersQuery.isPending ? (
         <div className={styles.sectionState} role="status">
-          <p className={styles.stateTitle}>Loading members</p>
+          <p className={styles.stateTitle}>Loading members...</p>
           <p className={styles.stateCopy}>
             Project access details are being prepared.
           </p>
@@ -81,7 +81,7 @@ export function MembersPage() {
           className={cx(styles.sectionState, styles.stateError)}
           role="alert"
         >
-          <p className={styles.stateTitle}>Members could not load</p>
+          <p className={styles.stateTitle}>Failed to load members.</p>
           <p className={styles.stateCopy}>
             {getErrorMessage(
               membersQuery.error,
@@ -100,7 +100,7 @@ export function MembersPage() {
 
       {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
         <div className={styles.sectionState}>
-          <p className={styles.stateTitle}>No members yet</p>
+          <p className={styles.stateTitle}>No members found.</p>
           <p className={styles.stateCopy}>
             Members with project access will appear here.
           </p>

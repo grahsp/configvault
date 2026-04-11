@@ -12,6 +12,7 @@ export type MockRoute = {
   body?: unknown
   method?: string
   path: string
+  response?: Promise<Response> | Response
   status?: number
 }
 
@@ -134,6 +135,11 @@ export function mockFetchSequence(routes: MockRoute[]) {
       }
 
       const [route] = pendingRoutes.splice(matchingRouteIndex, 1)
+
+      if (route.response) {
+        return route.response
+      }
+
       const status = route.status ?? 200
 
       if (status === 204) {
