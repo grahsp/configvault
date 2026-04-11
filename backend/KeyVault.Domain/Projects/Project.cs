@@ -9,6 +9,9 @@ public sealed class Project
 
 	public string Name { get; private set; } = null!;
 	
+	private readonly List<Environment> _environments = [];
+	public IReadOnlyList<Environment> Environments => _environments;
+	
 	private readonly List<ProjectMember> _members = [];
 	public IReadOnlyList<ProjectMember> Members => _members;
 	
@@ -29,17 +32,19 @@ public sealed class Project
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		
 		var project = new Project(Guid.NewGuid(), name, now);
-		project.AddOwner(userId);
+		project.SetInitialOwner(userId);
+		project.SetInitialEnvironments();
 		
 		return project;
 	}
 
-	private void AddOwner(Guid id)
+	private void SetInitialOwner(Guid id)
+		=> _members.Add(new ProjectMember(Id, id, ProjectRole.Owner));
+
+	private void SetInitialEnvironments()
 	{
-		if (Members.Count > 0)
-			throw new OwnerAlreadyExistsException();
-		
-		_members.Add(new ProjectMember(Id, id, ProjectRole.Owner));
+		_environments.Add(Environment.Create(Id, "development", CreatedAt));
+		_environments.Add(Environment.Create(Id, "production", CreatedAt));
 	}
 
 

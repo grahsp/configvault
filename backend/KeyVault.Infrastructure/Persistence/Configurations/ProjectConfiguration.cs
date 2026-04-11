@@ -12,10 +12,22 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
 		
 		builder.HasKey(x => x.Id);
 
+		builder.Property(x => x.Id)
+			.ValueGeneratedNever();
+
 		builder.Property(x => x.Name)
 			.IsRequired()
 			.HasMaxLength(256);
+		
+		// Environments
+		builder.Navigation(x => x.Environments)
+			.UsePropertyAccessMode(PropertyAccessMode.Field);	
+		
+		builder.HasMany(x => x.Environments)
+			.WithOne()
+			.HasForeignKey(x => x.ProjectId);
 
+		// Members
 		builder.Navigation(x => x.Members)
 			.UsePropertyAccessMode(PropertyAccessMode.Field);	
 		
