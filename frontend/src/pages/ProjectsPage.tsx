@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   useCreateProject,
   useDeleteProject,
@@ -47,6 +47,7 @@ function sortProjectsByCreatedDate(projects: ProjectListItem[]) {
 }
 
 export function ProjectsPage() {
+  const navigate = useNavigate()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
@@ -98,10 +99,11 @@ export function ProjectsPage() {
         description: projectDescription.trim() || undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (createdProject) => {
           setIsCreateModalOpen(false)
           setProjectName('')
           setProjectDescription('')
+          navigate(`/projects/${createdProject.id}`)
         },
       },
     )
