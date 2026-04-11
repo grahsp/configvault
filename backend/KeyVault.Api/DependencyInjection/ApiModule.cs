@@ -46,7 +46,10 @@ public static class ApiModule
 		{
 			services.AddEndpointsApiExplorer();
 			services.AddSwaggerGen(options =>
-				options.OperationFilter<DevSubjectHeaderFilter>());
+			{
+				options.OperationFilter<DevSubjectHeaderFilter>();
+				options.CustomSchemaIds(type => type.FullName);
+			});
 		}
 
 		services.AddHttpContextAccessor();

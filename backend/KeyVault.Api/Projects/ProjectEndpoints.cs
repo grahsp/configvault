@@ -6,15 +6,21 @@ public static class ProjectEndpoints
 {
 	public static void AddProjectEndpoints(this IEndpointRouteBuilder builder)
 	{
-		var group = builder.MapGroup("/projects")
+		var projects = builder.MapGroup("/projects")
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Projects");
 
-		group.MapPost("", CreateProject.Endpoint.Handle);
-		group.MapDelete("/{id}", DeleteProject.Endpoint.Handle);
+		projects.MapPost("", CreateProject.Endpoint.Handle);
+		projects.MapDelete("/{id}", DeleteProject.Endpoint.Handle);
 		
-		group.MapGet("", GetProjects.Endpoint.Handle);
-		group.MapGet("/{id}", GetProject.Endpoint.Handle)
+		projects.MapGet("", GetProjects.Endpoint.Handle);
+		projects.MapGet("/{id}", GetProject.Endpoint.Handle)
 			.WithName(nameof(GetProject));
+
+		var members = builder.MapGroup("/projects/{id}/members")
+			.RequireAuthorization(Policies.ActiveUser)
+			.WithTags("Members");
+
+		members.MapPost("", AddMember.Endpoint.Handle);
 	}
 }
