@@ -40,6 +40,7 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByText('Credentials for production services'),
     ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Secrets' })).toBeInTheDocument()
   })
 
   it('shows project section navigation on the secrets route', async () => {
@@ -63,6 +64,33 @@ describe('ProjectDetailPage', () => {
     expect(secretsLink).toHaveAttribute('aria-current', 'page')
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
     expect(membersLink).not.toHaveAttribute('aria-current')
+    expect(
+      screen.getByText('Vault entries and controls will appear here.'),
+    ).toBeInTheDocument()
+  })
+
+  it('renders the members route directly', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Production secrets' }),
+    ).toBeInTheDocument()
+
+    expect(screen.getByRole('heading', { name: 'Members' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(
+      screen.getByText('Project access and role controls will appear here.'),
+    ).toBeInTheDocument()
   })
 
   it('shows the active project section after navigating tabs', async () => {
@@ -83,6 +111,7 @@ describe('ProjectDetailPage', () => {
 
     await user.click(screen.getByRole('link', { name: 'Members' }))
 
+    expect(screen.getByRole('heading', { name: 'Members' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
       'aria-current',
       'page',

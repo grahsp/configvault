@@ -1,11 +1,13 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import {
   ActivationRoute,
   ProtectedRoute,
 } from '../features/auth/components/ProtectedRoute'
-import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage/ProjectDetailPage'
+import { MembersPage } from '../features/projects/pages/MembersPage'
+import { ProjectLayout } from '../features/projects/pages/ProjectLayout'
 import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
+import { SecretsPage } from '../features/projects/pages/SecretsPage'
 import { ActivatePage } from '../features/users/pages/ActivatePage'
 import { ProfilePage } from '../features/users/pages/ProfilePage'
 import { HomePage } from './pages/HomePage'
@@ -31,25 +33,23 @@ export const router = createBrowserRouter([
         path: 'projects/:projectId',
         element: (
           <ProtectedRoute>
-            <ProjectDetailPage />
+            <ProjectLayout />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: 'projects/:projectId/secrets',
-        element: (
-          <ProtectedRoute>
-            <ProjectDetailPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'projects/:projectId/members',
-        element: (
-          <ProtectedRoute>
-            <ProjectDetailPage />
-          </ProtectedRoute>
-        ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="secrets" replace />,
+          },
+          {
+            path: 'secrets',
+            element: <SecretsPage />,
+          },
+          {
+            path: 'members',
+            element: <MembersPage />,
+          },
+        ],
       },
       {
         path: 'profile',

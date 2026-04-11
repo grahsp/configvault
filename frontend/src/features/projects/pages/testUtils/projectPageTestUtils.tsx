@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { createMemoryRouter, RouterProvider } from 'react-router-dom'
+import { Navigate, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { vi } from 'vitest'
 import { LocationProbe } from './LocationProbe.testComponent'
-import { ProjectDetailPage } from '../ProjectDetailPage/ProjectDetailPage'
+import { MembersPage } from '../MembersPage'
+import { ProjectLayout } from '../ProjectLayout'
+import { SecretsPage } from '../SecretsPage'
 
 export type MockRoute = {
   body?: unknown
@@ -63,15 +65,21 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
     [
       {
         path: '/projects/:projectId',
-        element: <ProjectDetailPage />,
-      },
-      {
-        path: '/projects/:projectId/secrets',
-        element: <ProjectDetailPage />,
-      },
-      {
-        path: '/projects/:projectId/members',
-        element: <ProjectDetailPage />,
+        element: <ProjectLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="secrets" replace />,
+          },
+          {
+            path: 'secrets',
+            element: <SecretsPage />,
+          },
+          {
+            path: 'members',
+            element: <MembersPage />,
+          },
+        ],
       },
       {
         path: '/projects',
