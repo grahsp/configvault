@@ -4,8 +4,8 @@ import {
   ActivationRoute,
   ProtectedRoute,
 } from '../features/auth/components/ProtectedRoute'
-import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage'
-import { ProjectsPage } from '../features/projects/pages/ProjectsPage'
+import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage/ProjectDetailPage'
+import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
 import { ActivatePage } from '../features/users/pages/ActivatePage'
 import { ProfilePage } from '../features/users/pages/ProfilePage'
 import { HomePage } from './pages/HomePage'
