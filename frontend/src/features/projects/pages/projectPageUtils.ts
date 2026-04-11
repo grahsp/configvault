@@ -1,10 +1,6 @@
 import { ApiError } from '../../../api/errors/apiError'
 import type { ProjectListItem } from '../types'
 
-export function cx(...classes: Array<string | false | undefined>) {
-  return classes.filter(Boolean).join(' ')
-}
-
 export function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
     return 'date unavailable'

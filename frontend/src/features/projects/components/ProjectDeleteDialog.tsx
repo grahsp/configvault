@@ -1,5 +1,6 @@
 import type { UseMutationResult } from '@tanstack/react-query'
-import { cx, getErrorMessage } from '../pages/projectPageUtils'
+import { cx } from '../../../shared/utils/cx'
+import { getErrorMessage } from '../pages/projectPageUtils'
 import styles from './ProjectDeleteDialog.module.css'
 
 interface ProjectDeleteDialogProps {

@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom'
+import { cx } from '../../../../shared/utils/cx'
 import type { ProjectDetails } from '../../types'
-import {
-  cx,
-  formatCreatedDate,
-  getErrorMessage,
-} from '../projectPageUtils'
+import { formatCreatedDate, getErrorMessage } from '../projectPageUtils'
 import styles from './ProjectDetailPage.module.css'
 
 interface ProjectDetailContentProps {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
+import { cx } from '../../../../shared/utils/cx'
 import type { ProjectListItem } from '../../types'
-import { cx, formatCreatedDate } from '../projectPageUtils'
+import { formatCreatedDate } from '../projectPageUtils'
 import styles from './ProjectsPage.module.css'
 
 interface ProjectListProps {
