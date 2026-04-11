@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using KeyVault.Api.Configuration;
 using KeyVault.Api.Authentication;
 
@@ -10,6 +12,12 @@ public static class ApiModule
 		IConfiguration configuration,
 		IWebHostEnvironment environment)
 	{
+		services.ConfigureHttpJsonOptions(options =>
+		{
+			options.SerializerOptions.Converters
+				.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+		});
+		
 		services.AddOptions<CorsOptions>()
 			.Bind(configuration.GetSection(CorsOptions.Section))
 			.Validate(options =>

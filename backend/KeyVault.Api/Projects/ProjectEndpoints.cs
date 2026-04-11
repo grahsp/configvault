@@ -17,10 +17,11 @@ public static class ProjectEndpoints
 		projects.MapGet("/{id}", GetProject.Endpoint.Handle)
 			.WithName(nameof(GetProject));
 
-		var members = builder.MapGroup("/projects/{id}/members")
+		var members = builder.MapGroup("/projects/{projectId}/members")
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Members");
 
 		members.MapPost("", AddMember.Endpoint.Handle);
+		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
 	}
 }

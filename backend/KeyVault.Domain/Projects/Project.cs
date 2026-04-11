@@ -86,4 +86,23 @@ public sealed class Project
 		
 		_members.Add(new ProjectMember(Id, userId, role));
 	}
+
+	public void SetRole(Guid actorId, Guid userId, ProjectRole role)
+	{
+		if (role == ProjectRole.Owner)
+			throw new InvalidRoleException();
+		
+		var actor = RequireMember(actorId);
+		var member = RequireMember(userId);
+		
+		// cannot change the role of members with a greater role
+		if (actor.Role >= member.Role)
+			throw new InsufficientProjectRoleException();
+		
+		// cannot set a role higher than the actors role
+		if (role < actor.Role)
+			throw new InsufficientProjectRoleException();
+		
+		member.SetRole(role);
+	}
 }
