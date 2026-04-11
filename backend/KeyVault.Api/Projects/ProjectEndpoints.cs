@@ -21,6 +21,7 @@ public static class ProjectEndpoints
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Members");
 
+		members.MapGet("", GetMembers.Endpoint.Handle);
 		members.MapPost("", AddMember.Endpoint.Handle);
 		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
 	}

@@ -13,6 +13,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<Project> Projects { get; set; }
 	IQueryable<Project> IReadDbContext.Projects => Projects;
 	
+	public DbSet<ProjectMember> ProjectMembers { get; set; }
+	IQueryable<ProjectMember> IReadDbContext.ProjectMembers => ProjectMembers;
+	
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
