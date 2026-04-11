@@ -1,6 +1,8 @@
 namespace KeyVault.Api.Middleware;
 
-public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
+public sealed class ExceptionHandlingMiddleware(
+	RequestDelegate next,
+	ILogger<ExceptionHandlingMiddleware> logger)
 {
 	public async Task InvokeAsync(HttpContext context)
 	{
@@ -10,6 +12,8 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
 		}
 		catch (Exception ex)
 		{
+			logger.LogError(ex, "Unhandled exception");
+			
 			var problem = ProblemDetailsFactory.Create(ex);
 
 			context.Response.StatusCode = problem.Status!.Value;
