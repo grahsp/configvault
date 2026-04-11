@@ -86,6 +86,19 @@ public sealed class Project
 		
 		_members.Add(new ProjectMember(Id, userId, role));
 	}
+	
+	public void RemoveMember(Guid actorId, Guid userId)
+	{
+		RequireMemberWithRole(actorId, ProjectRole.Admin);
+		
+		if (!TryGetMember(userId, out var member))
+			return;
+		
+		if (member.Role == ProjectRole.Owner)
+			throw new InvalidRoleException();
+
+		_members.Remove(member);
+	}
 
 	public void SetRole(Guid actorId, Guid userId, ProjectRole role)
 	{

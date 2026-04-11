@@ -5,5 +5,4 @@ public enum ProjectRole
 	Owner,
 	Admin,
 	Member,
-	Subject
 }
