@@ -66,6 +66,14 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
         element: <ProjectDetailPage />,
       },
       {
+        path: '/projects/:projectId/secrets',
+        element: <ProjectDetailPage />,
+      },
+      {
+        path: '/projects/:projectId/members',
+        element: <ProjectDetailPage />,
+      },
+      {
         path: '/projects',
         element: <LocationProbe />,
       },

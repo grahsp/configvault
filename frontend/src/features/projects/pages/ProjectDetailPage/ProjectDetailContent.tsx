@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { cx } from '../../../../shared/utils/cx'
+import { ProjectSubNav } from '../../components/ProjectSubNav'
 import type { ProjectDetails } from '../../types'
 import { formatCreatedDate, getErrorMessage } from '../projectPageUtils'
 import styles from './ProjectDetailPage.module.css'
@@ -105,6 +106,8 @@ export function ProjectDetailContent({
       {project.description ? (
         <p className={styles.cardCopy}>{project.description}</p>
       ) : null}
+
+      <ProjectSubNav projectId={project.id} />
 
       <div className={styles.placeholder}>
         <p className={styles.placeholderTitle}>Vault content will appear here</p>
