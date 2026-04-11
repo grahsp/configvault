@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 
 export function HomePage() {
   const { error, isAuthenticated, isLoading } = useAuth()

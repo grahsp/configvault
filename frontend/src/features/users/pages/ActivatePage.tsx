@@ -1,8 +1,8 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createApiClient } from '../api/apiClient'
-import { useAuth } from '../auth/useAuth'
-import { useCurrentUser } from '../features/user/useCurrentUser'
+import { createApiClient } from '../../../api/apiClient'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 
 export function ActivatePage() {
   const { getAccessTokenSilently } = useAuth()

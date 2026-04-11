@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { authConfig } from './authConfig'
+import { authConfig } from '../api/authConfig'
 
 export function useAuth() {
   const auth = useAuth0()

@@ -5,8 +5,8 @@ import { RouterProvider } from 'react-router-dom'
 import './index.css'
 import { queryClient } from './api/queryClient'
 import { router } from './app/router'
-import { AuthProvider } from './auth/AuthProvider'
-import { CurrentUserProvider } from './auth/CurrentUserProvider'
+import { AuthProvider } from './features/auth/context/AuthProvider'
+import { CurrentUserProvider } from './features/auth/context/CurrentUserProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

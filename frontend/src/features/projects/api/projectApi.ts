@@ -1,10 +1,10 @@
-import type { ApiClient } from '../../api/apiClient'
+import type { ApiClient } from '../../../api/apiClient'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
   ProjectDetails,
   ProjectListItem,
-} from './types'
+} from '../types'
 
 export const projectQueryKeys = {
   all: ['projects'] as const,

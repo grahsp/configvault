@@ -1,17 +1,17 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ApiError } from '../api/apiClient'
+import { ApiError } from '../../../api/apiClient'
 import {
   useCreateProject,
   useDeleteProject,
   useProjects,
-} from '../features/projects/useProjects'
-import type { ProjectListItem } from '../features/projects/types'
+} from '../hooks/useProjects'
+import type { ProjectListItem } from '../types'
 import {
   getProjectNameValidationError,
   normalizeProjectName,
   PROJECT_NAME_MAX_LENGTH,
-} from '../features/projects/projectValidation'
+} from '../validation/projectValidation'
 
 function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {

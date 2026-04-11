@@ -1,7 +1,7 @@
 import {
   useCurrentUserContext,
-} from '../../auth/currentUserContext'
-import type { CurrentUserContextValue } from '../../auth/currentUserContext'
+} from '../../auth/context/currentUserContext'
+import type { CurrentUserContextValue } from '../../auth/context/currentUserContext'
 
 export type UseCurrentUserResult = CurrentUserContextValue
 

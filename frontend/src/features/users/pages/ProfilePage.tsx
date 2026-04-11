@@ -1,4 +1,4 @@
-import { useCurrentUser } from '../features/user/useCurrentUser'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 
 export function ProfilePage() {
   const { user, isLoading, error } = useCurrentUser()

@@ -1,8 +1,8 @@
 import { type PropsWithChildren, useEffect, useState } from 'react'
-import { createApiClient } from '../api/apiClient'
-import type { CurrentUser } from '../features/user/types'
+import { createApiClient } from '../../../api/apiClient'
+import type { CurrentUser } from '../../users/types'
 import { CurrentUserContext } from './currentUserContext'
-import { useAuth } from './useAuth'
+import { useAuth } from '../hooks/useAuth'
 
 export function CurrentUserProvider({ children }: PropsWithChildren) {
   const { getAccessTokenSilently, isAuthenticated } = useAuth()

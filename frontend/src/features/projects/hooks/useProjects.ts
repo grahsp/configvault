@@ -1,19 +1,19 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createApiClient } from '../../api/apiClient'
-import { useAuth } from '../../auth/useAuth'
+import { createApiClient } from '../../../api/apiClient'
+import { useAuth } from '../../auth/hooks/useAuth'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
   ProjectDetails,
-} from './types'
+} from '../types'
 import {
   createProject,
   deleteProject,
   getProject,
   listProjects,
   projectQueryKeys,
-} from './projectApi'
+} from '../api/projectApi'
 
 function isProjectDetails(
   project: CreateProjectResponse,
