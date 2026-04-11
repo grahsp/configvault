@@ -11,7 +11,8 @@ public sealed class Handler(IUserContext user, IReadDbContext db)
 	public Task<ProjectDetails?> HandleAsync(Query query, CancellationToken ct)
 	{
 		return db.Projects
-			.Where(x => x.Id == query.Id && user.UserId == x.OwnerId)
+			.Where(x => x.Id == query.Id)
+			.Where(x => x.Members.Any(m => m.UserId == user.UserId))
 			.Select(x => new ProjectDetails(x.Id, x.Name, x.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 	}

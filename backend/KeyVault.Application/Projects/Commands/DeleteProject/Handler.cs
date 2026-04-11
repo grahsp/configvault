@@ -14,8 +14,7 @@ public sealed class Handler(IUserContext user, IProjectRepository repository, IU
 		if (project is null)
 			throw new NotFoundException("Project not found");
 
-		if (project.OwnerId != user.UserId)
-			throw new ForbiddenException("User is not the owner of this project");
+		project.EnsureCanDelete(user.UserId);
 
 		repository.Remove(project);
 		await uow.SaveChangesAsync(ct);

@@ -11,7 +11,7 @@ public class Handler(IUserContext user, IReadDbContext db)
 	public async Task<IReadOnlyList<ProjectListItem>> HandleAsync(Query query, CancellationToken ct)
 	{
 		return await db.Projects
-			.Where(x => x.OwnerId == user.UserId)
+			.Where(x => x.Members.Any(m => m.UserId == user.UserId))
 			.OrderBy(x => x.Name)
 			.Select(x => new ProjectListItem(x.Id, x.Name, x.CreatedAt))
 			.ToListAsync(ct);

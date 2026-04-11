@@ -7,7 +7,9 @@ namespace KeyVault.Infrastructure.Persistence.Repositories;
 public class EfProjectRepository(AppDbContext db) : IProjectRepository
 {
 	public Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
-		=> db.Projects.SingleOrDefaultAsync(x => x.Id == id, ct);
+		=> db.Projects
+			.Include(x => x.Members)
+			.SingleOrDefaultAsync(x => x.Id == id, ct);
 
 	public void Add(Project project)
 		=> db.Projects.Add(project);
