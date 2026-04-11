@@ -150,7 +150,6 @@ a {
 .button--danger {
   background: #b91c1c;
   color: #ffffff;
-  box-shadow: 0 18px 40px rgba(185, 28, 28, 0.18);
 }
 
 .button:disabled {
