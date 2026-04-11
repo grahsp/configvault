@@ -30,9 +30,11 @@ function getErrorMessage(error: unknown) {
 }
 
 function isNotFoundError(error: unknown) {
-  return (
-    error instanceof ApiError && (error.status === 403 || error.status === 404)
-  )
+  return error instanceof ApiError && error.kind === 'not-found'
+}
+
+function isAuthError(error: unknown) {
+  return error instanceof ApiError && error.kind === 'auth'
 }
 
 export function ProjectDetailPage() {
@@ -88,6 +90,8 @@ export function ProjectDetailPage() {
 
   const isProjectNotFound =
     projectQuery.isError && isNotFoundError(projectQuery.error)
+  const isProjectAuthError =
+    projectQuery.isError && isAuthError(projectQuery.error)
 
   return (
     <main className="projects-page projects-page--top">
@@ -104,6 +108,16 @@ export function ProjectDetailPage() {
             <p className="projects-state__title">Project not found</p>
             <p className="projects-state__copy">
               This project is missing or your account cannot access it.
+            </p>
+            <Link className="button button--secondary" to="/projects">
+              Back to projects
+            </Link>
+          </div>
+        ) : isProjectAuthError ? (
+          <div className="projects-state projects-state--error" role="alert">
+            <p className="projects-state__title">Project access denied</p>
+            <p className="projects-state__copy">
+              Your account is not authorized to open this project.
             </p>
             <Link className="button button--secondary" to="/projects">
               Back to projects

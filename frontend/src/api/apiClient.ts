@@ -7,29 +7,41 @@ interface ApiClientOptions {
 }
 
 export type ApiErrorDetails = Record<string, unknown> | unknown[] | string | null
+export type ApiErrorKind = 'auth' | 'not-found' | 'unexpected' | 'validation'
+export type ValidationErrors = Record<string, string[]>
 
 interface ParsedErrorBody {
+  detail?: string
   message?: string
   details?: ApiErrorDetails
+  validationErrors?: ValidationErrors
 }
 
 export class ApiError extends Error {
   status: number
+  kind: ApiErrorKind
   details?: ApiErrorDetails
+  validationErrors?: ValidationErrors
 
   constructor({
     details,
+    kind,
     message,
     status,
+    validationErrors,
   }: {
     details?: ApiErrorDetails
+    kind: ApiErrorKind
     message: string
     status: number
+    validationErrors?: ValidationErrors
   }) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.kind = kind
     this.details = details
+    this.validationErrors = validationErrors
   }
 }
 
@@ -71,6 +83,59 @@ function toApiErrorDetails(value: unknown): ApiErrorDetails | undefined {
   return undefined
 }
 
+function toValidationErrors(value: unknown): ValidationErrors | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const validationErrors = Object.entries(value).reduce<ValidationErrors>(
+    (errors, [field, fieldErrors]) => {
+      if (!Array.isArray(fieldErrors)) {
+        return errors
+      }
+
+      const messages = fieldErrors.filter(
+        (fieldError): fieldError is string =>
+          typeof fieldError === 'string' && Boolean(fieldError.trim()),
+      )
+
+      if (messages.length > 0) {
+        errors[field] = messages
+      }
+
+      return errors
+    },
+    {},
+  )
+
+  return Object.keys(validationErrors).length > 0
+    ? validationErrors
+    : undefined
+}
+
+function classifyApiError(
+  response: Response,
+  validationErrors?: ValidationErrors,
+): ApiErrorKind {
+  if (response.status === 404) {
+    return 'not-found'
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    return 'auth'
+  }
+
+  if (
+    response.status === 400 ||
+    response.status === 422 ||
+    validationErrors
+  ) {
+    return 'validation'
+  }
+
+  return 'unexpected'
+}
+
 function parseErrorBody(responseText: string): ParsedErrorBody {
   const trimmedResponseText = responseText.trim()
 
@@ -92,9 +157,13 @@ function parseErrorBody(responseText: string): ParsedErrorBody {
       readStringField(parsedBody, 'title') ??
       readStringField(parsedBody, 'error') ??
       readStringField(parsedBody, 'detail')
+    const detail = readStringField(parsedBody, 'detail')
+    const validationErrors = toValidationErrors(parsedBody.errors)
 
     return {
+      detail,
       message,
+      validationErrors,
       details:
         toApiErrorDetails(parsedBody.errors) ?? toApiErrorDetails(parsedBody),
     }
@@ -109,13 +178,17 @@ function parseErrorBody(responseText: string): ParsedErrorBody {
 async function buildApiError(response: Response, path: string) {
   const responseText = await response.text()
   const parsedError = parseErrorBody(responseText)
+  const kind = classifyApiError(response, parsedError.validationErrors)
 
   return new ApiError({
+    kind,
     status: response.status,
     message:
+      parsedError.detail ??
       parsedError.message ??
       `API request failed with status ${response.status} for ${path}`,
     details: parsedError.details,
+    validationErrors: parsedError.validationErrors,
   })
 }
 
