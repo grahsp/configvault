@@ -1,11 +1,17 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ApiError } from '../api/apiClient'
 import {
   useCreateProject,
   useDeleteProject,
   useProjects,
 } from '../features/projects/useProjects'
 import type { ProjectListItem } from '../features/projects/types'
+import {
+  getProjectNameValidationError,
+  normalizeProjectName,
+  PROJECT_NAME_MAX_LENGTH,
+} from '../features/projects/projectValidation'
 
 function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
@@ -28,6 +34,26 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error
     ? error.message
     : 'Something went wrong while loading projects.'
+}
+
+function getValidationMessage(error: unknown, fieldNames: string[]) {
+  if (!(error instanceof ApiError) || error.kind !== 'validation') {
+    return undefined
+  }
+
+  const matchingFieldName = Object.keys(error.validationErrors ?? {}).find(
+    (fieldName) =>
+      fieldNames.some(
+        (expectedFieldName) =>
+          fieldName.toLowerCase() === expectedFieldName.toLowerCase(),
+      ),
+  )
+
+  if (!matchingFieldName) {
+    return undefined
+  }
+
+  return error.validationErrors?.[matchingFieldName]?.[0]
 }
 
 function sortProjectsByCreatedDate(projects: ProjectListItem[]) {
@@ -58,6 +84,14 @@ export function ProjectsPage() {
   const projectsQuery = useProjects()
   const createProjectMutation = useCreateProject()
   const deleteProjectMutation = useDeleteProject()
+  const projectNameValidationError = getProjectNameValidationError(projectName)
+  const serverProjectNameError = getValidationMessage(
+    createProjectMutation.error,
+    ['name', 'project.name'],
+  )
+  const visibleProjectNameError =
+    serverProjectNameError ??
+    (projectName ? projectNameValidationError : undefined)
 
   const sortedProjects = useMemo(
     () => sortProjectsByCreatedDate(projectsQuery.data ?? []),
@@ -87,9 +121,9 @@ export function ProjectsPage() {
   function handleCreateProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const trimmedName = projectName.trim()
+    const trimmedName = normalizeProjectName(projectName)
 
-    if (!trimmedName) {
+    if (getProjectNameValidationError(projectName)) {
       return
     }
 
@@ -224,8 +258,12 @@ export function ProjectsPage() {
                 Project name
                 <input
                   autoFocus
+                  aria-describedby={
+                    visibleProjectNameError ? 'project-name-error' : undefined
+                  }
+                  aria-invalid={Boolean(visibleProjectNameError)}
                   disabled={createProjectMutation.isPending}
-                  maxLength={120}
+                  maxLength={PROJECT_NAME_MAX_LENGTH}
                   onChange={(event) => setProjectName(event.target.value)}
                   placeholder="Production secrets"
                   required
@@ -247,8 +285,21 @@ export function ProjectsPage() {
               </label>
 
               {createProjectMutation.isError ? (
-                <p className="project-form__error" role="alert">
-                  {getErrorMessage(createProjectMutation.error)}
+                <p
+                  className="project-form__error"
+                  id={visibleProjectNameError ? 'project-name-error' : undefined}
+                  role="alert"
+                >
+                  {serverProjectNameError ??
+                    getErrorMessage(createProjectMutation.error)}
+                </p>
+              ) : projectNameValidationError && projectName ? (
+                <p
+                  className="project-form__error"
+                  id="project-name-error"
+                  role="alert"
+                >
+                  {projectNameValidationError}
                 </p>
               ) : null}
 
@@ -264,7 +315,8 @@ export function ProjectsPage() {
                 <button
                   className="button button--primary"
                   disabled={
-                    createProjectMutation.isPending || !projectName.trim()
+                    createProjectMutation.isPending ||
+                    Boolean(projectNameValidationError)
                   }
                   type="submit"
                 >

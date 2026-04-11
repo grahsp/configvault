@@ -21,4 +21,8 @@ export interface CreateProjectRequest {
 
 export interface CreateProjectResponse {
   id: string
+  name?: string
+  description?: string
+  createdAt?: string
+  updatedAt?: string
 }

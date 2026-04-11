@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createApiClient } from '../../api/apiClient'
 import { useAuth } from '../../auth/useAuth'
-import type { CreateProjectRequest } from './types'
+import type {
+  CreateProjectRequest,
+  CreateProjectResponse,
+  ProjectDetails,
+} from './types'
 import {
   createProject,
   deleteProject,
@@ -10,6 +14,12 @@ import {
   listProjects,
   projectQueryKeys,
 } from './projectApi'
+
+function isProjectDetails(
+  project: CreateProjectResponse,
+): project is ProjectDetails {
+  return Boolean(project.name)
+}
 
 function useAuthenticatedProjectClient() {
   const { getAccessTokenSilently } = useAuth()
@@ -45,10 +55,18 @@ export function useCreateProject() {
 
   return useMutation({
     mutationFn: (project: CreateProjectRequest) => createProject(client, project),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: (createdProject) => {
+      if (isProjectDetails(createdProject)) {
+        queryClient.setQueryData(
+          projectQueryKeys.detail(createdProject.id),
+          createdProject,
+        )
+      }
+
+      return queryClient.invalidateQueries({
         queryKey: projectQueryKeys.lists(),
-      }),
+      })
+    },
   })
 }
 

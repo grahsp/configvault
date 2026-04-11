@@ -263,6 +263,41 @@ describe('ProjectsPage', () => {
     )
   })
 
+  it('shows structured validation errors from the API', async () => {
+    mockFetchSequence([
+      { path: '/projects', body: [] },
+      {
+        method: 'POST',
+        path: '/projects',
+        status: 400,
+        body: {
+          title: 'One or more validation errors occurred.',
+          status: 400,
+          errors: {
+            Name: ['Project name is required.'],
+          },
+        },
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await user.click(await screen.findByText('Create your first project'))
+
+    const dialog = screen.getByRole('dialog', { name: 'Create project' })
+    await user.type(within(dialog).getByLabelText('Project name'), 'New vault')
+    await user.click(within(dialog).getByRole('button', { name: 'Create' }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Project name is required.',
+    )
+    expect(screen.getByLabelText('Project name')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
+  })
+
   it('confirms before deleting a project', async () => {
     const fetchMock = mockFetchSequence([
       {
@@ -354,7 +389,7 @@ describe('ProjectDetailPage', () => {
     expect(screen.getByText('Project service failed.')).toBeInTheDocument()
   })
 
-  it('shows the not-found state for missing or inaccessible projects', async () => {
+  it('shows the not-found state for missing projects', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -370,6 +405,25 @@ describe('ProjectDetailPage', () => {
       screen.getByText(
         'This project is missing or your account cannot access it.',
       ),
+    ).toBeInTheDocument()
+  })
+
+  it('shows an access-denied state for authorization failures', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: { title: 'Forbidden' },
+        status: 403,
+      },
+    ])
+
+    renderProjectDetail()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Project access denied',
+    )
+    expect(
+      screen.getByText('Your account is not authorized to open this project.'),
     ).toBeInTheDocument()
   })
 })
