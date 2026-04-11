@@ -16,6 +16,6 @@ public sealed class ProjectMember
 		Role = role;
 	}
 	
-	internal void ChangeRole(ProjectRole role)
+	internal void SetRole(ProjectRole role)
 		=> Role = role;
 }
