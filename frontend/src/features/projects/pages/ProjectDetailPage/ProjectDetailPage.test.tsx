@@ -146,10 +146,10 @@ describe('ProjectDetailPage', () => {
       name: /Olivia OwnerYou Owner No actions available/,
     })
     const adminRow = within(membersTable).getByRole('row', {
-      name: /Alex Admin Role for Alex AdminAdmin Manage role/,
+      name: /Alex Admin Role for Alex AdminAdmin Remove/,
     })
     const memberRow = within(membersTable).getByRole('row', {
-      name: /user-member Role for user-memberMember Manage role/,
+      name: /user-member Role for user-memberMember Remove/,
     })
 
     expect(ownerRow).toBeInTheDocument()
@@ -161,9 +161,9 @@ describe('ProjectDetailPage', () => {
     ).toBeEnabled()
     expect(
       within(adminRow).getByRole('button', {
-        name: 'Manage role for Alex Admin',
+        name: 'Remove Alex Admin',
       }),
-    ).toBeDisabled()
+    ).toBeEnabled()
     expect(
       within(memberRow).getByRole('combobox', {
         name: 'Role for user-member',
@@ -171,12 +171,12 @@ describe('ProjectDetailPage', () => {
     ).toBeEnabled()
     expect(
       within(memberRow).getByRole('button', {
-        name: 'Manage role for user-member',
+        name: 'Remove user-member',
       }),
-    ).toBeDisabled()
+    ).toBeEnabled()
   })
 
-  it('disables role selectors for read-only members', async () => {
+  it('disables member controls for read-only members', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -203,8 +203,13 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
+    const roleSelector = await screen.findByRole('combobox', {
+      name: 'Role for Alex Admin',
+    })
+
+    expect(roleSelector).toBeDisabled()
     expect(
-      await screen.findByRole('combobox', { name: 'Role for Alex Admin' }),
+      screen.getByRole('button', { name: 'Remove Alex Admin' }),
     ).toBeDisabled()
   })
 
@@ -321,6 +326,170 @@ describe('ProjectDetailPage', () => {
     )
     expect(roleSelector).toHaveValue('member')
     expect(roleSelector).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('opens and cancels the remove member confirmation', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove user-member' }),
+    )
+
+    const dialog = screen.getByRole('dialog', { name: 'Remove member' })
+    expect(
+      within(dialog).getByText('Remove this member from the project?'),
+    ).toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Remove member' }),
+    ).not.toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/projects/project-1/members/user-member'),
+      expect.objectContaining({ method: 'DELETE' }),
+    )
+  })
+
+  it('removes a member after confirmation and refreshes the member list', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+      {
+        method: 'DELETE',
+        path: '/projects/project-1/members/user-member',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove user-member' }),
+    )
+
+    const dialog = screen.getByRole('dialog', { name: 'Remove member' })
+    await user.click(within(dialog).getByRole('button', { name: 'Remove' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/members/user-member'),
+        expect.objectContaining({ method: 'DELETE' }),
+      ),
+    )
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Remove user-member' }),
+      ).not.toBeInTheDocument(),
+    )
+  })
+
+  it('shows remove member errors and leaves the member visible', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'user-member',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+      {
+        method: 'DELETE',
+        path: '/projects/project-1/members/user-member',
+        body: { message: 'Member removal rejected.' },
+        status: 403,
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove user-member' }),
+    )
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Remove member' })).getByRole(
+        'button',
+        { name: 'Remove' },
+      ),
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Member removal rejected.',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Remove user-member' }),
+    ).toBeInTheDocument()
   })
 
   it('shows an error state when project members cannot load', async () => {

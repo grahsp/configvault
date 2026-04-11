@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { cx } from '../../../shared/utils/cx'
 import { RoleSelector } from '../components/RoleSelector'
-import { useProjectMembers } from '../hooks/useProjects'
+import {
+  useProjectMembers,
+  useRemoveProjectMember,
+} from '../hooks/useProjects'
 import type { ProjectMember, ProjectRole } from '../types'
 import { getErrorMessage } from './projectPageUtils'
 import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
@@ -15,10 +19,37 @@ const roleLabels: Record<ProjectRole, string> = {
 export function MembersPage() {
   const { projectId } = useParams()
   const membersQuery = useProjectMembers(projectId ?? '')
+  const [memberPendingRemoval, setMemberPendingRemoval] =
+    useState<ProjectMember | null>(null)
+  const removeMemberMutation = useRemoveProjectMember(projectId ?? '')
   const members = membersQuery.data ?? []
   const currentUserRole = members.find((member) => member.isCurrentUser)?.role
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
+
+  function openRemoveDialog(member: ProjectMember) {
+    removeMemberMutation.reset()
+    setMemberPendingRemoval(member)
+  }
+
+  function closeRemoveDialog() {
+    if (removeMemberMutation.isPending) {
+      return
+    }
+
+    removeMemberMutation.reset()
+    setMemberPendingRemoval(null)
+  }
+
+  function confirmRemoveMember() {
+    if (!memberPendingRemoval || removeMemberMutation.isPending) {
+      return
+    }
+
+    removeMemberMutation.mutate(memberPendingRemoval.userId, {
+      onSuccess: () => setMemberPendingRemoval(null),
+    })
+  }
 
   return (
     <section className={styles.membersSection} aria-labelledby="members-title">
@@ -85,8 +116,13 @@ export function MembersPage() {
               {members.map((member) => (
                 <MemberRow
                   canManageMembers={canManageMembers}
+                  isRemovePending={
+                    removeMemberMutation.isPending &&
+                    memberPendingRemoval?.userId === member.userId
+                  }
                   key={member.userId}
                   member={member}
+                  onRemove={openRemoveDialog}
                   projectId={projectId ?? ''}
                 />
               ))}
@@ -94,17 +130,31 @@ export function MembersPage() {
           </table>
         </div>
       ) : null}
+
+      {memberPendingRemoval ? (
+        <RemoveMemberDialog
+          displayName={getMemberDisplayName(memberPendingRemoval)}
+          error={removeMemberMutation.error}
+          isPending={removeMemberMutation.isPending}
+          onCancel={closeRemoveDialog}
+          onConfirm={confirmRemoveMember}
+        />
+      ) : null}
     </section>
   )
 }
 
 function MemberRow({
   canManageMembers,
+  isRemovePending,
   member,
+  onRemove,
   projectId,
 }: {
   canManageMembers: boolean
+  isRemovePending: boolean
   member: ProjectMember
+  onRemove: (member: ProjectMember) => void
   projectId: string
 }) {
   const displayName = getMemberDisplayName(member)
@@ -138,16 +188,76 @@ function MemberRow({
           </span>
         ) : (
           <button
+            aria-label={`Remove ${displayName}`}
             className={styles.memberAction}
-            disabled
+            disabled={!canManageMembers || isRemovePending}
+            onClick={() => onRemove(member)}
             type="button"
-            aria-label={`Manage role for ${displayName}`}
           >
-            Manage role
+            Remove
           </button>
         )}
       </td>
     </tr>
+  )
+}
+
+function RemoveMemberDialog({
+  displayName,
+  error,
+  isPending,
+  onCancel,
+  onConfirm,
+}: {
+  displayName: string
+  error: Error | null
+  isPending: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className={styles.modalBackdrop} role="presentation">
+      <div
+        aria-labelledby="remove-member-title"
+        aria-modal="true"
+        className={cx(styles.modal, styles.modalCompact)}
+        role="dialog"
+      >
+        <h2 id="remove-member-title">Remove member</h2>
+        <p className={styles.modalCopy}>
+          Remove this member from the project?
+        </p>
+        <p className={styles.modalCopy}>{displayName} will lose access.</p>
+
+        {error ? (
+          <p className={styles.formError} role="alert">
+            {getErrorMessage(
+              error,
+              'Something went wrong while removing this member.',
+            )}
+          </p>
+        ) : null}
+
+        <div className={styles.formActions}>
+          <button
+            className={cx(styles.button, styles.buttonSecondary)}
+            disabled={isPending}
+            onClick={onCancel}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className={cx(styles.button, styles.buttonDanger)}
+            disabled={isPending}
+            onClick={onConfirm}
+            type="button"
+          >
+            {isPending ? 'Removing' : 'Remove'}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
