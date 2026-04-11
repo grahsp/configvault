@@ -8,8 +8,8 @@ internal static class Endpoint
 	internal static async Task<IResult> Handle(IQueryDispatcher dispatcher, CancellationToken ct)
 	{
 		var query = new Query();
-		var result = await dispatcher.DispatchAsync(query, ct);
+		var projects = await dispatcher.DispatchAsync(query, ct);
 		
-		return Results.Ok(result);
+		return Results.Ok(projects);
 	}
 }

@@ -8,8 +8,8 @@ internal static class GetCurrentUser
 	internal static async Task<IResult> Handle(IQueryDispatcher dispatcher, CancellationToken ct)
 	{
 		var query = new GetCurrentUserQuery();
-		var result = await dispatcher.DispatchAsync(query, ct);
+		var user = await dispatcher.DispatchAsync(query, ct);
 		
-		return Results.Ok(result);
+		return Results.Ok(user);
 	}
 }

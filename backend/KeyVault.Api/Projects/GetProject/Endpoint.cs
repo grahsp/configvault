@@ -11,8 +11,11 @@ internal static class Endpoint
 		CancellationToken ct)
 	{
 		var query = new Query(id);
-		var result = await dispatcher.DispatchAsync(query, ct);
+		var project = await dispatcher.DispatchAsync(query, ct);
 
-		return Results.Ok(result);
+		if (project is null)
+			return Results.NotFound();
+
+		return Results.Ok(project);
 	}
 }

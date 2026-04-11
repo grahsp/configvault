@@ -1,5 +1,6 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
+using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
 
 namespace KeyVault.Application.Projects.Commands.DeleteProject;
@@ -9,12 +10,12 @@ public sealed class Handler(IUserContext user, IProjectRepository repository, IU
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = await repository.GetByIdAsync(command.Id, ct);
-		
+
 		if (project is null)
-			return Unit.Value;
+			throw new NotFoundException("Project not found");
 
 		if (project.OwnerId != user.UserId)
-			return Unit.Value;
+			throw new ForbiddenException("User is not the owner of this project");
 
 		repository.Remove(project);
 		await uow.SaveChangesAsync(ct);
