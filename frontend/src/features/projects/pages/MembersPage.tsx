@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { cx } from '../../../shared/utils/cx'
+import { AddMemberForm } from '../components/AddMemberForm'
 import { RoleSelector } from '../components/RoleSelector'
 import {
   useProjectMembers,
@@ -58,6 +59,8 @@ export function MembersPage() {
           Members
         </h2>
       </div>
+
+      {canManageMembers ? <AddMemberForm projectId={projectId ?? ''} /> : null}
 
       {membersQuery.isPending ? (
         <div className={styles.sectionState} role="status">

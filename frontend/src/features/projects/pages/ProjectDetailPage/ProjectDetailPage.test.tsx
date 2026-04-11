@@ -211,6 +211,203 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByRole('button', { name: 'Remove Alex Admin' }),
     ).toBeDisabled()
+    expect(
+      screen.queryByRole('form', { name: 'Add member' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the add member form for users who can manage members', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const addMemberForm = await screen.findByRole('form', {
+      name: 'Add member',
+    })
+
+    expect(
+      within(addMemberForm).getByRole('textbox', { name: 'User ID' }),
+    ).toBeInTheDocument()
+    expect(
+      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+    ).toBeEnabled()
+  })
+
+  it('does not add a member when the user ID is empty', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const addMemberForm = await screen.findByRole('form', {
+      name: 'Add member',
+    })
+
+    await user.click(
+      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Enter a user ID.',
+    )
+    expect(
+      within(addMemberForm).getByRole('textbox', { name: 'User ID' }),
+    ).toHaveAttribute('aria-invalid', 'true')
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/projects/project-1/members'),
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
+
+  it('adds a member with the default member role and refreshes the list', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/members',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+          {
+            userId: 'new-user',
+            displayName: null,
+            role: 'member',
+            isCurrentUser: false,
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const addMemberForm = await screen.findByRole('form', {
+      name: 'Add member',
+    })
+    const userIdInput = within(addMemberForm).getByRole('textbox', {
+      name: 'User ID',
+    })
+
+    await user.type(userIdInput, ' new-user ')
+    await user.click(
+      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+    )
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/members'),
+        expect.objectContaining({
+          body: JSON.stringify({ role: 'member', userId: 'new-user' }),
+          method: 'POST',
+        }),
+      ),
+    )
+    expect(
+      await screen.findByRole('row', {
+        name: /new-user Role for new-userMember Remove/,
+      }),
+    ).toBeInTheDocument()
+    expect(userIdInput).toHaveValue('')
+  })
+
+  it('shows add member errors without clearing the entered user ID', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [
+          {
+            userId: 'current-user',
+            displayName: 'Olivia Owner',
+            role: 'owner',
+            isCurrentUser: true,
+          },
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/members',
+        body: { message: 'Member could not be invited.' },
+        status: 409,
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const addMemberForm = await screen.findByRole('form', {
+      name: 'Add member',
+    })
+    const userIdInput = within(addMemberForm).getByRole('textbox', {
+      name: 'User ID',
+    })
+
+    await user.type(userIdInput, 'new-user')
+    await user.click(
+      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Member could not be invited.',
+    )
+    expect(userIdInput).toHaveValue('new-user')
   })
 
   it('updates a member role and refreshes the member list', async () => {

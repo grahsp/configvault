@@ -20,7 +20,7 @@ export function addMember(
 ) {
   return client.request<void>(buildProjectMembersPath(projectId), {
     method: 'POST',
-    body: JSON.stringify({ userId }),
+    body: JSON.stringify({ role: 'member', userId }),
   })
 }
 
