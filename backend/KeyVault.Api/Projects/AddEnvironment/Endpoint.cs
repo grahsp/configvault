@@ -8,8 +8,8 @@ internal static class Endpoint
 	internal static async Task<IResult> Handle(ICommandDispatcher dispatcher, Guid projectId, Request request, CancellationToken ct)
 	{
 		var command = new Command(projectId, request.EnvironmentName);
-		await dispatcher.DispatchAsync(command, ct);
+		var environment = await dispatcher.DispatchAsync(command, ct);
 
-		return Results.NoContent();
+		return Results.CreatedAtRoute(nameof(GetEnvironments), environment);
 	}
 }

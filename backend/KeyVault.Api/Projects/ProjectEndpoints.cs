@@ -30,7 +30,8 @@ public static class ProjectEndpoints
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Environments");
 		
-		environments.MapGet("", GetEnvironments.Endpoint.Handle);
+		environments.MapGet("", GetEnvironments.Endpoint.Handle)
+			.WithName(nameof(GetEnvironments));
 		environments.MapPost("", AddEnvironment.Endpoint.Handle);
 		environments.MapDelete("/{environmentId}", RemoveEnvironment.Endpoint.Handle);
 	}

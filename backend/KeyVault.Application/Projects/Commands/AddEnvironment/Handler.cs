@@ -2,6 +2,7 @@ using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects.Exceptions;
+using KeyVault.Application.Projects.Queries.GetEnvironments;
 
 namespace KeyVault.Application.Projects.Commands.AddEnvironment;
 
@@ -10,16 +11,16 @@ public sealed class Handler(
 	IProjectRepository repository,
 	IUnitOfWork uow,
 	TimeProvider time)
-	: ICommandHandler<Command, Unit>
+	: ICommandHandler<Command, Response>
 {
-	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
+	public async Task<Response> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 
-		project.AddEnvironment(user.UserId, command.EnvironmentName, time.GetUtcNow());
+		var environment = project.AddEnvironment(user.UserId, command.EnvironmentName, time.GetUtcNow());
 		await uow.SaveChangesAsync(ct);
 
-		return Unit.Value;
+		return new Response(environment.Id, environment.Name);
 	}
 }
