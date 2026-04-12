@@ -34,7 +34,7 @@ describe('config items api', () => {
     )
   })
 
-  it('creates a config item with the requested key', async () => {
+  it('creates a config item with an encoded project id and requested key', async () => {
     const client = createMockClient()
     const configItem = {
       id: 'config-1',
@@ -44,11 +44,11 @@ describe('config items api', () => {
     vi.mocked(client.request).mockResolvedValue(configItem)
 
     await expect(
-      createConfigItem(client, 'project-1', 'API_KEY'),
+      createConfigItem(client, 'project/with space', 'API_KEY'),
     ).resolves.toEqual(configItem)
 
     expect(client.request).toHaveBeenCalledWith(
-      '/projects/project-1/config-items',
+      '/projects/project%2Fwith%20space/config-items',
       {
         method: 'POST',
         body: JSON.stringify({ key: 'API_KEY' }),
