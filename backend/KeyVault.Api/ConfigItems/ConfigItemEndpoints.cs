@@ -11,5 +11,6 @@ public static class ConfigItemEndpoints
 			.WithTags("Config Items");
 
 		configItems.MapGet("", GetConfigItems.Endpoint.Handle);
+		configItems.MapPost("", AddConfigItem.Endpoint.Handle);
 	}
 }
