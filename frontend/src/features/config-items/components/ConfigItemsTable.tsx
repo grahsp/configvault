@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useConfigItems } from '../hooks/useConfigItems'
+import { useRenameConfigItem } from '../hooks/useRenameConfigItem'
 import type { ConfigItem } from '../types/ConfigItem'
+import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
 import { ConfigItemRow } from './ConfigItemRow'
 import { DeleteConfigItemDialog } from './DeleteConfigItemDialog'
-import { RenameConfigItemModal } from './RenameConfigItemModal'
 import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemsTableProps {
@@ -18,12 +20,53 @@ export function ConfigItemsTable({
   onAddConfigItem,
   projectId,
 }: ConfigItemsTableProps) {
+  const { addToast } = useToast()
   const configItemsQuery = useConfigItems(projectId)
   const configItems = configItemsQuery.data ?? []
-  const [configItemPendingRename, setConfigItemPendingRename] =
-    useState<ConfigItem | null>(null)
+  const renameConfigItemMutation = useRenameConfigItem(projectId)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draftKey, setDraftKey] = useState('')
   const [configItemPendingDelete, setConfigItemPendingDelete] =
     useState<ConfigItem | null>(null)
+
+  function handleStartRename(configItem: ConfigItem) {
+    renameConfigItemMutation.reset()
+    setEditingId(configItem.id)
+    setDraftKey(configItem.key)
+  }
+
+  function handleCancelRename() {
+    renameConfigItemMutation.reset()
+    setEditingId(null)
+    setDraftKey('')
+  }
+
+  async function handleSaveRename(configItem: ConfigItem) {
+    const trimmedKey = draftKey.trim()
+
+    if (!trimmedKey || trimmedKey === configItem.key) {
+      handleCancelRename()
+      return
+    }
+
+    if (getConfigItemKeyValidationError(draftKey)) {
+      return
+    }
+
+    try {
+      await renameConfigItemMutation.mutateAsync({
+        configItemId: configItem.id,
+        key: trimmedKey,
+      })
+      addToast({ message: 'Secret renamed', type: 'success' })
+      handleCancelRename()
+    } catch (error) {
+      addToast({
+        message: getErrorMessage(error, 'Failed to rename secret'),
+        type: 'error',
+      })
+    }
+  }
 
   if (configItemsQuery.isPending) {
     return (
@@ -95,23 +138,31 @@ export function ConfigItemsTable({
             {configItems.map((configItem) => (
               <ConfigItemRow
                 configItem={configItem}
+                draftKey={draftKey}
+                isEditing={editingId === configItem.id}
+                isSaving={
+                  editingId === configItem.id && renameConfigItemMutation.isPending
+                }
                 key={configItem.id}
+                onCancelEdit={handleCancelRename}
                 onDelete={setConfigItemPendingDelete}
-                onRename={setConfigItemPendingRename}
+                onDraftKeyChange={(nextDraftKey) => {
+                  renameConfigItemMutation.reset()
+                  setDraftKey(nextDraftKey)
+                }}
+                onRename={handleStartRename}
+                onSaveEdit={() => handleSaveRename(configItem)}
                 shouldFocus={configItem.id === focusedConfigItemId}
+                validationError={
+                  editingId === configItem.id
+                    ? getConfigItemKeyValidationError(draftKey)
+                    : undefined
+                }
               />
             ))}
           </tbody>
         </table>
       </div>
-
-      {configItemPendingRename ? (
-        <RenameConfigItemModal
-          configItem={configItemPendingRename}
-          onCancel={() => setConfigItemPendingRename(null)}
-          projectId={projectId}
-        />
-      ) : null}
 
       {configItemPendingDelete ? (
         <DeleteConfigItemDialog

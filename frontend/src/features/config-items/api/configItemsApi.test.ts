@@ -77,7 +77,7 @@ describe('config items api', () => {
     expect(client.request).toHaveBeenCalledWith(
       '/projects/project%2Fwith%20space/config-items/config%2Fwith%20space',
       {
-        method: 'PUT',
+        method: 'PATCH',
         body: JSON.stringify({ key: 'RENAMED_KEY' }),
       },
     )

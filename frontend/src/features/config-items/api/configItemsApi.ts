@@ -33,7 +33,7 @@ export function renameConfigItem(
   return client.request<ConfigItem>(
     buildConfigItemPath(projectId, configItemId),
     {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify({ key }),
     },
   )

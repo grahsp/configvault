@@ -3,3 +3,8 @@ export interface ConfigItem {
   key: string
   createdAt: string
 }
+
+export type EditableConfigItem = ConfigItem & {
+  isEditing?: boolean
+  draftKey?: string
+}

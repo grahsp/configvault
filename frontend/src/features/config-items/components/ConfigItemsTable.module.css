@@ -106,6 +106,39 @@
   font-weight: 800;
 }
 
+.rowActionPrimary {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.inlineKeyField {
+  display: grid;
+  gap: 6px;
+}
+
+.inlineKeyField input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+}
+
+.inlineKeyField input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.inlineKeyError {
+  color: #b91c1c;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
