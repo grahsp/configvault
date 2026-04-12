@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { Navigate, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { vi } from 'vitest'
+import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
 import { LocationProbe } from './LocationProbe.testComponent'
 import { MembersPage } from '../MembersPage'
@@ -56,7 +57,9 @@ export function renderWithRouter({
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
       </QueryClientProvider>,
     ),
     router,
@@ -69,7 +72,9 @@ function renderProjectDetailResult(router: ReturnType<typeof createMemoryRouter>
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
       </QueryClientProvider>,
     ),
     router,

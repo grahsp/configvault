@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
+import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useRenameConfigItem } from '../hooks/useRenameConfigItem'
 import type { ConfigItem } from '../types/ConfigItem'
@@ -20,6 +21,7 @@ export function RenameConfigItemModal({
   onCancel,
   projectId,
 }: RenameConfigItemModalProps) {
+  const { addToast } = useToast()
   const [key, setKey] = useState(configItem.key)
   const renameConfigItemMutation = useRenameConfigItem(projectId)
   const validationError = getConfigItemKeyValidationError(key)
@@ -39,9 +41,10 @@ export function RenameConfigItemModal({
         configItemId: configItem.id,
         key: key.trim(),
       })
+      addToast({ message: 'Secret renamed', type: 'success' })
       onCancel()
     } catch {
-      // The mutation state renders the error without closing the modal.
+      addToast({ message: 'Failed to rename secret', type: 'error' })
     }
   }
 

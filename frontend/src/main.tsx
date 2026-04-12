@@ -7,13 +7,16 @@ import { queryClient } from './api/queryClient'
 import { router } from './app/router'
 import { AuthProvider } from './features/auth/context/AuthProvider'
 import { CurrentUserProvider } from './features/auth/context/CurrentUserProvider'
+import { ToastProvider } from './shared/components/toast/ToastProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CurrentUserProvider>
-          <RouterProvider router={router} />
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
         </CurrentUserProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -66,6 +66,7 @@ export function ProjectSecretsPage() {
 
         <ConfigItemsTable
           focusedConfigItemId={focusedConfigItemId}
+          onAddConfigItem={() => setIsAddModalOpen(true)}
           projectId={project.id}
         />
       </section>

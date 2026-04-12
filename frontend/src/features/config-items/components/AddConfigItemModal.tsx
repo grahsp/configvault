@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
+import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useCreateConfigItem } from '../hooks/useCreateConfigItem'
 import type { ConfigItem } from '../types/ConfigItem'
@@ -20,13 +21,15 @@ export function AddConfigItemModal({
   onCreated,
   projectId,
 }: AddConfigItemModalProps) {
+  const { addToast } = useToast()
   const [key, setKey] = useState('')
   const createConfigItemMutation = useCreateConfigItem(projectId)
   const validationError = getConfigItemKeyValidationError(key)
   const uppercaseSuggestion = getUppercaseConfigItemKeySuggestion(key)
-  const visibleError =
-    key || createConfigItemMutation.isError
-      ? validationError ?? getErrorMessage(createConfigItemMutation.error)
+  const visibleError = validationError
+    ? validationError
+    : createConfigItemMutation.isError
+      ? getErrorMessage(createConfigItemMutation.error)
       : undefined
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -40,9 +43,10 @@ export function AddConfigItemModal({
       const createdConfigItem = await createConfigItemMutation.mutateAsync(
         key.trim(),
       )
+      addToast({ message: 'Secret created', type: 'success' })
       onCreated(createdConfigItem)
     } catch {
-      // The mutation state renders the error without closing the modal.
+      addToast({ message: 'Failed to create secret', type: 'error' })
     }
   }
 
@@ -137,5 +141,5 @@ export function AddConfigItemModal({
 }
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Failed to create secret.'
+  return error instanceof Error ? error.message : 'Failed to create secret'
 }

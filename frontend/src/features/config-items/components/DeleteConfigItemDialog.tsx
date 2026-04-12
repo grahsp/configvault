@@ -1,3 +1,4 @@
+import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useDeleteConfigItem } from '../hooks/useDeleteConfigItem'
 import type { ConfigItem } from '../types/ConfigItem'
@@ -14,14 +15,16 @@ export function DeleteConfigItemDialog({
   onCancel,
   projectId,
 }: DeleteConfigItemDialogProps) {
+  const { addToast } = useToast()
   const deleteConfigItemMutation = useDeleteConfigItem(projectId)
 
   async function handleConfirm() {
     try {
       await deleteConfigItemMutation.mutateAsync(configItem.id)
+      addToast({ message: 'Secret deleted', type: 'success' })
       onCancel()
     } catch {
-      // The mutation state renders the error without closing the dialog.
+      addToast({ message: 'Failed to delete secret', type: 'error' })
     }
   }
 
@@ -81,5 +84,5 @@ export function DeleteConfigItemDialog({
 }
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Failed to delete secret.'
+  return error instanceof Error ? error.message : 'Failed to delete secret'
 }

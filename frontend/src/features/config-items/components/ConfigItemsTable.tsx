@@ -9,11 +9,13 @@ import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemsTableProps {
   focusedConfigItemId?: string | null
+  onAddConfigItem: () => void
   projectId: string
 }
 
 export function ConfigItemsTable({
   focusedConfigItemId,
+  onAddConfigItem,
   projectId,
 }: ConfigItemsTableProps) {
   const configItemsQuery = useConfigItems(projectId)
@@ -58,10 +60,17 @@ export function ConfigItemsTable({
   if (configItems.length === 0) {
     return (
       <div className={styles.state}>
-        <p className={styles.stateTitle}>No secrets yet.</p>
+        <p className={styles.stateTitle}>No secrets yet</p>
         <p className={styles.stateCopy}>
           Add a secret key to start tracking values across environments.
         </p>
+        <button
+          className={cx(styles.button, styles.buttonPrimary)}
+          onClick={onAddConfigItem}
+          type="button"
+        >
+          Add Secret
+        </button>
       </div>
     )
   }
