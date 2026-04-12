@@ -30,6 +30,7 @@ public static class ProjectEndpoints
 			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Environments");
 		
+		environments.MapGet("", GetEnvironments.Endpoint.Handle);
 		environments.MapPost("", AddEnvironment.Endpoint.Handle);
 	}
 }
