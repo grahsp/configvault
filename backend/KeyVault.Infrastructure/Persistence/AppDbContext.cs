@@ -1,4 +1,5 @@
 using KeyVault.Application.Persistence;
+using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	
 	public DbSet<Environment> Environments { get; set; }
 	IQueryable<Environment> IReadDbContext.Environments => Environments;
+	
+	public DbSet<ConfigItem> ConfigItems { get; set; }
+	IQueryable<ConfigItem> IReadDbContext.ConfigItems => ConfigItems;
 	
 	public DbSet<ProjectMember> ProjectMembers { get; set; }
 	IQueryable<ProjectMember> IReadDbContext.ProjectMembers => ProjectMembers;

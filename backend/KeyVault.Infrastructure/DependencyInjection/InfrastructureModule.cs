@@ -1,5 +1,6 @@
 using System.Reflection;
 using KeyVault.Application.Abstractions.Messaging;
+using KeyVault.Application.ConfigItems;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Users;
@@ -36,6 +37,7 @@ public static class InfrastructureModule
 		
 		services.AddScoped<IUserRepository, EfUserRepository>();
 		services.AddScoped<IProjectRepository, EfProjectRepository>();
+		services.AddScoped<IConfigItemRepository, EfConfigItemRepository>();
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 
