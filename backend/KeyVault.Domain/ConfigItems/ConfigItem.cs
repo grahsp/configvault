@@ -23,4 +23,6 @@ public sealed class ConfigItem
 	{
 		return new ConfigItem(Guid.NewGuid(), projectId, key, now);
 	}
+	
+	public void SetKey(ConfigKey key) => Key = key;
 }
