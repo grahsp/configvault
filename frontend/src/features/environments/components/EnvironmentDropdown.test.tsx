@@ -187,6 +187,188 @@ describe('EnvironmentDropdown', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows inline create controls from the add action', async () => {
+    const user = userEvent.setup()
+    mockEnvironmentFetch([])
+
+    render(<ControlledEnvironmentDropdown />)
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Select environment \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+
+    expect(
+      screen.getByRole('textbox', { name: 'Environment name' }),
+    ).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+  })
+
+  it('rejects whitespace-only environment names before creating', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockEnvironmentFetch([])
+
+    render(<ControlledEnvironmentDropdown />)
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Select environment \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.type(screen.getByRole('textbox', { name: 'Environment name' }), '   ')
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Enter an environment name.',
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects duplicate environment names before creating', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockEnvironmentFetch([
+      {
+        id: 'env-development',
+        environmentName: 'Development',
+      },
+    ])
+
+    render(
+      <ControlledEnvironmentDropdown initialEnvironmentId="env-development" />,
+    )
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Development \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.type(
+      screen.getByRole('textbox', { name: 'Environment name' }),
+      'development',
+    )
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Environment already exists.',
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates, appends, selects, and closes for a valid environment', async () => {
+    const user = userEvent.setup()
+    const handleEnvironmentChange = vi.fn()
+    const fetchMock = vi.fn(
+      async (...args: [RequestInfo | URL, RequestInit?]) => {
+        const [, init] = args
+
+        if (init?.method === 'POST') {
+          return jsonResponse({
+            id: 'env-staging',
+            environmentName: 'Staging',
+          })
+        }
+
+        return jsonResponse([
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ])
+      },
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <ControlledEnvironmentDropdown
+        initialEnvironmentId="env-development"
+        onEnvironmentChange={handleEnvironmentChange}
+      />,
+    )
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Development \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.type(
+      screen.getByRole('textbox', { name: 'Environment name' }),
+      '  Staging  ',
+    )
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Staging \]/,
+      }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(handleEnvironmentChange).toHaveBeenCalledWith('env-staging')
+
+    const createCall = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === 'POST',
+    )
+
+    expect(createCall?.[0]?.toString()).toContain(
+      '/projects/project-1/environments',
+    )
+    expect(createCall?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          environmentName: 'Staging',
+        }),
+      }),
+    )
+
+    await user.click(screen.getByRole('button', { name: /Staging/ }))
+    expect(screen.getByRole('option', { name: 'Staging' })).toBeInTheDocument()
+  })
+
+  it('keeps create controls open and shows an error when creation fails', async () => {
+    const user = userEvent.setup()
+    const fetchMock = vi.fn(
+      async (...args: [RequestInfo | URL, RequestInit?]) => {
+        const [, init] = args
+
+        if (init?.method === 'POST') {
+          return jsonResponse({ message: 'Server error' }, 500)
+        }
+
+        return jsonResponse([])
+      },
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<ControlledEnvironmentDropdown />)
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Select environment \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.type(
+      screen.getByRole('textbox', { name: 'Environment name' }),
+      'Staging',
+    )
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Environment could not be created.',
+    )
+    expect(
+      screen.getByRole('textbox', { name: 'Environment name' }),
+    ).toHaveValue('Staging')
+    expect(screen.getByRole('listbox')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('selects an environment and closes after click selection', async () => {
     const user = userEvent.setup()
     const handleEnvironmentChange = vi.fn()
@@ -290,5 +472,48 @@ describe('EnvironmentDropdown', () => {
 
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('creates with Enter and cancels with Escape from the create input', async () => {
+    const user = userEvent.setup()
+    const fetchMock = vi.fn(
+      async (...args: [RequestInfo | URL, RequestInit?]) => {
+        const [, init] = args
+
+        if (init?.method === 'POST') {
+          return jsonResponse({
+            id: 'env-staging',
+            environmentName: 'Staging',
+          })
+        }
+
+        return jsonResponse([])
+      },
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<ControlledEnvironmentDropdown />)
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Select environment \]/,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.keyboard('Sandbox{Escape}')
+
+    expect(
+      screen.getByRole('button', { name: '+ Add environment' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '+ Add environment' }))
+    await user.keyboard('Staging{Enter}')
+
+    expect(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Staging \]/,
+      }),
+    ).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

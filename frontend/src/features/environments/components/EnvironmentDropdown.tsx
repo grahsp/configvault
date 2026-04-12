@@ -1,4 +1,5 @@
 import {
+  type FormEvent,
   type KeyboardEvent,
   useEffect,
   useId,
@@ -10,7 +11,7 @@ import {
 import { createApiClient } from '../../../api/apiClient'
 import { useAuth } from '../../../shared/hooks/useAuth'
 import { cx } from '../../../shared/utils/cx'
-import { getEnvironments } from '../api'
+import { createEnvironment, getEnvironments } from '../api'
 import type { Environment } from '../types'
 import styles from './EnvironmentDropdown.module.css'
 
@@ -29,6 +30,7 @@ interface EnvironmentState {
 type EnvironmentAction =
   | { type: 'load' }
   | { environments: Environment[]; type: 'success' }
+  | { environment: Environment; type: 'append' }
   | { type: 'error' }
 
 const initialEnvironmentState: EnvironmentState = {
@@ -53,6 +55,11 @@ function environmentReducer(
         environments: action.environments,
         hasError: false,
         isLoading: false,
+      }
+    case 'append':
+      return {
+        ...state,
+        environments: [...state.environments, action.environment],
       }
     case 'error':
       return {
@@ -83,6 +90,11 @@ export function EnvironmentDropdown({
   )
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isCreating, setIsCreating] = useState(false)
+  const [createName, setCreateName] = useState('')
+  const [createError, setCreateError] = useState('')
+  const [isCreatePending, setIsCreatePending] = useState(false)
+  const createInputRef = useRef<HTMLInputElement>(null)
   const selectedEnvironment = environments.find(
     (environment) => environment.id === selectedEnvironmentId,
   )
@@ -153,6 +165,24 @@ export function EnvironmentDropdown({
     return () => document.removeEventListener('mousedown', handleMouseDown)
   }, [isOpen])
 
+  useEffect(() => {
+    if (isCreating) {
+      createInputRef.current?.focus()
+    }
+  }, [isCreating])
+
+  function resetCreateState() {
+    setIsCreating(false)
+    setCreateName('')
+    setCreateError('')
+    setIsCreatePending(false)
+  }
+
+  function closeDropdown() {
+    setIsOpen(false)
+    resetCreateState()
+  }
+
   function openDropdown() {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0)
     setIsOpen(true)
@@ -160,7 +190,48 @@ export function EnvironmentDropdown({
 
   function selectEnvironment(environment: Environment) {
     onEnvironmentChange(environment.id)
-    setIsOpen(false)
+    closeDropdown()
+  }
+
+  async function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isCreatePending) {
+      return
+    }
+
+    const trimmedName = createName.trim()
+
+    if (!trimmedName) {
+      setCreateError('Enter an environment name.')
+      return
+    }
+
+    const normalizedName = trimmedName.toLocaleLowerCase()
+    const hasDuplicate = environments.some(
+      (environment) =>
+        environment.environmentName.trim().toLocaleLowerCase() ===
+        normalizedName,
+    )
+
+    if (hasDuplicate) {
+      setCreateError('Environment already exists.')
+      return
+    }
+
+    setIsCreatePending(true)
+    setCreateError('')
+
+    try {
+      const environment = await createEnvironment(client, projectId, trimmedName)
+
+      dispatch({ environment, type: 'append' })
+      onEnvironmentChange(environment.id)
+      closeDropdown()
+    } catch {
+      setCreateError('Environment could not be created.')
+      setIsCreatePending(false)
+    }
   }
 
   function moveActiveIndex(direction: 1 | -1) {
@@ -186,7 +257,7 @@ export function EnvironmentDropdown({
   function handleTriggerKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
     if (event.key === 'Escape' && isOpen) {
       event.preventDefault()
-      setIsOpen(false)
+      closeDropdown()
       return
     }
 
@@ -233,7 +304,7 @@ export function EnvironmentDropdown({
         disabled={isLoading}
         onClick={() => {
           if (isOpen) {
-            setIsOpen(false)
+            closeDropdown()
             return
           }
 
@@ -284,9 +355,76 @@ export function EnvironmentDropdown({
           {!hasError ? (
             <>
               <div className={styles.divider} role="separator" />
-              <button className={styles.addAction} type="button">
-                + Add environment
-              </button>
+              {isCreating ? (
+                <form
+                  className={styles.createForm}
+                  onSubmit={handleCreateSubmit}
+                >
+                  <label className={styles.createLabel}>
+                    Environment name
+                    <input
+                      aria-describedby={
+                        createError ? `${listboxId}-create-error` : undefined
+                      }
+                      aria-invalid={Boolean(createError)}
+                      className={styles.createInput}
+                      disabled={isCreatePending}
+                      onChange={(event) => {
+                        setCreateName(event.target.value)
+                        setCreateError('')
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') {
+                          event.preventDefault()
+                          resetCreateState()
+                        }
+                      }}
+                      ref={createInputRef}
+                      type="text"
+                      value={createName}
+                    />
+                  </label>
+
+                  {createError ? (
+                    <p
+                      className={styles.createError}
+                      id={`${listboxId}-create-error`}
+                      role="alert"
+                    >
+                      {createError}
+                    </p>
+                  ) : null}
+
+                  <div className={styles.createActions}>
+                    <button
+                      className={cx(styles.createButton, styles.createSubmit)}
+                      disabled={isCreatePending}
+                      type="submit"
+                    >
+                      {isCreatePending ? 'Creating' : 'Create'}
+                    </button>
+                    <button
+                      className={cx(styles.createButton, styles.createCancel)}
+                      disabled={isCreatePending}
+                      onClick={resetCreateState}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  className={styles.addAction}
+                  onClick={() => {
+                    setIsCreating(true)
+                    setCreateError('')
+                  }}
+                  type="button"
+                >
+                  + Add environment
+                </button>
+              )}
             </>
           ) : null}
         </div>

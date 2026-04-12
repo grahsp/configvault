@@ -29,7 +29,9 @@
 
 .trigger:focus-visible,
 .option:focus-visible,
-.addAction:focus-visible {
+.addAction:focus-visible,
+.createInput:focus-visible,
+.createButton:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.22);
   outline-offset: 2px;
 }
@@ -88,6 +90,73 @@
 
 .addAction {
   color: #2563eb;
+}
+
+.createForm {
+  display: grid;
+  gap: 8px;
+}
+
+.createLabel {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.createInput {
+  min-height: 38px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  font: inherit;
+}
+
+.createInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.createActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.createButton {
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.createButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.createSubmit {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.createCancel {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.createError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .emptyState,
