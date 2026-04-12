@@ -128,7 +128,7 @@ describe('ProjectDetailPage', () => {
 
     expect(
       await screen.findByRole('button', {
-        name: /Environment: \[ Staging \]/,
+        name: /^Staging$/,
       }),
     ).toBeInTheDocument()
     expect(router.state.location.search).toBe('?environmentId=env-staging')
@@ -161,7 +161,7 @@ describe('ProjectDetailPage', () => {
 
     await user.click(
       await screen.findByRole('button', {
-        name: /Environment: \[ Development \]/,
+        name: /^Development$/,
       }),
     )
     await user.click(screen.getByRole('option', { name: 'Staging' }))

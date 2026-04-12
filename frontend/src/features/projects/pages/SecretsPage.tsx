@@ -24,14 +24,19 @@ export function SecretsPage() {
 
   return (
     <section className={styles.placeholder} aria-labelledby="secrets-title">
-      <h2 className={styles.placeholderTitle} id="secrets-title">
-        Secrets
-      </h2>
-      <EnvironmentDropdown
-        onEnvironmentChange={handleEnvironmentChange}
-        projectId={project.id}
-        selectedEnvironmentId={selectedEnvironmentId}
-      />
+      <div className={styles.placeholderHeader}>
+        <h2 className={styles.placeholderTitle} id="secrets-title">
+          Secrets
+        </h2>
+        <div className={styles.environmentPicker}>
+          <span className={styles.environmentPickerLabel}>Environment</span>
+          <EnvironmentDropdown
+            onEnvironmentChange={handleEnvironmentChange}
+            projectId={project.id}
+            selectedEnvironmentId={selectedEnvironmentId}
+          />
+        </div>
+      </div>
       <p className={styles.placeholderCopy}>
         Vault entries and controls will appear here.
       </p>
