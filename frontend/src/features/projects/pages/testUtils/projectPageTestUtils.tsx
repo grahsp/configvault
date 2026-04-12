@@ -53,15 +53,30 @@ export function renderWithRouter({
     },
   )
 
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
+  return {
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+    router,
+  }
+}
+
+function renderProjectDetailResult(router: ReturnType<typeof createMemoryRouter>) {
+  const queryClient = createTestQueryClient()
+
+  return {
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+    router,
+  }
 }
 
 export function renderProjectDetail(initialPath = '/projects/project-1') {
-  const queryClient = createTestQueryClient()
   const router = createMemoryRouter(
     [
       {
@@ -92,11 +107,7 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
     },
   )
 
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
+  return renderProjectDetailResult(router)
 }
 
 function jsonResponse(body: unknown, status = 200) {

@@ -6,9 +6,13 @@ import {
   renderProjectDetail,
 } from '../testUtils/projectPageTestUtils'
 
+const authMocks = vi.hoisted(() => ({
+  getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
+}))
+
 vi.mock('../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({
-    getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
+    getAccessTokenSilently: authMocks.getAccessTokenSilently,
   }),
 }))
 
@@ -40,6 +44,15 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1',
         body: projectDetails,
       },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
     ])
 
     renderProjectDetail()
@@ -58,6 +71,15 @@ describe('ProjectDetailPage', () => {
       {
         path: '/projects/project-1',
         body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
       },
     ])
 
@@ -79,11 +101,95 @@ describe('ProjectDetailPage', () => {
     ).toBeInTheDocument()
   })
 
+  it('preserves the selected environment from the secrets route query string', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+    ])
+
+    const { router } = renderProjectDetail(
+      '/projects/project-1/secrets?environmentId=env-staging',
+    )
+
+    expect(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Staging \]/,
+      }),
+    ).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?environmentId=env-staging')
+  })
+
+  it('updates the secrets route query string when selecting an environment', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+    ])
+
+    const { router } = renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /Environment: \[ Development \]/,
+      }),
+    )
+    await user.click(screen.getByRole('option', { name: 'Staging' }))
+
+    expect(router.state.location.search).toBe('?environmentId=env-staging')
+    expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
+      'href',
+      '/projects/project-1/members?environmentId=env-staging',
+    )
+    expect(
+      screen.getByText('Vault entries and controls will appear here.'),
+    ).toBeInTheDocument()
+  })
+
   it('renders the members route directly', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
         body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
       },
       {
         path: '/projects/project-1/members',
