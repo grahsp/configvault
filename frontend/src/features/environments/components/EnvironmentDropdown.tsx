@@ -11,7 +11,7 @@ import {
 import { createApiClient } from '../../../api/apiClient'
 import { useAuth } from '../../../shared/hooks/useAuth'
 import { cx } from '../../../shared/utils/cx'
-import { createEnvironment, getEnvironments } from '../api'
+import { createEnvironment, deleteEnvironment, getEnvironments } from '../api'
 import type { Environment } from '../types'
 import styles from './EnvironmentDropdown.module.css'
 
@@ -31,6 +31,7 @@ type EnvironmentAction =
   | { type: 'load' }
   | { environments: Environment[]; type: 'success' }
   | { environment: Environment; type: 'append' }
+  | { environmentId: string; type: 'remove' }
   | { type: 'error' }
 
 const initialEnvironmentState: EnvironmentState = {
@@ -60,6 +61,13 @@ function environmentReducer(
       return {
         ...state,
         environments: [...state.environments, action.environment],
+      }
+    case 'remove':
+      return {
+        ...state,
+        environments: state.environments.filter(
+          (environment) => environment.id !== action.environmentId,
+        ),
       }
     case 'error':
       return {
@@ -94,6 +102,11 @@ export function EnvironmentDropdown({
   const [createName, setCreateName] = useState('')
   const [createError, setCreateError] = useState('')
   const [isCreatePending, setIsCreatePending] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [deletingEnvironmentId, setDeletingEnvironmentId] = useState('')
+  const [environmentPendingDelete, setEnvironmentPendingDelete] =
+    useState<Environment | null>(null)
+  const isCreatePendingRef = useRef(false)
   const createInputRef = useRef<HTMLInputElement>(null)
   const selectedEnvironment = environments.find(
     (environment) => environment.id === selectedEnvironmentId,
@@ -172,6 +185,7 @@ export function EnvironmentDropdown({
   }, [isCreating])
 
   function resetCreateState() {
+    isCreatePendingRef.current = false
     setIsCreating(false)
     setCreateName('')
     setCreateError('')
@@ -180,11 +194,14 @@ export function EnvironmentDropdown({
 
   function closeDropdown() {
     setIsOpen(false)
+    setDeleteError('')
+    setEnvironmentPendingDelete(null)
     resetCreateState()
   }
 
   function openDropdown() {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0)
+    setDeleteError('')
     setIsOpen(true)
   }
 
@@ -193,10 +210,51 @@ export function EnvironmentDropdown({
     closeDropdown()
   }
 
+  function openDeleteDialog(environment: Environment) {
+    if (environments.length <= 1) {
+      return
+    }
+
+    setDeleteError('')
+    setEnvironmentPendingDelete(environment)
+  }
+
+  function closeDeleteDialog() {
+    if (deletingEnvironmentId) {
+      return
+    }
+
+    setDeleteError('')
+    setEnvironmentPendingDelete(null)
+  }
+
+  async function recoverCreatedEnvironment(environmentName: string) {
+    try {
+      const nextEnvironments = await getEnvironments(client, projectId)
+      const recoveredEnvironment = nextEnvironments.find(
+        (environment) =>
+          environment.environmentName.trim().toLocaleLowerCase() ===
+          environmentName.toLocaleLowerCase(),
+      )
+
+      if (!recoveredEnvironment) {
+        return false
+      }
+
+      dispatch({ environments: nextEnvironments, type: 'success' })
+      onEnvironmentChange(recoveredEnvironment.id)
+      closeDropdown()
+
+      return true
+    } catch {
+      return false
+    }
+  }
+
   async function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (isCreatePending) {
+    if (isCreatePendingRef.current) {
       return
     }
 
@@ -219,18 +277,66 @@ export function EnvironmentDropdown({
       return
     }
 
+    isCreatePendingRef.current = true
     setIsCreatePending(true)
     setCreateError('')
 
-    try {
-      const environment = await createEnvironment(client, projectId, trimmedName)
+    let environment: Environment
 
-      dispatch({ environment, type: 'append' })
-      onEnvironmentChange(environment.id)
-      closeDropdown()
+    try {
+      environment = await createEnvironment(client, projectId, trimmedName)
     } catch {
+      const wasCreated = await recoverCreatedEnvironment(trimmedName)
+
+      if (wasCreated) {
+        return
+      }
+
       setCreateError('Environment could not be created.')
+      isCreatePendingRef.current = false
       setIsCreatePending(false)
+      return
+    }
+
+    dispatch({ environment, type: 'append' })
+    onEnvironmentChange(environment.id)
+    closeDropdown()
+  }
+
+  async function handleDeleteEnvironment() {
+    if (
+      deletingEnvironmentId ||
+      environments.length <= 1 ||
+      !environmentPendingDelete
+    ) {
+      return
+    }
+
+    setDeleteError('')
+    setDeletingEnvironmentId(environmentPendingDelete.id)
+
+    try {
+      await deleteEnvironment(client, projectId, environmentPendingDelete.id)
+
+      const nextEnvironments = environments.filter(
+        (nextEnvironment) =>
+          nextEnvironment.id !== environmentPendingDelete.id,
+      )
+
+      dispatch({ environmentId: environmentPendingDelete.id, type: 'remove' })
+      setActiveIndex((currentIndex) =>
+        Math.min(currentIndex, Math.max(nextEnvironments.length - 1, 0)),
+      )
+      setIsOpen(false)
+      setEnvironmentPendingDelete(null)
+
+      if (environmentPendingDelete.id === selectedEnvironmentId) {
+        onEnvironmentChange(nextEnvironments[0]?.id ?? '')
+      }
+    } catch {
+      setDeleteError('Environment could not be deleted.')
+    } finally {
+      setDeletingEnvironmentId('')
     }
   }
 
@@ -288,10 +394,8 @@ export function EnvironmentDropdown({
   }
 
   const triggerLabel = isLoading
-    ? 'Environment: [ loading... ]'
-    : `Environment: [ ${
-        selectedEnvironment?.environmentName ?? 'Select environment'
-      } ]`
+    ? 'Loading...'
+    : selectedEnvironment?.environmentName ?? 'Select environment'
 
   return (
     <div className={styles.environmentDropdown} ref={wrapperRef}>
@@ -333,22 +437,41 @@ export function EnvironmentDropdown({
 
           {!hasError
             ? environments.map((environment, index) => (
-                <button
-                  aria-selected={environment.id === selectedEnvironmentId}
-                  className={cx(
-                    styles.option,
-                    index === activeIndex && styles.optionActive,
-                    environment.id === selectedEnvironmentId &&
-                      styles.optionSelected,
-                  )}
-                  id={`${listboxId}-option-${environment.id}`}
-                  key={environment.id}
-                  onClick={() => selectEnvironment(environment)}
-                  role="option"
-                  type="button"
-                >
-                  {environment.environmentName}
-                </button>
+                <div className={styles.optionRow} key={environment.id}>
+                  <button
+                    aria-selected={environment.id === selectedEnvironmentId}
+                    className={cx(
+                      styles.option,
+                      index === activeIndex && styles.optionActive,
+                      environment.id === selectedEnvironmentId &&
+                        styles.optionSelected,
+                    )}
+                    id={`${listboxId}-option-${environment.id}`}
+                    onClick={() => selectEnvironment(environment)}
+                    role="option"
+                    type="button"
+                  >
+                    {environment.environmentName}
+                  </button>
+                  <button
+                    aria-label={
+                      environments.length <= 1
+                        ? `Cannot delete ${environment.environmentName} because it is the only environment`
+                        : `Delete ${environment.environmentName}`
+                    }
+                    className={styles.deleteAction}
+                    disabled={
+                      environments.length <= 1 ||
+                      deletingEnvironmentId === environment.id
+                    }
+                    onClick={() => openDeleteDialog(environment)}
+                    type="button"
+                  >
+                    {deletingEnvironmentId === environment.id
+                      ? 'Deleting'
+                      : 'Delete'}
+                  </button>
+                </div>
               ))
             : null}
 
@@ -429,6 +552,75 @@ export function EnvironmentDropdown({
           ) : null}
         </div>
       ) : null}
+
+      {environmentPendingDelete ? (
+        <DeleteEnvironmentDialog
+          deleteError={deleteError}
+          environment={environmentPendingDelete}
+          isPending={deletingEnvironmentId === environmentPendingDelete.id}
+          onCancel={closeDeleteDialog}
+          onConfirm={handleDeleteEnvironment}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+function DeleteEnvironmentDialog({
+  deleteError,
+  environment,
+  isPending,
+  onCancel,
+  onConfirm,
+}: {
+  deleteError: string
+  environment: Environment
+  isPending: boolean
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className={styles.modalBackdrop} role="presentation">
+      <div
+        aria-labelledby="delete-environment-title"
+        aria-modal="true"
+        className={cx(styles.modal, styles.modalCompact)}
+        role="dialog"
+      >
+        <h2 id="delete-environment-title">Delete environment</h2>
+        <p className={styles.modalCopy}>
+          Delete this environment from the project?
+        </p>
+        <p className={styles.modalCopy}>
+          {environment.environmentName} and its associated configuration values
+          will be removed.
+        </p>
+
+        {deleteError ? (
+          <p className={styles.createError} role="alert">
+            {deleteError}
+          </p>
+        ) : null}
+
+        <div className={styles.modalActions}>
+          <button
+            className={cx(styles.modalButton, styles.modalButtonSecondary)}
+            disabled={isPending}
+            onClick={onCancel}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className={cx(styles.modalButton, styles.modalButtonDanger)}
+            disabled={isPending}
+            onClick={onConfirm}
+            type="button"
+          >
+            {isPending ? 'Deleting' : 'Delete'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
