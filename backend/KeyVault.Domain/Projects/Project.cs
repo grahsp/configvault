@@ -129,11 +129,8 @@ public sealed class Project
 	private static string NormalizeEnvironmentName(string name)
 		=> name.Trim().ToLowerInvariant();
 	
-	public bool TryGetEnvironment(string normalizedName, [NotNullWhen(true)] out Environment? environment)
-	{
-		environment = _environments.SingleOrDefault(e => e.Name == normalizedName);
-		return environment != null;
-	}
+	public bool EnvironmentExists(string normalizedName)
+		=> _environments.Any(e => e.Name == normalizedName);
 	
 	public bool TryGetEnvironment(Guid id, [NotNullWhen(true)] out Environment? environment)
 	{
@@ -148,7 +145,7 @@ public sealed class Project
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		RequireMemberWithRole(actorId, ProjectRole.Admin);
 		
-		if (TryGetEnvironment(normalizedName, out _))
+		if (EnvironmentExists(normalizedName))
 			throw new EnvironmentAlreadyExists(normalizedName);
 		
 		var environment = Environment.Create(Id, normalizedName, now);
