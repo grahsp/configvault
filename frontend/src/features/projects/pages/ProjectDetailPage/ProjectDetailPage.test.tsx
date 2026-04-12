@@ -53,6 +53,10 @@ describe('ProjectDetailPage', () => {
           },
         ],
       },
+      {
+        path: '/projects/project-1/config-items',
+        body: [],
+      },
     ])
 
     renderProjectDetail()
@@ -63,7 +67,9 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByText('Credentials for production services'),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Secrets' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Secrets' }),
+    ).toBeInTheDocument()
   })
 
   it('shows project section navigation on the secrets route', async () => {
@@ -81,6 +87,10 @@ describe('ProjectDetailPage', () => {
           },
         ],
       },
+      {
+        path: '/projects/project-1/config-items',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/secrets')
@@ -97,8 +107,9 @@ describe('ProjectDetailPage', () => {
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(
-      screen.getByText('Vault entries and controls will appear here.'),
+      screen.getByRole('button', { name: 'Add Secret' }),
     ).toBeInTheDocument()
+    expect(await screen.findByText('No secrets yet.')).toBeInTheDocument()
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -119,6 +130,10 @@ describe('ProjectDetailPage', () => {
             environmentName: 'Staging',
           },
         ],
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [],
       },
     ])
 
@@ -172,7 +187,7 @@ describe('ProjectDetailPage', () => {
       '/projects/project-1/members?environmentId=env-staging',
     )
     expect(
-      screen.getByText('Vault entries and controls will appear here.'),
+      screen.getByRole('button', { name: 'Add Secret' }),
     ).toBeInTheDocument()
   })
 

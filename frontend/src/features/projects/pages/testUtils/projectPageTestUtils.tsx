@@ -3,10 +3,10 @@ import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { Navigate, createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { vi } from 'vitest'
+import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
 import { LocationProbe } from './LocationProbe.testComponent'
 import { MembersPage } from '../MembersPage'
 import { ProjectLayout } from '../ProjectLayout'
-import { SecretsPage } from '../SecretsPage'
 
 export type MockRoute = {
   body?: unknown
@@ -89,7 +89,7 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
           },
           {
             path: 'secrets',
-            element: <SecretsPage />,
+            element: <ProjectSecretsPage />,
           },
           {
             path: 'members',
