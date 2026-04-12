@@ -1,0 +1,103 @@
+.environmentDropdown {
+  position: relative;
+  display: inline-grid;
+  gap: 6px;
+  min-width: 240px;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.trigger:focus-visible,
+.option:focus-visible,
+.addAction:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 2px;
+}
+
+.chevron {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-width: 240px;
+  padding: 6px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+
+.option,
+.addAction {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:hover,
+.optionActive,
+.addAction:hover {
+  background: #f1f5f9;
+}
+
+.optionSelected {
+  background: #e0f2fe;
+}
+
+.divider {
+  height: 1px;
+  margin: 4px 0;
+  background: #e5e7eb;
+}
+
+.addAction {
+  color: #2563eb;
+}
+
+.emptyState,
+.errorState {
+  margin: 0;
+  padding: 10px;
+  color: #475569;
+  font-weight: 700;
+}
+
+.errorState {
+  color: #b91c1c;
+}
