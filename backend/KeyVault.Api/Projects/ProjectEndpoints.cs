@@ -32,5 +32,6 @@ public static class ProjectEndpoints
 		
 		environments.MapGet("", GetEnvironments.Endpoint.Handle);
 		environments.MapPost("", AddEnvironment.Endpoint.Handle);
+		environments.MapDelete("/{environmentId}", RemoveEnvironment.Endpoint.Handle);
 	}
 }

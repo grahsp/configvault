@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using KeyVault.Domain.Exceptions;
 using KeyVault.Domain.Projects.Exceptions;
 
 namespace KeyVault.Domain.Projects;
@@ -133,13 +134,19 @@ public sealed class Project
 		environment = _environments.SingleOrDefault(e => e.Name == normalizedName);
 		return environment != null;
 	}
+	
+	public bool TryGetEnvironment(Guid id, [NotNullWhen(true)] out Environment? environment)
+	{
+		environment = _environments.SingleOrDefault(e => e.Id == id);
+		return environment != null;
+	}
 
 	public Environment AddEnvironment(Guid actorId, string name, DateTimeOffset now)
 	{
+		var normalizedName = NormalizeEnvironmentName(name);
+		
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		RequireMemberWithRole(actorId, ProjectRole.Admin);
-		
-		var normalizedName = NormalizeEnvironmentName(name);
 		
 		if (TryGetEnvironment(normalizedName, out _))
 			throw new EnvironmentAlreadyExists(normalizedName);
@@ -148,5 +155,16 @@ public sealed class Project
 		_environments.Add(environment);
 		
 		return environment;
+	}
+
+	public void RemoveEnvironment(Guid actorId, Guid environmentId)
+	{
+		RequireMemberWithRole(actorId, ProjectRole.Admin);
+
+		if (Environments.Count == 1)
+			throw new BusinessRuleViolationException("There must exist at least one environment in a project.");
+
+		if (TryGetEnvironment(environmentId, out var environment))
+			_environments.Remove(environment);
 	}
 }
