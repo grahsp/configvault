@@ -4,10 +4,7 @@ import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useCreateConfigItem } from '../hooks/useCreateConfigItem'
 import type { ConfigItem } from '../types/ConfigItem'
-import {
-  getConfigItemKeyValidationError,
-  getUppercaseConfigItemKeySuggestion,
-} from '../validation/configItemValidation'
+import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
 import styles from './ConfigItemsTable.module.css'
 
 interface AddConfigItemModalProps {
@@ -25,12 +22,7 @@ export function AddConfigItemModal({
   const [key, setKey] = useState('')
   const createConfigItemMutation = useCreateConfigItem(projectId)
   const validationError = getConfigItemKeyValidationError(key)
-  const uppercaseSuggestion = getUppercaseConfigItemKeySuggestion(key)
   const visibleError = validationError
-    ? validationError
-    : createConfigItemMutation.isError
-      ? getErrorMessage(createConfigItemMutation.error)
-      : undefined
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -45,8 +37,11 @@ export function AddConfigItemModal({
       )
       addToast({ message: 'Secret created', type: 'success' })
       onCreated(createdConfigItem)
-    } catch {
-      addToast({ message: 'Failed to create secret', type: 'error' })
+    } catch (error) {
+      addToast({
+        message: getErrorMessage(error, 'Failed to create secret'),
+        type: 'error',
+      })
     }
   }
 
@@ -60,15 +55,6 @@ export function AddConfigItemModal({
       >
         <div className={styles.modalHeader}>
           <h2 id="add-config-item-title">Add secret</h2>
-          <button
-            aria-label="Close add secret"
-            className={styles.modalClose}
-            disabled={createConfigItemMutation.isPending}
-            onClick={onCancel}
-            type="button"
-          >
-            Close
-          </button>
         </div>
 
         <form className={styles.configItemForm} onSubmit={handleSubmit}>
@@ -77,11 +63,7 @@ export function AddConfigItemModal({
             <input
               autoFocus
               aria-describedby={
-                visibleError
-                  ? 'add-config-item-key-error'
-                  : uppercaseSuggestion
-                    ? 'add-config-item-key-suggestion'
-                    : undefined
+                visibleError ? 'add-config-item-key-error' : undefined
               }
               aria-invalid={Boolean(visibleError)}
               disabled={createConfigItemMutation.isPending}
@@ -95,15 +77,6 @@ export function AddConfigItemModal({
               value={key}
             />
           </label>
-
-          {uppercaseSuggestion && !visibleError ? (
-            <p
-              className={styles.configItemFormHint}
-              id="add-config-item-key-suggestion"
-            >
-              Suggested key: {uppercaseSuggestion}
-            </p>
-          ) : null}
 
           {visibleError ? (
             <p
@@ -140,6 +113,6 @@ export function AddConfigItemModal({
   )
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Failed to create secret'
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage
 }

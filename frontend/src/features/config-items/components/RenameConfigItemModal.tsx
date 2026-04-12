@@ -26,8 +26,7 @@ export function RenameConfigItemModal({
   const renameConfigItemMutation = useRenameConfigItem(projectId)
   const validationError = getConfigItemKeyValidationError(key)
   const uppercaseSuggestion = getUppercaseConfigItemKeySuggestion(key)
-  const visibleError =
-    validationError ?? getErrorMessage(renameConfigItemMutation.error)
+  const visibleError = validationError
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -43,8 +42,11 @@ export function RenameConfigItemModal({
       })
       addToast({ message: 'Secret renamed', type: 'success' })
       onCancel()
-    } catch {
-      addToast({ message: 'Failed to rename secret', type: 'error' })
+    } catch (error) {
+      addToast({
+        message: getErrorMessage(error, 'Failed to rename secret'),
+        type: 'error',
+      })
     }
   }
 
@@ -58,15 +60,6 @@ export function RenameConfigItemModal({
       >
         <div className={styles.modalHeader}>
           <h2 id="rename-config-item-title">Rename secret</h2>
-          <button
-            aria-label="Close rename secret"
-            className={styles.modalClose}
-            disabled={renameConfigItemMutation.isPending}
-            onClick={onCancel}
-            type="button"
-          >
-            Close
-          </button>
         </div>
 
         <form className={styles.configItemForm} onSubmit={handleSubmit}>
@@ -137,6 +130,6 @@ export function RenameConfigItemModal({
   )
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : undefined
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage
 }

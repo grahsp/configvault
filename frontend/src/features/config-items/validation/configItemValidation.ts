@@ -9,6 +9,10 @@ export function getConfigItemKeyValidationError(key: string) {
     return 'Key cannot contain spaces.'
   }
 
+  if (/[^A-Za-z0-9_]/.test(trimmedKey)) {
+    return 'Key can only contain letters, numbers, and underscores.'
+  }
+
   return undefined
 }
 

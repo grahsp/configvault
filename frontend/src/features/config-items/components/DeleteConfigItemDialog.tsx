@@ -23,8 +23,11 @@ export function DeleteConfigItemDialog({
       await deleteConfigItemMutation.mutateAsync(configItem.id)
       addToast({ message: 'Secret deleted', type: 'success' })
       onCancel()
-    } catch {
-      addToast({ message: 'Failed to delete secret', type: 'error' })
+    } catch (error) {
+      addToast({
+        message: getErrorMessage(error, 'Failed to delete secret'),
+        type: 'error',
+      })
     }
   }
 
@@ -38,27 +41,12 @@ export function DeleteConfigItemDialog({
       >
         <div className={styles.modalHeader}>
           <h2 id="delete-config-item-title">Delete secret?</h2>
-          <button
-            aria-label="Close delete secret"
-            className={styles.modalClose}
-            disabled={deleteConfigItemMutation.isPending}
-            onClick={onCancel}
-            type="button"
-          >
-            Close
-          </button>
         </div>
 
         <p className={styles.modalCopy}>{configItem.key}</p>
         <p className={styles.modalCopy}>
           This will remove all environment values.
         </p>
-
-        {deleteConfigItemMutation.isError ? (
-          <p className={styles.configItemFormError} role="alert">
-            {getErrorMessage(deleteConfigItemMutation.error)}
-          </p>
-        ) : null}
 
         <div className={styles.formActions}>
           <button
@@ -83,6 +71,6 @@ export function DeleteConfigItemDialog({
   )
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Failed to delete secret'
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+  return error instanceof Error ? error.message : fallbackMessage
 }
