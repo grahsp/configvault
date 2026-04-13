@@ -8,12 +8,16 @@ import { useConfigItems } from './useConfigItems'
 import { useCreateConfigItem } from './useCreateConfigItem'
 import { useDeleteConfigItem } from './useDeleteConfigItem'
 import { useRenameConfigItem } from './useRenameConfigItem'
+import { useRevealConfigItemValue } from './useRevealConfigItemValue'
+import { useUpsertConfigItemValue } from './useUpsertConfigItemValue'
 
 const apiMocks = vi.hoisted(() => ({
   createConfigItem: vi.fn(),
   deleteConfigItem: vi.fn(),
+  getConfigItemValue: vi.fn(),
   getConfigItems: vi.fn(),
   renameConfigItem: vi.fn(),
+  upsertConfigItemValue: vi.fn(),
 }))
 
 vi.mock('../api/configItemsApi', () => apiMocks)
@@ -307,6 +311,126 @@ describe('config item hooks', () => {
         getCachedConfigItems(queryClient, projectId, environmentName),
       ).toEqual(existingConfigItems),
     )
+  })
+
+  it('reveals a config item value for the selected environment', async () => {
+    const queryClient = createTestQueryClient()
+    apiMocks.getConfigItemValue.mockResolvedValue({ value: 'secret-value' })
+
+    const { result } = renderHook(
+      () => useRevealConfigItemValue(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    let revealedValue
+
+    await act(async () => {
+      revealedValue = await result.current.mutateAsync({
+        configItemId: 'config-1',
+      })
+    })
+
+    expect(revealedValue).toEqual({ value: 'secret-value' })
+    expect(apiMocks.getConfigItemValue).toHaveBeenCalledWith(
+      expect.any(Object),
+      projectId,
+      'config-1',
+      environmentName,
+    )
+  })
+
+  it('surfaces reveal failures without changing config item cache state', async () => {
+    const queryClient = createTestQueryClient()
+    apiMocks.getConfigItemValue.mockRejectedValue(new Error('Reveal failed'))
+    queryClient.setQueryData(
+      configItemQueryKeys.list(projectId, environmentName),
+      existingConfigItems,
+    )
+
+    const { result } = renderHook(
+      () => useRevealConfigItemValue(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await expect(
+      act(async () => {
+        await result.current.mutateAsync({ configItemId: 'config-1' })
+      }),
+    ).rejects.toThrow('Reveal failed')
+
+    expect(
+      getCachedConfigItems(queryClient, projectId, environmentName),
+    ).toEqual(existingConfigItems)
+  })
+
+  it('sets hasValue locally after upserting a config item value', async () => {
+    const queryClient = createTestQueryClient()
+    apiMocks.upsertConfigItemValue.mockResolvedValue(undefined)
+    queryClient.setQueryData(
+      configItemQueryKeys.list(projectId, environmentName),
+      existingConfigItems,
+    )
+
+    const { result } = renderHook(
+      () => useUpsertConfigItemValue(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        configItemId: 'config-2',
+        value: 'new-secret-value',
+      })
+    })
+
+    expect(
+      getCachedConfigItems(queryClient, projectId, environmentName),
+    ).toContainEqual({
+      ...existingConfigItems[1],
+      hasValue: true,
+    })
+    expect(apiMocks.upsertConfigItemValue).toHaveBeenCalledWith(
+      expect.any(Object),
+      projectId,
+      'config-2',
+      environmentName,
+      'new-secret-value',
+    )
+  })
+
+  it('keeps the previous hasValue state when upsert fails', async () => {
+    const queryClient = createTestQueryClient()
+    apiMocks.upsertConfigItemValue.mockRejectedValue(new Error('Upsert failed'))
+    queryClient.setQueryData(
+      configItemQueryKeys.list(projectId, environmentName),
+      existingConfigItems,
+    )
+
+    const { result } = renderHook(
+      () => useUpsertConfigItemValue(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await expect(
+      act(async () => {
+        await result.current.mutateAsync({
+          configItemId: 'config-2',
+          value: 'new-secret-value',
+        })
+      }),
+    ).rejects.toThrow('Upsert failed')
+
+    expect(
+      getCachedConfigItems(queryClient, projectId, environmentName),
+    ).toEqual(existingConfigItems)
   })
 
   it('optimistically removes a config item', async () => {

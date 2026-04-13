@@ -391,6 +391,73 @@ describe('ProjectSecretsPage', () => {
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
   })
 
+  it('clears revealed values and loads a new list when the environment changes', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'environment-1',
+            environmentName: 'production',
+          },
+          {
+            id: 'environment-2',
+            environmentName: 'staging',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+      {
+        path: '/projects/project-1/config-items/config-1/value',
+        body: { value: 'production-secret-value' },
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Reveal API_KEY' }),
+    )
+
+    expect(
+      await screen.findByRole('row', {
+        name: /API_KEY production-secret-value Hide Edit Delete/,
+      }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^production$/ }))
+    await user.click(screen.getByRole('option', { name: 'staging' }))
+
+    expect(
+      await screen.findByRole('button', { name: /^staging$/ }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('row', {
+        name: /API_KEY \*{4} Reveal Edit Delete/,
+      }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('production-secret-value')).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/projects/project-1/config-items?environment=staging',
+      ),
+      expect.any(Object),
+    )
+    expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
+  })
+
   it('enters and cancels inline config item key and value editing', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
