@@ -1,0 +1,43 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: KeyVault.Api/Dockerfile
+    image: keyvault-api
+    ports:
+      - "3030:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__ConnectionString: ${DB_CONNECTION_STRING}
+      IdentityProvider__Authority: ${IDP_AUTHORITY}
+      IdentityProvider__Audience: ${IDP_AUDIENCE}
+      Cors__AllowedOrigins__0: http://localhost:3000
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:3030/api
+        VITE_AUTH0_DOMAIN: ${IDP_DOMAIN}
+        VITE_AUTH0_CLIENT_ID: ${IDP_CLIENT_ID}
+        VITE_AUTH0_AUDIENCE: ${IDP_AUDIENCE}
+    image: keyvault-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: keyvault
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
