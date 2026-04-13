@@ -21,6 +21,13 @@ public sealed class ConfigItemConfiguration : IEntityTypeConfiguration<ConfigIte
 		builder.Property(x => x.ProjectId)
 			.IsRequired();
 		
+		builder.Navigation(x => x.Values)
+			.UsePropertyAccessMode(PropertyAccessMode.Field);	
+		
+		builder.HasMany(x => x.Values)
+			.WithOne()
+			.HasForeignKey(x => x.ConfigItemId);
+		
 		builder.Property(x => x.Key)
 			.HasConversion(key => key.Value, value => ConfigKey.Create(value))
 			.HasMaxLength(64)

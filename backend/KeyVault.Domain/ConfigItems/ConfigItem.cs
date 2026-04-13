@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace KeyVault.Domain.ConfigItems;
 
 public sealed class ConfigItem
@@ -6,6 +8,9 @@ public sealed class ConfigItem
 	public Guid ProjectId { get; private init; }
 
 	public ConfigKey Key { get; private set; } = null!;
+	
+	private readonly List<ConfigValue> _values = [];
+	public IReadOnlyList<ConfigValue> Values => _values;
 	
 	public DateTimeOffset CreatedAt { get; private init; }
 	
@@ -25,4 +30,21 @@ public sealed class ConfigItem
 	}
 	
 	public void SetKey(ConfigKey key) => Key = key;
+
+	public bool TryGetValue(Guid environmentId, [NotNullWhen(true)] out ConfigValue? value)
+	{
+		value = _values.SingleOrDefault(v => v.EnvironmentId == environmentId);
+		return value != null;
+	}
+
+	public void SetValue(Guid environmentId, string value, Guid actorId, DateTimeOffset now)
+	{
+		if (TryGetValue(environmentId, out var existing))
+		{
+			existing.SetValue(value, actorId, now);
+			return;
+		}
+		
+		_values.Add(new ConfigValue(Id, environmentId, value, actorId, now));
+	}
 }
