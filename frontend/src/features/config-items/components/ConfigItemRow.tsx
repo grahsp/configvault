@@ -7,28 +7,41 @@ import styles from './ConfigItemsTable.module.css'
 interface ConfigItemRowProps {
   configItem: ConfigItem
   draftKey: string
+  draftValue: string
+  isRevealing: boolean
   isEditing: boolean
   isSaving: boolean
+  isValueRevealed: boolean
+  revealedValue?: string
   onDelete: (configItem: ConfigItem) => void
   onDraftKeyChange: (key: string) => void
+  onDraftValueChange: (value: string) => void
   onCancelEdit: () => void
-  onRename: (configItem: ConfigItem) => void
+  onEdit: (configItem: ConfigItem) => void
+  onReveal: (configItem: ConfigItem) => void
   onSaveEdit: () => void
   shouldFocus?: boolean
   validationError?: string
 }
 
-const maskedValue = '******'
+const maskedValue = '****'
+const emptyValue = '(empty)'
 
 export function ConfigItemRow({
   configItem,
   draftKey,
+  draftValue,
+  isRevealing,
   isEditing,
   isSaving,
+  isValueRevealed,
+  revealedValue,
   onCancelEdit,
   onDelete,
   onDraftKeyChange,
-  onRename,
+  onDraftValueChange,
+  onEdit,
+  onReveal,
   onSaveEdit,
   shouldFocus = false,
   validationError,
@@ -53,6 +66,14 @@ export function ConfigItemRow({
       event.preventDefault()
       onCancelEdit()
     }
+  }
+
+  function renderValue() {
+    if (isValueRevealed && revealedValue !== undefined) {
+      return revealedValue
+    }
+
+    return configItem.hasValue ? maskedValue : emptyValue
   }
 
   return (
@@ -84,7 +105,20 @@ export function ConfigItemRow({
         )}
       </th>
       <td>
-        <span className={styles.maskedValue}>{maskedValue}</span>
+        {isEditing ? (
+          <label className={styles.inlineValueField}>
+            <span className={styles.visuallyHidden}>Value</span>
+            <input
+              disabled={isSaving}
+              onChange={(event) => onDraftValueChange(event.target.value)}
+              onKeyDown={handleKeyDown}
+              type="text"
+              value={draftValue}
+            />
+          </label>
+        ) : (
+          <span className={styles.maskedValue}>{renderValue()}</span>
+        )}
       </td>
       <td className={styles.actionsColumn}>
         <div className={styles.rowActions}>
@@ -109,10 +143,25 @@ export function ConfigItemRow({
             </>
           ) : (
             <>
+              {configItem.hasValue ? (
+                <button
+                  aria-label={
+                    isValueRevealed
+                      ? `Hide ${configItem.key}`
+                      : `Reveal ${configItem.key}`
+                  }
+                  className={styles.rowAction}
+                  disabled={isRevealing}
+                  onClick={() => onReveal(configItem)}
+                  type="button"
+                >
+                  {isRevealing ? 'Revealing' : isValueRevealed ? 'Hide' : 'Reveal'}
+                </button>
+              ) : null}
               <button
                 aria-label={`Edit ${configItem.key}`}
                 className={styles.rowAction}
-                onClick={() => onRename(configItem)}
+                onClick={() => onEdit(configItem)}
                 type="button"
               >
                 Edit

@@ -112,12 +112,14 @@
   color: #ffffff;
 }
 
-.inlineKeyField {
+.inlineKeyField,
+.inlineValueField {
   display: grid;
   gap: 6px;
 }
 
-.inlineKeyField input {
+.inlineKeyField input,
+.inlineValueField input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #94a3b8;
@@ -127,7 +129,8 @@
   font: inherit;
 }
 
-.inlineKeyField input:disabled {
+.inlineKeyField input:disabled,
+.inlineValueField input:disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
