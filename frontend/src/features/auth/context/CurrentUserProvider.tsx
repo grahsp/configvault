@@ -1,4 +1,10 @@
-import { type PropsWithChildren, useEffect, useState } from 'react'
+import {
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { createApiClient } from '../../../api/apiClient'
 import { CurrentUserContext } from '../../../shared/hooks/currentUserContext'
 import { useAuth } from '../../../shared/hooks/useAuth'
@@ -9,52 +15,59 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
   const [currentUser, setCurrentUser] = useState<CurrentUser>()
   const [error, setError] = useState<Error>()
   const [isLoading, setIsLoading] = useState(false)
+  const requestIdRef = useRef(0)
 
-  useEffect(() => {
+  const refreshCurrentUser = useCallback(async () => {
     if (!isAuthenticated) {
-      return
+      requestIdRef.current += 1
+      setCurrentUser(undefined)
+      setError(undefined)
+      setIsLoading(false)
+      return undefined
     }
 
-    let isCancelled = false
+    const requestId = requestIdRef.current + 1
+    requestIdRef.current = requestId
+    setIsLoading(true)
+    setError(undefined)
 
-    async function loadCurrentUser() {
-      setIsLoading(true)
-      setError(undefined)
+    try {
+      const client = createApiClient({ getAccessTokenSilently })
+      const user = await client.request<CurrentUser>('/me')
 
-      try {
-        const client = createApiClient({ getAccessTokenSilently })
-        const user = await client.request<CurrentUser>('/me')
-
-        if (isCancelled) {
-          return
-        }
-
-        setCurrentUser(user)
-        setIsLoading(false)
-      } catch (error: unknown) {
-        if (isCancelled) {
-          return
-        }
-
-        console.error('Failed to load current user', error)
-        setCurrentUser(undefined)
-        setError(
-          error instanceof Error
-            ? error
-            : new Error('Failed to load current user'),
-        )
-        setIsLoading(false)
+      if (requestIdRef.current !== requestId) {
+        return user
       }
+
+      setCurrentUser(user)
+      setIsLoading(false)
+      return user
+    } catch (error: unknown) {
+      if (requestIdRef.current !== requestId) {
+        throw error
+      }
+
+      console.error('Failed to load current user', error)
+      setCurrentUser(undefined)
+      setError(
+        error instanceof Error
+          ? error
+          : new Error('Failed to load current user'),
+      )
+      setIsLoading(false)
+      throw error
+    }
+  }, [getAccessTokenSilently, isAuthenticated])
+
+  useEffect(() => {
+    async function loadCurrentUser() {
+      await refreshCurrentUser()
     }
 
     loadCurrentUser().catch(() => {
-      // Errors are handled in loadCurrentUser to keep state updates in one place.
+      // Errors are exposed through context state.
     })
-
-    return () => {
-      isCancelled = true
-    }
-  }, [getAccessTokenSilently, isAuthenticated])
+  }, [refreshCurrentUser])
 
   return (
     <CurrentUserContext.Provider
@@ -62,6 +75,7 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
         user: isAuthenticated && !isLoading ? currentUser : undefined,
         isLoading: isAuthenticated ? isLoading : false,
         error: isAuthenticated ? error : undefined,
+        refreshCurrentUser,
       }}
     >
       {children}

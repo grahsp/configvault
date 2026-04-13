@@ -5,6 +5,7 @@ export interface CurrentUserContextValue {
   user?: CurrentUser
   isLoading: boolean
   error?: Error
+  refreshCurrentUser: () => Promise<CurrentUser | undefined>
 }
 
 export const CurrentUserContext = createContext<

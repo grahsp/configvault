@@ -7,7 +7,7 @@ import styles from './ActivatePage.module.css'
 
 export function ActivatePage() {
   const { getAccessTokenSilently } = useAuth()
-  const { user } = useCurrentUser()
+  const { refreshCurrentUser, user } = useCurrentUser()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
@@ -39,6 +39,7 @@ export function ActivatePage() {
       })
 
       setDisplayName(trimmedDisplayName)
+      await refreshCurrentUser()
       navigate('/projects', { replace: true })
     } catch (error: unknown) {
       console.error('Failed to activate user', error)
