@@ -138,6 +138,14 @@ public sealed class Project
 		return environment != null;
 	}
 
+	public bool TryGetEnvironment(string name, [NotNullWhen(true)] out Environment? environment)
+	{
+		var normalizedName = NormalizeEnvironmentName(name);
+		environment = _environments.SingleOrDefault(e => e.Name == normalizedName);
+		
+		return environment != null;
+	}
+
 	public Environment AddEnvironment(Guid actorId, string name, DateTimeOffset now)
 	{
 		var normalizedName = NormalizeEnvironmentName(name);

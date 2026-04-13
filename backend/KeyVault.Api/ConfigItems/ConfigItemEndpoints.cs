@@ -14,5 +14,11 @@ public static class ConfigItemEndpoints
 		configItems.MapPost("", AddConfigItem.Endpoint.Handle);
 		configItems.MapPatch("/{configItemId}", RenameConfigItem.Endpoint.Handle);
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
+		
+		var configValues = builder.MapGroup("/projects/{projectId}/config-items/{configItemId}/values")
+			.RequireAuthorization(Policies.ActiveUser)
+			.WithTags("Config Values");
+		
+		configValues.MapPut("", SetConfigValue.Endpoint.Handle);
 	}
 }
