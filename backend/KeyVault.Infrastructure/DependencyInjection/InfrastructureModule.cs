@@ -29,7 +29,13 @@ public static class InfrastructureModule
 		services.AddDbContext<AppDbContext>((sp, options) =>
 		{
 			var database = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-			options.UseNpgsql(database.ConnectionString);
+			options.UseNpgsql(database.ConnectionString, pgOptions =>
+			{
+				pgOptions.EnableRetryOnFailure(
+					maxRetryCount: 5,
+					maxRetryDelay: TimeSpan.FromSeconds(5),
+					errorCodesToAdd: null);
+			});
 		});
 
 		services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());

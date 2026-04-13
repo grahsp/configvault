@@ -13,7 +13,8 @@ services:
       IdentityProvider__Audience: ${IDP_AUDIENCE}
       Cors__AllowedOrigins__0: http://localhost:3000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -38,6 +39,11 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-data:
