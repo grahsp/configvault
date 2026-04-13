@@ -7,6 +7,8 @@ using KeyVault.Api.Projects;
 using KeyVault.Api.Users;
 using KeyVault.Application.DependencyInjection;
 using KeyVault.Infrastructure.DependencyInjection;
+using KeyVault.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Api;
 
@@ -44,6 +46,12 @@ public class Program
 		app.UseAuthorization();
 
 		app.UseMiddleware<ExceptionHandlingMiddleware>();
+		
+		using (var scope = app.Services.CreateScope())
+		{
+			var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+			db.Database.Migrate();
+		}
 
 		app.AddUserEndpoints();
 		app.AddProjectEndpoints();
