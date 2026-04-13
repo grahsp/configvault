@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using KeyVault.Domain.Projects;
 
 namespace KeyVault.Domain.ConfigItems;
 
@@ -6,6 +7,7 @@ public sealed class ConfigItem
 {
 	public Guid Id { get; private init; }
 	public Guid ProjectId { get; private init; }
+	public Project Project { get; private init; } = null!;
 
 	public ConfigKey Key { get; private set; } = null!;
 	

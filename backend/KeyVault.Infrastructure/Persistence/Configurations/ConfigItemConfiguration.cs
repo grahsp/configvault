@@ -21,6 +21,11 @@ public sealed class ConfigItemConfiguration : IEntityTypeConfiguration<ConfigIte
 		builder.Property(x => x.ProjectId)
 			.IsRequired();
 		
+		builder.HasOne(x => x.Project)
+			.WithMany()
+			.HasForeignKey(x => x.ProjectId)
+			.OnDelete(DeleteBehavior.Cascade);
+		
 		builder.Navigation(x => x.Values)
 			.UsePropertyAccessMode(PropertyAccessMode.Field);	
 		

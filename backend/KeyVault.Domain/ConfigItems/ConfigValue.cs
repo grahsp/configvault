@@ -1,9 +1,14 @@
+using Environment = KeyVault.Domain.Projects.Environment;
+
 namespace KeyVault.Domain.ConfigItems;
 
 public sealed class ConfigValue
 {
 	public Guid ConfigItemId { get; private init; }
+	public ConfigItem ConfigItem { get; private init; } = null!;
+	
 	public Guid EnvironmentId { get; private init; }
+	public Environment Environment { get; private init; } = null!;
 	
 	public string Value { get; private set; } = null!;
 	

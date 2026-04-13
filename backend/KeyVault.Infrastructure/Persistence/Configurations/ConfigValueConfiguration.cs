@@ -11,6 +11,16 @@ public class ConfigValueConfiguration : IEntityTypeConfiguration<ConfigValue>
 		builder.ToTable("config_values");
 
 		builder.HasKey(x => new { x.ConfigItemId, x.EnvironmentId });
+		
+		builder.HasOne(x => x.ConfigItem)
+			.WithMany(x => x.Values)
+			.HasForeignKey(x => x.ConfigItemId)
+			.OnDelete(DeleteBehavior.Cascade);
+		
+		builder.HasOne(x => x.Environment)
+			.WithMany()
+			.HasForeignKey(x => x.EnvironmentId)
+			.OnDelete(DeleteBehavior.Cascade);
 
 		builder.Property(x => x.Value)
 			.HasMaxLength(256);
