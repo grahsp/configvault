@@ -20,5 +20,6 @@ public static class ConfigItemEndpoints
 			.WithTags("Config Values");
 		
 		configValues.MapPut("", SetConfigValue.Endpoint.Handle);
+		configValues.MapGet("", GetConfigValue.Endpoint.Handle);
 	}
 }

@@ -21,6 +21,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<ConfigItem> ConfigItems { get; set; }
 	IQueryable<ConfigItem> IReadDbContext.ConfigItems => ConfigItems;
 	
+	public DbSet<ConfigValue> ConfigValues { get; set; }
+	IQueryable<ConfigValue> IReadDbContext.ConfigValues => ConfigValues;
+	
 	public DbSet<ProjectMember> ProjectMembers { get; set; }
 	IQueryable<ProjectMember> IReadDbContext.ProjectMembers => ProjectMembers;
 	
