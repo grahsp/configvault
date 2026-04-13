@@ -13,8 +13,8 @@ internal static class Endpoint
 			throw new ValidationException("Invalid key format");
 		
 		var command = new Command(projectId, key);
-		var response = await dispatcher.DispatchAsync(command, ct);
+		await dispatcher.DispatchAsync(command, ct);
 
-		return Results.Ok(response);
+		return Results.NoContent();
 	}
 }

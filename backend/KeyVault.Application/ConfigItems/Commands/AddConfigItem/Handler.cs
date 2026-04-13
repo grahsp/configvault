@@ -17,9 +17,9 @@ public sealed class Handler(
 	IConfigItemRepository configurations,
 	IUnitOfWork uow,
 	TimeProvider time)
-	: ICommandHandler<Command, ConfigItemSummary>
+	: ICommandHandler<Command, Unit>
 {
-	public async Task<ConfigItemSummary> HandleAsync(Command command, CancellationToken ct)
+	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = await projects.GetByIdAsync(command.ProjectId, ct)
 		              ?? throw new ProjectNotFoundException(command.ProjectId);
@@ -43,7 +43,7 @@ public sealed class Handler(
 			throw new ConfigItemAlreadyExists(command.Key);
 		}
 		
-		return new ConfigItemSummary(item.Id, item.Key.Value);
+		return Unit.Value;
 	}
 }
 

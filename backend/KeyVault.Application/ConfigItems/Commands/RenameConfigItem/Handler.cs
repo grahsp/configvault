@@ -14,9 +14,9 @@ public class Handler(
 	IProjectRepository projects,
 	IConfigItemRepository configurations,
 	IUnitOfWork uow)
-	: ICommandHandler<Command, ConfigItemSummary>
+	: ICommandHandler<Command, Unit>
 {
-	public async Task<ConfigItemSummary> HandleAsync(Command command, CancellationToken ct)
+	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
 		var project = await projects.GetByIdAsync(command.ProjectId, ct)
 		    ?? throw new ProjectNotFoundException(command.ProjectId);
@@ -29,6 +29,6 @@ public class Handler(
 		configItem.SetKey(command.Key);
 		await uow.SaveChangesAsync(ct);
 
-		return new ConfigItemSummary(configItem.Id, configItem.Key.Value);
+		return Unit.Value;
 	}
 }
