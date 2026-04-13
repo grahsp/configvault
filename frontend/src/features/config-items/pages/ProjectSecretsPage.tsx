@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { EnvironmentDropdown } from '../../environments/components/EnvironmentDropdown'
+import type { Environment } from '../../environments/types'
 import type { ProjectLayoutContext } from '../../projects/pages/ProjectLayout'
 import { AddConfigItemModal } from '../components/AddConfigItemModal'
 import { ConfigItemsTable } from '../components/ConfigItemsTable'
-import type { ConfigItem } from '../types/ConfigItem'
 import styles from './ProjectSecretsPage.module.css'
 
 export function ProjectSecretsPage() {
@@ -14,6 +14,7 @@ export function ProjectSecretsPage() {
   const [focusedConfigItemId, setFocusedConfigItemId] = useState<string | null>(
     null,
   )
+  const [selectedEnvironmentName, setSelectedEnvironmentName] = useState('')
   const selectedEnvironmentId = searchParams.get('environmentId') ?? ''
 
   function handleEnvironmentChange(environmentId: string) {
@@ -30,8 +31,15 @@ export function ProjectSecretsPage() {
     })
   }
 
-  function handleCreated(configItem: ConfigItem) {
-    setFocusedConfigItemId(configItem.id)
+  const handleSelectedEnvironmentChange = useCallback(
+    (environment: Environment | null) => {
+      setSelectedEnvironmentName(environment?.environmentName ?? '')
+    },
+    [],
+  )
+
+  function handleCreated() {
+    setFocusedConfigItemId(null)
     setIsAddModalOpen(false)
   }
 
@@ -50,6 +58,7 @@ export function ProjectSecretsPage() {
               <span className={styles.environmentPickerLabel}>Environment</span>
               <EnvironmentDropdown
                 onEnvironmentChange={handleEnvironmentChange}
+                onSelectedEnvironmentChange={handleSelectedEnvironmentChange}
                 projectId={project.id}
                 selectedEnvironmentId={selectedEnvironmentId}
               />
@@ -65,6 +74,7 @@ export function ProjectSecretsPage() {
         </div>
 
         <ConfigItemsTable
+          environmentName={selectedEnvironmentName}
           focusedConfigItemId={focusedConfigItemId}
           onAddConfigItem={() => setIsAddModalOpen(true)}
           projectId={project.id}
@@ -73,6 +83,7 @@ export function ProjectSecretsPage() {
 
       {isAddModalOpen ? (
         <AddConfigItemModal
+          environmentName={selectedEnvironmentName}
           onCancel={() => setIsAddModalOpen(false)}
           onCreated={handleCreated}
           projectId={project.id}

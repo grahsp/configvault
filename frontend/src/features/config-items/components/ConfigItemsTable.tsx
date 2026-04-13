@@ -10,20 +10,25 @@ import { DeleteConfigItemDialog } from './DeleteConfigItemDialog'
 import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemsTableProps {
+  environmentName: string
   focusedConfigItemId?: string | null
   onAddConfigItem: () => void
   projectId: string
 }
 
 export function ConfigItemsTable({
+  environmentName,
   focusedConfigItemId,
   onAddConfigItem,
   projectId,
 }: ConfigItemsTableProps) {
   const { addToast } = useToast()
-  const configItemsQuery = useConfigItems(projectId)
+  const configItemsQuery = useConfigItems(projectId, environmentName)
   const configItems = configItemsQuery.data ?? []
-  const renameConfigItemMutation = useRenameConfigItem(projectId)
+  const renameConfigItemMutation = useRenameConfigItem(
+    projectId,
+    environmentName,
+  )
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftKey, setDraftKey] = useState('')
   const [configItemPendingDelete, setConfigItemPendingDelete] =
@@ -68,7 +73,7 @@ export function ConfigItemsTable({
     }
   }
 
-  if (configItemsQuery.isPending) {
+  if (!environmentName || configItemsQuery.isLoading) {
     return (
       <div className={styles.state} role="status">
         <p className={styles.stateTitle}>Loading secrets...</p>
@@ -167,6 +172,7 @@ export function ConfigItemsTable({
       {configItemPendingDelete ? (
         <DeleteConfigItemDialog
           configItem={configItemPendingDelete}
+          environmentName={environmentName}
           onCancel={() => setConfigItemPendingDelete(null)}
           projectId={projectId}
         />

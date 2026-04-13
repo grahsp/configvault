@@ -56,24 +56,29 @@ function createDeferred<T>() {
   return { promise, reject, resolve }
 }
 
-function getCachedConfigItems(queryClient: QueryClient, projectId: string) {
+function getCachedConfigItems(
+  queryClient: QueryClient,
+  projectId: string,
+  environmentName: string,
+) {
   return queryClient.getQueryData<ConfigItem[]>(
-    configItemQueryKeys.list(projectId),
+    configItemQueryKeys.list(projectId, environmentName),
   )
 }
 
 describe('config item hooks', () => {
   const projectId = 'project-1'
+  const environmentName = 'production'
   const existingConfigItems: ConfigItem[] = [
     {
       id: 'config-1',
       key: 'API_KEY',
-      createdAt: '2026-04-12T10:00:00.000Z',
+      hasValue: true,
     },
     {
       id: 'config-2',
       key: 'DATABASE_URL',
-      createdAt: '2026-04-12T11:00:00.000Z',
+      hasValue: false,
     },
   ]
 
@@ -84,84 +89,133 @@ describe('config item hooks', () => {
   it('does not fetch config items when the project id is empty', async () => {
     const queryClient = createTestQueryClient()
 
-    renderHook(() => useConfigItems(''), {
+    renderHook(() => useConfigItems('', environmentName), {
       wrapper: createWrapper(queryClient),
     })
 
     await waitFor(() => expect(apiMocks.getConfigItems).not.toHaveBeenCalled())
   })
 
-  it('fetches config items for a project', async () => {
+  it('does not fetch config items when the environment name is empty', async () => {
+    const queryClient = createTestQueryClient()
+
+    renderHook(() => useConfigItems(projectId, ''), {
+      wrapper: createWrapper(queryClient),
+    })
+
+    await waitFor(() => expect(apiMocks.getConfigItems).not.toHaveBeenCalled())
+  })
+
+  it('fetches config items for a project environment', async () => {
     const queryClient = createTestQueryClient()
     apiMocks.getConfigItems.mockResolvedValue(existingConfigItems)
 
-    const { result } = renderHook(() => useConfigItems(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useConfigItems(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     await waitFor(() => expect(result.current.data).toEqual(existingConfigItems))
     expect(apiMocks.getConfigItems).toHaveBeenCalledWith(
       expect.any(Object),
       projectId,
+      environmentName,
     )
   })
 
-  it('optimistically adds a config item and replaces it with the created item', async () => {
+  it('uses separate cache entries for each environment', async () => {
     const queryClient = createTestQueryClient()
-    const deferredCreate = createDeferred<ConfigItem>()
-    const createdConfigItem: ConfigItem = {
-      id: 'config-3',
-      key: 'NEW_KEY',
-      createdAt: '2026-04-12T12:00:00.000Z',
-    }
+    apiMocks.getConfigItems.mockResolvedValue(existingConfigItems)
+
+    const { rerender } = renderHook(
+      ({ nextEnvironmentName }) =>
+        useConfigItems(projectId, nextEnvironmentName),
+      {
+        initialProps: { nextEnvironmentName: environmentName },
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await waitFor(() => expect(apiMocks.getConfigItems).toHaveBeenCalledTimes(1))
+
+    const stagingConfigItems: ConfigItem[] = [
+      {
+        id: 'config-3',
+        key: 'STRIPE_KEY',
+        hasValue: true,
+      },
+    ]
+    apiMocks.getConfigItems.mockResolvedValue(stagingConfigItems)
+    rerender({ nextEnvironmentName: 'staging' })
+
+    await waitFor(() => expect(apiMocks.getConfigItems).toHaveBeenCalledTimes(2))
+    expect(
+      getCachedConfigItems(queryClient, projectId, environmentName),
+    ).toEqual(existingConfigItems)
+    expect(getCachedConfigItems(queryClient, projectId, 'staging')).toEqual(
+      stagingConfigItems,
+    )
+  })
+
+  it('optimistically adds a config item and refetches the list', async () => {
+    const queryClient = createTestQueryClient()
+    const deferredCreate = createDeferred<void>()
     apiMocks.createConfigItem.mockReturnValue(deferredCreate.promise)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useCreateConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useCreateConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() => result.current.mutate('NEW_KEY'))
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual([
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual([
         ...existingConfigItems,
-        expect.objectContaining({ key: 'NEW_KEY' }),
+        expect.objectContaining({ hasValue: false, key: 'NEW_KEY' }),
       ]),
     )
 
     await act(async () => {
-      deferredCreate.resolve(createdConfigItem)
+      deferredCreate.resolve(undefined)
       await deferredCreate.promise
     })
 
-    await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toContainEqual(
-        createdConfigItem,
-      ),
-    )
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 
   it('restores the previous list when create fails', async () => {
     const queryClient = createTestQueryClient()
-    const deferredCreate = createDeferred<ConfigItem>()
+    const deferredCreate = createDeferred<void>()
     apiMocks.createConfigItem.mockReturnValue(deferredCreate.promise)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useCreateConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useCreateConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() => result.current.mutate('NEW_KEY'))
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toHaveLength(3),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toHaveLength(3),
     )
 
     await act(async () => {
@@ -170,27 +224,26 @@ describe('config item hooks', () => {
     })
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual(
-        existingConfigItems,
-      ),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual(existingConfigItems),
     )
   })
 
-  it('optimistically renames a config item and stores the server result', async () => {
+  it('optimistically renames a config item and refetches the list', async () => {
     const queryClient = createTestQueryClient()
-    const renamedConfigItem: ConfigItem = {
-      ...existingConfigItems[0],
-      key: 'RENAMED_KEY',
-    }
-    apiMocks.renameConfigItem.mockResolvedValue(renamedConfigItem)
+    apiMocks.renameConfigItem.mockResolvedValue(undefined)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useRenameConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useRenameConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() =>
       result.current.mutate({
@@ -200,9 +253,12 @@ describe('config item hooks', () => {
     )
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toContainEqual(
-        renamedConfigItem,
-      ),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toContainEqual({
+        ...existingConfigItems[0],
+        key: 'RENAMED_KEY',
+      }),
     )
     expect(apiMocks.renameConfigItem).toHaveBeenCalledWith(
       expect.any(Object),
@@ -214,16 +270,19 @@ describe('config item hooks', () => {
 
   it('restores the previous list when rename fails', async () => {
     const queryClient = createTestQueryClient()
-    const deferredRename = createDeferred<ConfigItem>()
+    const deferredRename = createDeferred<void>()
     apiMocks.renameConfigItem.mockReturnValue(deferredRename.promise)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useRenameConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useRenameConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() =>
       result.current.mutate({
@@ -233,9 +292,9 @@ describe('config item hooks', () => {
     )
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)?.[0].key).toBe(
-        'RENAMED_KEY',
-      ),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName)?.[0].key,
+      ).toBe('RENAMED_KEY'),
     )
 
     await act(async () => {
@@ -244,9 +303,9 @@ describe('config item hooks', () => {
     })
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual(
-        existingConfigItems,
-      ),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual(existingConfigItems),
     )
   })
 
@@ -254,20 +313,23 @@ describe('config item hooks', () => {
     const queryClient = createTestQueryClient()
     apiMocks.deleteConfigItem.mockResolvedValue(undefined)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useDeleteConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useDeleteConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() => result.current.mutate('config-1'))
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual([
-        existingConfigItems[1],
-      ]),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual([existingConfigItems[1]]),
     )
     expect(apiMocks.deleteConfigItem).toHaveBeenCalledWith(
       expect.any(Object),
@@ -281,20 +343,23 @@ describe('config item hooks', () => {
     const deferredDelete = createDeferred<void>()
     apiMocks.deleteConfigItem.mockReturnValue(deferredDelete.promise)
     queryClient.setQueryData(
-      configItemQueryKeys.list(projectId),
+      configItemQueryKeys.list(projectId, environmentName),
       existingConfigItems,
     )
 
-    const { result } = renderHook(() => useDeleteConfigItem(projectId), {
-      wrapper: createWrapper(queryClient),
-    })
+    const { result } = renderHook(
+      () => useDeleteConfigItem(projectId, environmentName),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    )
 
     act(() => result.current.mutate('config-1'))
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual([
-        existingConfigItems[1],
-      ]),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual([existingConfigItems[1]]),
     )
 
     await act(async () => {
@@ -303,9 +368,9 @@ describe('config item hooks', () => {
     })
 
     await waitFor(() =>
-      expect(getCachedConfigItems(queryClient, projectId)).toEqual(
-        existingConfigItems,
-      ),
+      expect(
+        getCachedConfigItems(queryClient, projectId, environmentName),
+      ).toEqual(existingConfigItems),
     )
   })
 })

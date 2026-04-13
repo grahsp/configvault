@@ -13,13 +13,13 @@ interface RenameConfigItemContext {
   previousConfigItems?: ConfigItem[]
 }
 
-export function useRenameConfigItem(projectId: string) {
+export function useRenameConfigItem(projectId: string, environmentName: string) {
   const client = useAuthenticatedConfigItemsClient()
   const queryClient = useQueryClient()
-  const queryKey = configItemQueryKeys.list(projectId)
+  const queryKey = configItemQueryKeys.list(projectId, environmentName)
 
   return useMutation<
-    ConfigItem,
+    void,
     Error,
     RenameConfigItemVariables,
     RenameConfigItemContext
@@ -46,16 +46,6 @@ export function useRenameConfigItem(projectId: string) {
     onError: (_error, _variables, context) => {
       queryClient.setQueryData(queryKey, context?.previousConfigItems)
     },
-    onSuccess: (renamedConfigItem) => {
-      queryClient.setQueryData<ConfigItem[]>(queryKey, (current = []) =>
-        current.map((configItem) =>
-          configItem.id === renamedConfigItem.id
-            ? renamedConfigItem
-            : configItem,
-        ),
-      )
-
-      return queryClient.invalidateQueries({ queryKey })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   })
 }

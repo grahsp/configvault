@@ -14,12 +14,12 @@ export function useAuthenticatedConfigItemsClient() {
   )
 }
 
-export function useConfigItems(projectId: string) {
+export function useConfigItems(projectId: string, environmentName: string) {
   const client = useAuthenticatedConfigItemsClient()
 
   return useQuery({
-    queryKey: configItemQueryKeys.list(projectId),
-    queryFn: () => getConfigItems(client, projectId),
-    enabled: Boolean(projectId),
+    queryKey: configItemQueryKeys.list(projectId, environmentName),
+    queryFn: () => getConfigItems(client, projectId, environmentName),
+    enabled: Boolean(projectId && environmentName),
   })
 }

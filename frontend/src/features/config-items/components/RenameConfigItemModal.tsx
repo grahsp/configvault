@@ -12,18 +12,23 @@ import styles from './ConfigItemsTable.module.css'
 
 interface RenameConfigItemModalProps {
   configItem: ConfigItem
+  environmentName: string
   onCancel: () => void
   projectId: string
 }
 
 export function RenameConfigItemModal({
   configItem,
+  environmentName,
   onCancel,
   projectId,
 }: RenameConfigItemModalProps) {
   const { addToast } = useToast()
   const [key, setKey] = useState(configItem.key)
-  const renameConfigItemMutation = useRenameConfigItem(projectId)
+  const renameConfigItemMutation = useRenameConfigItem(
+    projectId,
+    environmentName,
+  )
   const validationError = getConfigItemKeyValidationError(key)
   const uppercaseSuggestion = getUppercaseConfigItemKeySuggestion(key)
   const visibleError = validationError

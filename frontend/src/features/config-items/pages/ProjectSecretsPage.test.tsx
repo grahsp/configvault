@@ -52,13 +52,18 @@ const projectDetails = {
 
 const environmentsRoute = {
   path: '/projects/project-1/environments',
-  body: [],
+  body: [
+    {
+      id: 'environment-1',
+      environmentName: 'production',
+    },
+  ],
 }
 
 const apiKeyConfigItem = {
   id: 'config-1',
   key: 'API_KEY',
-  createdAt: '2026-04-12T10:00:00.000Z',
+  hasValue: true,
 }
 
 const publicKeyConfigItem = {
@@ -68,7 +73,7 @@ const publicKeyConfigItem = {
 
 describe('ProjectSecretsPage', () => {
   it('renders on the project secrets route', async () => {
-    mockFetchSequence([
+    const fetchMock = mockFetchSequence([
       {
         path: '/projects/project-1',
         body: projectDetails,
@@ -86,6 +91,12 @@ describe('ProjectSecretsPage', () => {
       await screen.findByRole('heading', { name: 'Secrets' }),
     ).toBeInTheDocument()
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/projects/project-1/config-items?environment=production',
+      ),
+      expect.any(Object),
+    )
   })
 
   it('shows the secrets loading state while config items load', async () => {
@@ -153,12 +164,12 @@ describe('ProjectSecretsPage', () => {
           {
             id: 'config-1',
             key: 'API_KEY',
-            createdAt: '2026-04-12T10:00:00.000Z',
+            hasValue: true,
           },
           {
             id: 'config-2',
             key: 'DATABASE_URL',
-            createdAt: '2026-04-12T10:01:00.000Z',
+            hasValue: false,
           },
         ],
       },
@@ -229,11 +240,7 @@ describe('ProjectSecretsPage', () => {
       {
         path: '/projects/project-1/config-items',
         method: 'POST',
-        body: {
-          id: 'config-1',
-          key: 'API_KEY',
-          createdAt: '2026-04-12T10:00:00.000Z',
-        },
+        status: 204,
       },
       {
         path: '/projects/project-1/config-items',
@@ -241,7 +248,7 @@ describe('ProjectSecretsPage', () => {
           {
             id: 'config-1',
             key: 'API_KEY',
-            createdAt: '2026-04-12T10:00:00.000Z',
+            hasValue: false,
           },
         ],
       },
@@ -279,7 +286,7 @@ describe('ProjectSecretsPage', () => {
       {
         path: '/projects/project-1/config-items/config-1',
         method: 'PATCH',
-        body: publicKeyConfigItem,
+        status: 204,
       },
       {
         path: '/projects/project-1/config-items',
@@ -466,7 +473,7 @@ describe('ProjectSecretsPage', () => {
       {
         path: '/projects/project-1/config-items/config-1',
         method: 'PATCH',
-        body: publicKeyConfigItem,
+        status: 204,
       },
       {
         path: '/projects/project-1/config-items',
@@ -513,7 +520,7 @@ describe('ProjectSecretsPage', () => {
           {
             id: 'config-1',
             key: 'API_KEY',
-            createdAt: '2026-04-12T10:00:00.000Z',
+            hasValue: true,
           },
         ],
       },

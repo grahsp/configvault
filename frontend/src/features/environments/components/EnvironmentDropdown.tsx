@@ -17,6 +17,7 @@ import styles from './EnvironmentDropdown.module.css'
 
 interface EnvironmentDropdownProps {
   onEnvironmentChange: (environmentId: string) => void
+  onSelectedEnvironmentChange?: (environment: Environment | null) => void
   projectId: string
   selectedEnvironmentId: string
 }
@@ -80,6 +81,7 @@ function environmentReducer(
 
 export function EnvironmentDropdown({
   onEnvironmentChange,
+  onSelectedEnvironmentChange,
   projectId,
   selectedEnvironmentId,
 }: EnvironmentDropdownProps) {
@@ -126,6 +128,10 @@ export function EnvironmentDropdown({
   useEffect(() => {
     onEnvironmentChangeRef.current = onEnvironmentChange
   }, [onEnvironmentChange])
+
+  useEffect(() => {
+    onSelectedEnvironmentChange?.(selectedEnvironment ?? null)
+  }, [onSelectedEnvironmentChange, selectedEnvironment])
 
   useEffect(() => {
     if (!projectId) {

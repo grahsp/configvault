@@ -1,7 +1,11 @@
 export interface ConfigItem {
   id: string
   key: string
-  createdAt: string
+  hasValue: boolean
+}
+
+export interface ConfigItemValue {
+  value: string
 }
 
 export type EditableConfigItem = ConfigItem & {

@@ -5,16 +5,15 @@ import { configItemQueryKeys } from './configItemQueryKeys'
 import { useAuthenticatedConfigItemsClient } from './useConfigItems'
 
 interface CreateConfigItemContext {
-  optimisticId: string
   previousConfigItems?: ConfigItem[]
 }
 
-export function useCreateConfigItem(projectId: string) {
+export function useCreateConfigItem(projectId: string, environmentName: string) {
   const client = useAuthenticatedConfigItemsClient()
   const queryClient = useQueryClient()
-  const queryKey = configItemQueryKeys.list(projectId)
+  const queryKey = configItemQueryKeys.list(projectId, environmentName)
 
-  return useMutation<ConfigItem, Error, string, CreateConfigItemContext>({
+  return useMutation<void, Error, string, CreateConfigItemContext>({
     mutationFn: (key: string) => createConfigItem(client, projectId, key),
     onMutate: async (key) => {
       await queryClient.cancelQueries({ queryKey })
@@ -26,7 +25,7 @@ export function useCreateConfigItem(projectId: string) {
       const optimisticConfigItem: ConfigItem = {
         id: optimisticId,
         key,
-        createdAt: new Date().toISOString(),
+        hasValue: false,
       }
 
       queryClient.setQueryData<ConfigItem[]>(queryKey, (current = []) => [
@@ -34,20 +33,12 @@ export function useCreateConfigItem(projectId: string) {
         optimisticConfigItem,
       ])
 
-      return { optimisticId, previousConfigItems }
+      return { previousConfigItems }
     },
     onError: (_error, _key, context) => {
       queryClient.setQueryData(queryKey, context?.previousConfigItems)
     },
-    onSuccess: (createdConfigItem, _key, context) => {
-      queryClient.setQueryData<ConfigItem[]>(queryKey, (current = []) =>
-        current.map((configItem) =>
-          configItem.id === context.optimisticId
-            ? createdConfigItem
-            : configItem,
-        ),
-      )
-
+    onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey })
     },
   })

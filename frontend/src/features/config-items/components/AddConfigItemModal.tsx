@@ -3,24 +3,28 @@ import { useState } from 'react'
 import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
 import { useCreateConfigItem } from '../hooks/useCreateConfigItem'
-import type { ConfigItem } from '../types/ConfigItem'
 import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
 import styles from './ConfigItemsTable.module.css'
 
 interface AddConfigItemModalProps {
+  environmentName: string
   onCancel: () => void
-  onCreated: (configItem: ConfigItem) => void
+  onCreated: () => void
   projectId: string
 }
 
 export function AddConfigItemModal({
+  environmentName,
   onCancel,
   onCreated,
   projectId,
 }: AddConfigItemModalProps) {
   const { addToast } = useToast()
   const [key, setKey] = useState('')
-  const createConfigItemMutation = useCreateConfigItem(projectId)
+  const createConfigItemMutation = useCreateConfigItem(
+    projectId,
+    environmentName,
+  )
   const validationError = getConfigItemKeyValidationError(key)
   const visibleError = validationError
 
@@ -32,11 +36,9 @@ export function AddConfigItemModal({
     }
 
     try {
-      const createdConfigItem = await createConfigItemMutation.mutateAsync(
-        key.trim(),
-      )
+      await createConfigItemMutation.mutateAsync(key.trim())
       addToast({ message: 'Secret created', type: 'success' })
-      onCreated(createdConfigItem)
+      onCreated()
     } catch (error) {
       addToast({
         message: getErrorMessage(error, 'Failed to create secret'),

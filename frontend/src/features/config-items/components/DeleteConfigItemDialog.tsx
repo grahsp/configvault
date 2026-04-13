@@ -6,17 +6,19 @@ import styles from './ConfigItemsTable.module.css'
 
 interface DeleteConfigItemDialogProps {
   configItem: ConfigItem
+  environmentName: string
   onCancel: () => void
   projectId: string
 }
 
 export function DeleteConfigItemDialog({
   configItem,
+  environmentName,
   onCancel,
   projectId,
 }: DeleteConfigItemDialogProps) {
   const { addToast } = useToast()
-  const deleteConfigItemMutation = useDeleteConfigItem(projectId)
+  const deleteConfigItemMutation = useDeleteConfigItem(projectId, environmentName)
 
   async function handleConfirm() {
     try {

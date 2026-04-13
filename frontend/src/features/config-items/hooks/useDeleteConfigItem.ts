@@ -8,10 +8,10 @@ interface DeleteConfigItemContext {
   previousConfigItems?: ConfigItem[]
 }
 
-export function useDeleteConfigItem(projectId: string) {
+export function useDeleteConfigItem(projectId: string, environmentName: string) {
   const client = useAuthenticatedConfigItemsClient()
   const queryClient = useQueryClient()
-  const queryKey = configItemQueryKeys.list(projectId)
+  const queryKey = configItemQueryKeys.list(projectId, environmentName)
 
   return useMutation<void, Error, string, DeleteConfigItemContext>({
     mutationFn: (configItemId: string) =>
