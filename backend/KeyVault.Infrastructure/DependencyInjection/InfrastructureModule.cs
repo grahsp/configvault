@@ -1,10 +1,12 @@
 using System.Reflection;
+using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Users;
 using KeyVault.Infrastructure.Configuration;
+using KeyVault.Infrastructure.Cryptography;
 using KeyVault.Infrastructure.Dispatchers;
 using KeyVault.Infrastructure.Persistence;
 using KeyVault.Infrastructure.Persistence.Repositories;
@@ -26,6 +28,16 @@ public static class InfrastructureModule
 				"Database connection string must be configured!")
 			.ValidateOnStart();
 
+		services.AddOptions<EncryptionOptions>()
+			.Bind(configuration.GetSection(EncryptionOptions.Section))
+			.Validate(option =>
+					!string.IsNullOrWhiteSpace(option.MasterKey),
+				"Encryption master key must be configured!")
+			.Validate(option =>
+					IsValidMasterKey(option.MasterKey),
+				"Encryption master key must be a base64-encoded 32 byte value!")
+			.ValidateOnStart();
+
 		services.AddDbContext<AppDbContext>((sp, options) =>
 		{
 			var database = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
@@ -44,6 +56,10 @@ public static class InfrastructureModule
 		services.AddScoped<IUserRepository, EfUserRepository>();
 		services.AddScoped<IProjectRepository, EfProjectRepository>();
 		services.AddScoped<IConfigItemRepository, EfConfigItemRepository>();
+
+		services.AddSingleton<IAeadEncryption, AesGcmEncryption>();
+		services.AddSingleton<IMasterKeyProvider, ConfigurationMasterKeyProvider>();
+		services.AddSingleton<IEnvelopeEncryptionService, EnvelopeEncryptionService>();
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 
@@ -105,6 +121,21 @@ public static class InfrastructureModule
 
 				services.AddScoped(wrapperInterface, wrapperType);
 			}
+		}
+	}
+
+	private static bool IsValidMasterKey(string? value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return false;
+
+		try
+		{
+			return Convert.FromBase64String(value).Length == 32;
+		}
+		catch (FormatException)
+		{
+			return false;
 		}
 	}
 }

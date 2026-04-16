@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Domain;
 
 namespace KeyVault.Infrastructure.Cryptography;

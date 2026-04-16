@@ -1,3 +1,4 @@
+using KeyVault.Application.Abstractions.Cryptography;
 using Microsoft.Extensions.Options;
 
 namespace KeyVault.Infrastructure.Cryptography;
