@@ -26,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	
 	public DbSet<ProjectMember> ProjectMembers { get; set; }
 	IQueryable<ProjectMember> IReadDbContext.ProjectMembers => ProjectMembers;
+
+	public DbSet<ProjectDataKey> ProjectDataKeys { get; set; }
 	
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

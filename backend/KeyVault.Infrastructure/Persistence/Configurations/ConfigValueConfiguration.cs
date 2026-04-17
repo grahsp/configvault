@@ -1,3 +1,4 @@
+using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -23,7 +24,11 @@ public class ConfigValueConfiguration : IEntityTypeConfiguration<ConfigValue>
 			.OnDelete(DeleteBehavior.Cascade);
 
 		builder.Property(x => x.Value)
-			.HasMaxLength(256);
+			.IsRequired()
+			.HasColumnType("bytea")
+			.HasConversion(
+				value => value.Payload.ToArray(),
+				payload => EncryptedValue.FromPayload(payload));
 
 		builder.Property(x => x.LastModifiedBy)
 			.IsRequired();
