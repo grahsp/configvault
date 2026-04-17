@@ -9,6 +9,11 @@ public sealed class Project
 	public Guid Id { get; private init; }
 
 	public string Name { get; private set; } = null!;
+
+	private readonly List<ProjectDataKey> _dataKeys = [];
+	public IReadOnlyList<ProjectDataKey> DataKeys => _dataKeys;
+	public ProjectDataKey CurrentDataKey =>
+		_dataKeys.OrderByDescending(x => x.CreatedAt).First();
 	
 	private readonly List<Environment> _environments = [];
 	public IReadOnlyList<Environment> Environments => _environments;
@@ -20,19 +25,22 @@ public sealed class Project
 
 	private Project() {}
 
-	public Project(Guid id, string name, DateTimeOffset now)
+	public Project(Guid id, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
 	{
+		ArgumentNullException.ThrowIfNull(encryptedDataKey);
+
 		Id = id;
 		Name = name;
 
 		CreatedAt = now;
+		_dataKeys.Add(ProjectDataKey.Create(Id, encryptedDataKey, now));
 	}
 
-	public static Project Create(Guid userId, string name, DateTimeOffset now)
+	public static Project Create(Guid userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		
-		var project = new Project(Guid.NewGuid(), name, now);
+		var project = new Project(Guid.NewGuid(), name, encryptedDataKey, now);
 		project.SetInitialOwner(userId);
 		project.SetInitialEnvironments();
 		

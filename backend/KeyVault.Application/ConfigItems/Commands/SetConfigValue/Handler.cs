@@ -1,3 +1,4 @@
+using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
 using KeyVault.Application.ConfigItems.Exceptions;
@@ -14,7 +15,8 @@ public sealed class Handler(
 	IProjectRepository projects,
 	IConfigItemRepository configurations,
 	IUnitOfWork uow,
-	TimeProvider time)
+	TimeProvider time,
+	IEnvelopeEncryptionService encryption)
 	: ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
@@ -33,7 +35,8 @@ public sealed class Handler(
 
 		project.RequireMemberWithRole(user.UserId, ProjectRole.Admin);
 		
-		configuration.SetValue(environment.Id, command.Value, user.UserId, time.GetUtcNow());
+		var encryptedValue = encryption.EncryptSecret(command.Value, project.CurrentDataKey.Value);
+		configuration.SetValue(environment.Id, encryptedValue, user.UserId, time.GetUtcNow());
 		await uow.SaveChangesAsync(ct);
 		
 		return Unit.Value;

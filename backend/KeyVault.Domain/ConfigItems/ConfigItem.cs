@@ -39,8 +39,10 @@ public sealed class ConfigItem
 		return value != null;
 	}
 
-	public void SetValue(Guid environmentId, string value, Guid actorId, DateTimeOffset now)
+	public void SetValue(Guid environmentId, EncryptedValue value, Guid actorId, DateTimeOffset now)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		if (TryGetValue(environmentId, out var existing))
 		{
 			existing.SetValue(value, actorId, now);

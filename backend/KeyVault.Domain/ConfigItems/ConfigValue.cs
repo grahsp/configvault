@@ -10,15 +10,17 @@ public sealed class ConfigValue
 	public Guid EnvironmentId { get; private init; }
 	public Environment Environment { get; private init; } = null!;
 	
-	public string Value { get; private set; } = null!;
+	public EncryptedValue Value { get; private set; } = null!;
 	
 	public Guid LastModifiedBy { get; private set; }
 	public DateTimeOffset LastModifiedAt { get; private set; }
 	
 	private ConfigValue() {}
 
-	internal ConfigValue(Guid configItemId, Guid environmentId, string value, Guid actorId, DateTimeOffset now)
+	internal ConfigValue(Guid configItemId, Guid environmentId, EncryptedValue value, Guid actorId, DateTimeOffset now)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		ConfigItemId = configItemId;
 		EnvironmentId = environmentId;
 		Value = value;
@@ -27,8 +29,10 @@ public sealed class ConfigValue
 		LastModifiedAt = now;
 	}
 
-	public void SetValue(string value, Guid actorId, DateTimeOffset now)
+	public void SetValue(EncryptedValue value, Guid actorId, DateTimeOffset now)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		Value = value;
 		LastModifiedBy = actorId;
 		LastModifiedAt = now;
