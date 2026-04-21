@@ -9,6 +9,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Database__ConnectionString: ${DB_CONNECTION_STRING}
+      Encryption__MasterKey: ${ENCRYPTION_MASTERKEY}
       IdentityProvider__Authority: ${IDP_AUTHORITY}
       IdentityProvider__Audience: ${IDP_AUDIENCE}
       Cors__AllowedOrigins__0: http://localhost:3000
