@@ -31,7 +31,7 @@ public sealed class Handler(
 		              ?? throw new ProjectNotFoundException(configuration.ProjectId);
 		
 		if (!project.TryGetEnvironment(command.EnvironmentName, out var environment))
-			throw new EnvironmentNotFound(command.EnvironmentName);
+			throw new EnvironmentNotFoundException(command.EnvironmentName);
 
 		project.RequireMemberWithRole(user.UserId, ProjectRole.Admin);
 		
@@ -41,10 +41,4 @@ public sealed class Handler(
 		
 		return Unit.Value;
 	}
-}
-
-public sealed class EnvironmentNotFound : NotFoundException
-{
-	public EnvironmentNotFound(Guid id) : base($"Environment '{id}' not found.") {}
-	public EnvironmentNotFound(string name) : base($"Environment '{name}' not found.") {}
 }

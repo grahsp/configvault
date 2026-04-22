@@ -1,5 +1,6 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
+using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
@@ -27,7 +28,7 @@ public sealed class Handler(
 		project.RequireMemberWithRole(user.UserId, ProjectRole.Admin);
 		
 		if (await configurations.ExistsAsync(command.ProjectId, command.Key, ct))
-			throw new ConfigItemAlreadyExists(command.Key);
+			throw new ConfigItemAlreadyExistsException(command.Key);
 		
 		var item = ConfigItem.Create(project.Id, command.Key, time.GetUtcNow());
 			
@@ -37,14 +38,15 @@ public sealed class Handler(
 		{
 			await uow.SaveChangesAsync(ct);
 		}
-		// TODO: check db exceptions more precisely
-		catch (DbUpdateException)
+		catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
 		{
-			throw new ConfigItemAlreadyExists(command.Key);
+			throw new ConfigItemAlreadyExistsException(command.Key);
 		}
 		
 		return Unit.Value;
 	}
-}
 
-public sealed class ConfigItemAlreadyExists(ConfigKey key) : ValidationException($"Config item with key '{key}' already exists in project.");
+	private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+		=> ex.InnerException?.GetType().FullName == "Npgsql.PostgresException" &&
+		   ex.InnerException.GetType().GetProperty("SqlState")?.GetValue(ex.InnerException)?.ToString() == "23505";
+}
