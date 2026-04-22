@@ -12,7 +12,7 @@ services:
       Encryption__MasterKey: ${ENCRYPTION_MASTERKEY}
       IdentityProvider__Authority: ${IDP_AUTHORITY}
       IdentityProvider__Audience: ${IDP_AUDIENCE}
-      Cors__AllowedOrigins__0: http://localhost:3000
+      Cors__AllowedOrigins: http://localhost:3000
     depends_on:
       db:
         condition: service_healthy

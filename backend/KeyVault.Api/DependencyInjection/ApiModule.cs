@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using KeyVault.Api.Configuration;
 using KeyVault.Api.Authentication;
+using KeyVault.Api.Configuration;
 
 namespace KeyVault.Api.DependencyInjection;
 
@@ -20,20 +20,13 @@ public static class ApiModule
 		
 		services.AddOptions<CorsOptions>()
 			.Bind(configuration.GetSection(CorsOptions.Section))
-			.Validate(options =>
-					options.AllowedOrigins.All(origin => !string.IsNullOrWhiteSpace(origin)),
-				"Cors allowed origins cannot contain empty values.")
-			.Validate(options =>
-					options.AllowedOrigins.All(origin => Uri.TryCreate(origin, UriKind.Absolute, out _)),
-				"Cors allowed origins must be absolute URLs.")
+			.Validate(
+				options => CorsOriginParser.TryParse(options.AllowedOrigins, out _),
+				"Cors allowed origins must be a comma-separated list of absolute URLs without empty values.")
 			.ValidateOnStart();
 
-		var allowedOrigins = configuration
-			.GetSection(CorsOptions.Section)
-			.Get<CorsOptions>()?
-			.AllowedOrigins
-			.Where(origin => !string.IsNullOrWhiteSpace(origin))
-			.ToArray() ?? [];
+		var allowedOrigins = CorsOriginParser.Parse(
+			configuration.GetSection(CorsOptions.Section).Get<CorsOptions>()?.AllowedOrigins);
 
 		services.AddCors(options =>
 		{
