@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+
 namespace KeyVault.Api.Configuration;
 
 public static class CorsOriginParser
@@ -6,8 +8,10 @@ public static class CorsOriginParser
 	{
 		if (!TryParse(allowedOrigins, out var origins))
 		{
-			throw new InvalidOperationException(
-				"Cors allowed origins must be a comma-separated list of absolute URLs without empty values.");
+			throw new OptionsValidationException(
+				nameof(CorsOptions),
+				typeof(CorsOptions),
+				["Cors allowed origins must be a comma-separated list of absolute URLs without empty values."]);
 		}
 
 		return origins;

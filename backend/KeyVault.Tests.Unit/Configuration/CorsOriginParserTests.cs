@@ -1,4 +1,5 @@
 using KeyVault.Api.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace KeyVault.Tests.Unit.Configuration;
 
@@ -26,9 +27,9 @@ public sealed class CorsOriginParserTests
 	[InlineData("http://localhost:3000,")]
 	[InlineData("http://localhost:3000,,https://app.example.com")]
 	[InlineData("relative-path")]
-	public void Parse_WithInvalidOrigins_ThrowsInvalidOperationException(string allowedOrigins)
+	public void Parse_WithInvalidOrigins_ThrowsOptionsValidationException(string allowedOrigins)
 	{
-		Assert.Throws<InvalidOperationException>(() => CorsOriginParser.Parse(allowedOrigins));
+		Assert.Throws<OptionsValidationException>(() => CorsOriginParser.Parse(allowedOrigins));
 	}
 
 	[Theory]

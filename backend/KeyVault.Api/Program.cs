@@ -38,14 +38,14 @@ public class Program
 			app.UseSwaggerUI();
 		}
 
+		app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 		app.UseHttpsRedirection();
 		app.UseCors(CorsOptions.PolicyName);
 
 		app.UseAuthentication();
 		app.UseMiddleware<CurrentUserMiddleware>();
 		app.UseAuthorization();
-
-		app.UseMiddleware<ExceptionHandlingMiddleware>();
 		
 		using (var scope = app.Services.CreateScope())
 		{
