@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using KeyVault.Domain;
+using KeyVault.Infrastructure.Cryptography.Exceptions;
 using KeyVault.Infrastructure.Cryptography;
 
 namespace KeyVault.Tests.Unit.Cryptography;
@@ -114,7 +115,7 @@ public sealed class AesGcmEncryptionTests
 		var encrypted = _sut.Encrypt(Encoding.UTF8.GetBytes("secret"), key);
 		var unsupportedVersion = MutatePayload(encrypted, payload => payload[CryptoTestConstants.VersionOffset] = CryptoTestConstants.UnsupportedVersion);
 
-		Assert.Throws<InvalidOperationException>(() => _sut.Decrypt(unsupportedVersion, key));
+		Assert.Throws<UnsupportedEncryptionVersionException>(() => _sut.Decrypt(unsupportedVersion, key));
 	}
 
 	[Theory]

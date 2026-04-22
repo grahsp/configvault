@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Domain;
+using KeyVault.Infrastructure.Cryptography.Exceptions;
 
 namespace KeyVault.Infrastructure.Cryptography;
 
@@ -29,7 +30,7 @@ public class AesGcmEncryption : IAeadEncryption
 		ValidateKey(key);
 		
 		if (encrypted.Version != CurrentVersion)
-			throw new InvalidOperationException($"Unsupported encryption version '{encrypted.Version}'.");
+			throw new UnsupportedEncryptionVersionException(encrypted.Version);
 		
 		var plainText = new byte[encrypted.Ciphertext.Length];
 		

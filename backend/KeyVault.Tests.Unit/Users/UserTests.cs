@@ -1,4 +1,5 @@
 using KeyVault.Domain.Users;
+using KeyVault.Domain.Users.Exceptions;
 using Microsoft.Extensions.Time.Testing;
 
 namespace KeyVault.Tests.Unit.Users;
@@ -46,8 +47,20 @@ public sealed class UserTests
 		var user = User.Create("entra", "user-123", now);
 		user.AddExternalLogin("github", "123");
 
-		var exception = Assert.Throws<Exception>(() => user.AddExternalLogin("github", "123"));
+		var exception = Assert.Throws<DuplicateExternalLoginException>(() => user.AddExternalLogin("github", "123"));
 
 		Assert.Equal("User already has an external login for this subject", exception.Message);
+	}
+
+	[Fact]
+	public void Activate_ShouldThrow_WhenUserAlreadyActivated()
+	{
+		var now = _time.GetUtcNow();
+		var user = User.Create("entra", "user-123", now);
+		user.Activate("User", now);
+
+		var exception = Assert.Throws<UserAlreadyActivatedException>(() => user.Activate("User", now.AddMinutes(1)));
+
+		Assert.Equal("User has already been activated", exception.Message);
 	}
 }

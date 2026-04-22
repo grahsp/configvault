@@ -1,3 +1,5 @@
+using KeyVault.Domain.Users.Exceptions;
+
 namespace KeyVault.Domain.Users;
 
 public sealed class User
@@ -32,7 +34,7 @@ public sealed class User
 	public void AddExternalLogin(string issuer, string subject)
 	{
 		if (_externalLogins.Any(l => l.Issuer == issuer && l.Subject == subject))
-			throw new Exception("User already has an external login for this subject");
+			throw new DuplicateExternalLoginException();
 		
 		var login = new ExternalLogin(issuer, subject, Id);
 		_externalLogins.Add(login);
@@ -43,7 +45,7 @@ public sealed class User
 		ArgumentException.ThrowIfNullOrEmpty(displayName);
 		
 		if (Status != UserStatus.Pending)
-			throw new Exception("User already has an already been activated");
+			throw new UserAlreadyActivatedException();
 		
 		DisplayName = displayName;
 		Status = UserStatus.Active;
