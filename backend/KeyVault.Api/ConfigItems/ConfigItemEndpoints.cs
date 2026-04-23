@@ -12,6 +12,7 @@ public static class ConfigItemEndpoints
 
 		configItems.MapGet("", GetConfigItems.Endpoint.Handle);
 		configItems.MapPost("", AddConfigItem.Endpoint.Handle);
+		configItems.MapPut("", SaveConfigItems.Endpoint.Handle);
 		configItems.MapPatch("/{configItemId}", RenameConfigItem.Endpoint.Handle);
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		
