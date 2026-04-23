@@ -68,7 +68,7 @@ describe('ProjectDetailPage', () => {
       screen.getByText('Credentials for production services'),
     ).toBeInTheDocument()
     expect(
-      await screen.findByRole('heading', { name: 'Secrets' }),
+      await screen.findByRole('heading', { name: 'Environment Variables' }),
     ).toBeInTheDocument()
   })
 
@@ -106,11 +106,8 @@ describe('ProjectDetailPage', () => {
     expect(secretsLink).toHaveAttribute('aria-current', 'page')
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
     expect(membersLink).not.toHaveAttribute('aria-current')
-    expect(screen.getByRole('button', { name: 'Add Secret' })).toBeInTheDocument()
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: 'Add Secret' })).toHaveLength(
-      2,
-    )
+    expect(screen.getByRole('button', { name: 'Add Secret' })).toBeInTheDocument()
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -187,7 +184,9 @@ describe('ProjectDetailPage', () => {
       'href',
       '/projects/project-1/members?environmentId=env-staging',
     )
-    expect(screen.getByRole('button', { name: 'Add Secret' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Add Secret' }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders the members route directly', async () => {

@@ -1,6 +1,12 @@
 import type { ApiClient } from '../../../api/apiClient'
 import type { ConfigItem, ConfigItemValue } from '../types/ConfigItem'
 
+interface SaveConfigItemsUpdate {
+  configItemId: string
+  key?: string
+  value?: string
+}
+
 function buildConfigItemsPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/config-items`
 }
@@ -44,6 +50,23 @@ export function createConfigItem(
   return client.request<void>(buildConfigItemsPath(projectId), {
     method: 'POST',
     body: JSON.stringify({ key }),
+  })
+}
+
+export function saveConfigItems(
+  client: ApiClient,
+  projectId: string,
+  environmentName: string,
+  updates: SaveConfigItemsUpdate[],
+  deleteConfigItemIds: string[],
+) {
+  return client.request<void>(buildConfigItemsPath(projectId), {
+    method: 'PUT',
+    body: JSON.stringify({
+      environment: environmentName,
+      updates,
+      deleteConfigItemIds,
+    }),
   })
 }
 

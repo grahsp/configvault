@@ -1,5 +1,7 @@
-import { useState } from 'react'
-import { Link, Outlet, useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { EnvironmentDropdown } from '../../environments/components/EnvironmentDropdown'
+import type { Environment } from '../../environments/types'
 import { cx } from '../../../shared/utils/cx'
 import { ProjectDeleteDialog } from '../components/ProjectDeleteDialog'
 import { ProjectSubNav } from '../components/ProjectSubNav'
@@ -18,12 +20,38 @@ import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
 
 export function ProjectLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { projectId } = useParams()
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedEnvironmentName, setSelectedEnvironmentName] = useState('')
 
   const projectQuery = useProject(projectId ?? '')
   const deleteProjectMutation = useDeleteProject()
   const project = projectQuery.data
+  const selectedEnvironmentId = searchParams.get('environmentId') ?? ''
+  const isSecretsRoute = location.pathname.endsWith('/secrets')
+
+  function handleEnvironmentChange(environmentId: string) {
+    setSearchParams((currentParams) => {
+      const nextParams = new URLSearchParams(currentParams)
+
+      if (environmentId) {
+        nextParams.set('environmentId', environmentId)
+      } else {
+        nextParams.delete('environmentId')
+      }
+
+      return nextParams
+    })
+  }
+
+  const handleSelectedEnvironmentChange = useCallback(
+    (environment: Environment | null) => {
+      setSelectedEnvironmentName(environment?.environmentName ?? '')
+    },
+    [],
+  )
 
   function closeDeleteModal() {
     if (deleteProjectMutation.isPending) {
@@ -133,6 +161,17 @@ export function ProjectLayout() {
               </div>
 
               <div className={styles.actions}>
+                {isSecretsRoute ? (
+                  <div className={styles.environmentPicker}>
+                    <span className={styles.environmentLabel}>Environment</span>
+                    <EnvironmentDropdown
+                      onEnvironmentChange={handleEnvironmentChange}
+                      onSelectedEnvironmentChange={handleSelectedEnvironmentChange}
+                      projectId={project.id}
+                      selectedEnvironmentId={selectedEnvironmentId}
+                    />
+                  </div>
+                ) : null}
                 <button
                   className={cx(styles.button, styles.buttonDanger)}
                   disabled={deleteProjectMutation.isPending}
@@ -155,7 +194,7 @@ export function ProjectLayout() {
             ) : null}
 
             <ProjectSubNav projectId={project.id} />
-            <Outlet context={{ project }} />
+            <Outlet context={{ project, selectedEnvironmentName }} />
           </>
         ) : null}
       </section>
@@ -176,6 +215,7 @@ export function ProjectLayout() {
 
 export interface ProjectLayoutContext {
   project: ProjectDetails
+  selectedEnvironmentName: string
 }
 
 function ProjectNotFoundState() {

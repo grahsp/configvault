@@ -7,48 +7,52 @@ import styles from './ConfigItemsTable.module.css'
 interface ConfigItemRowProps {
   configItem: ConfigItem
   draftKey: string
-  draftValue: string
-  isRevealing: boolean
+  draftValue: string | null
   isEditing: boolean
+  isMarkedForDeletion: boolean
+  isRevealing: boolean
   isSaving: boolean
   isValueRevealed: boolean
-  revealedValue?: string
-  onDelete: (configItem: ConfigItem) => void
+  onDeleteToggle: (configItem: ConfigItem) => void
   onDraftKeyChange: (key: string) => void
   onDraftValueChange: (value: string) => void
   onCancelEdit: () => void
-  onEdit: (configItem: ConfigItem) => void
   onReveal: (configItem: ConfigItem) => void
   onSaveEdit: () => void
+  onStartValueEdit: (configItem: ConfigItem) => Promise<void> | void
+  revealedValue?: string
   shouldFocus?: boolean
   validationError?: string
 }
 
-const maskedValue = '****'
+const maskedValue = '************'
 const emptyValue = '(empty)'
 
 export function ConfigItemRow({
   configItem,
   draftKey,
   draftValue,
-  isRevealing,
   isEditing,
+  isMarkedForDeletion,
+  isRevealing,
   isSaving,
   isValueRevealed,
-  revealedValue,
   onCancelEdit,
-  onDelete,
+  onDeleteToggle,
   onDraftKeyChange,
   onDraftValueChange,
-  onEdit,
   onReveal,
   onSaveEdit,
+  onStartValueEdit,
+  revealedValue,
   shouldFocus = false,
   validationError,
 }: ConfigItemRowProps) {
   const keyCellRef = useRef<HTMLTableCellElement>(null)
+  const valueFieldRef = useRef<HTMLTextAreaElement>(null)
+  const shouldMoveCaretRef = useRef(false)
+  const isStartingValueEditRef = useRef(false)
   const errorId = `config-item-${configItem.id}-key-error`
-  const isSaveDisabled = isSaving || Boolean(validationError)
 
   useEffect(() => {
     if (shouldFocus && !isEditing) {
@@ -56,8 +60,21 @@ export function ConfigItemRow({
     }
   }, [isEditing, shouldFocus])
 
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Enter') {
+  useEffect(() => {
+    if (!shouldMoveCaretRef.current || draftValue === null) {
+      return
+    }
+
+    valueFieldRef.current?.focus()
+    const cursorPosition = draftValue.length
+    valueFieldRef.current?.setSelectionRange(cursorPosition, cursorPosition)
+    shouldMoveCaretRef.current = false
+  }, [draftValue])
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       onSaveEdit()
     }
@@ -69,6 +86,10 @@ export function ConfigItemRow({
   }
 
   function renderValue() {
+    if (isMarkedForDeletion) {
+      return ''
+    }
+
     if (isValueRevealed && revealedValue !== undefined) {
       return revealedValue
     }
@@ -76,108 +97,264 @@ export function ConfigItemRow({
     return configItem.hasValue ? maskedValue : emptyValue
   }
 
+  function renderEditingValue() {
+    if (isMarkedForDeletion) {
+      return ''
+    }
+
+    if (draftValue !== null) {
+      return draftValue
+    }
+
+    return configItem.hasValue ? maskedValue : ''
+  }
+
+  function handleValueFieldFocus() {
+    if (
+      !isEditing ||
+      isMarkedForDeletion ||
+      isSaving ||
+      !configItem.hasValue ||
+      draftValue !== null ||
+      isStartingValueEditRef.current
+    ) {
+      return
+    }
+
+    shouldMoveCaretRef.current = true
+    isStartingValueEditRef.current = true
+    void Promise.resolve(onStartValueEdit(configItem)).finally(() => {
+      isStartingValueEditRef.current = false
+    })
+  }
+
+  const isValueFieldLocked =
+    isEditing && configItem.hasValue && draftValue === null && !isMarkedForDeletion
+
   return (
-    <tr>
-      <th ref={keyCellRef} scope="row" tabIndex={shouldFocus ? -1 : undefined}>
-        {isEditing ? (
-          <div className={styles.inlineKeyField}>
-            <label>
-              <span className={styles.visuallyHidden}>Key</span>
-              <input
-                autoFocus
-                aria-describedby={validationError ? errorId : undefined}
-                aria-invalid={Boolean(validationError)}
-                disabled={isSaving}
-                onChange={(event) => onDraftKeyChange(event.target.value)}
-                onKeyDown={handleKeyDown}
-                type="text"
-                value={draftKey}
-              />
-            </label>
-            {validationError ? (
-              <span className={styles.inlineKeyError} id={errorId} role="alert">
-                {validationError}
-              </span>
-            ) : null}
-          </div>
-        ) : (
-          <span className={styles.configKey}>{configItem.key}</span>
-        )}
-      </th>
-      <td>
-        {isEditing ? (
-          <label className={styles.inlineValueField}>
-            <span className={styles.visuallyHidden}>Value</span>
-            <input
-              disabled={isSaving}
-              onChange={(event) => onDraftValueChange(event.target.value)}
-              onKeyDown={handleKeyDown}
-              type="text"
-              value={draftValue}
-            />
+    <tr
+      className={cx(
+        isEditing && styles.editingRow,
+        isMarkedForDeletion && styles.pendingDeleteRow,
+      )}
+    >
+      <th
+        className={styles.keyCell}
+        ref={keyCellRef}
+        scope="row"
+        tabIndex={shouldFocus ? -1 : undefined}
+      >
+        <div className={styles.fieldGroup}>
+          <label className={styles.visuallyHidden} htmlFor={`key-${configItem.id}`}>
+            Key
           </label>
-        ) : (
-          <span className={styles.maskedValue}>{renderValue()}</span>
-        )}
+          <input
+            aria-describedby={validationError ? errorId : undefined}
+            aria-invalid={Boolean(validationError)}
+            className={cx(
+              styles.textField,
+              !isEditing && styles.readonlyField,
+              isMarkedForDeletion && styles.markedForDeletionField,
+              validationError && styles.textFieldError,
+            )}
+            disabled={!isEditing || isSaving || isMarkedForDeletion}
+            id={`key-${configItem.id}`}
+            onChange={(event) => onDraftKeyChange(event.target.value)}
+            onKeyDown={handleKeyDown}
+            readOnly={!isEditing || isMarkedForDeletion}
+            type="text"
+            value={(isEditing ? draftKey : configItem.key)}
+          />
+          {isEditing && validationError ? (
+            <span className={styles.inlineKeyError} id={errorId} role="alert">
+              {validationError}
+            </span>
+          ) : null}
+        </div>
+      </th>
+      <td className={styles.valueCell}>
+        <label className={styles.visuallyHidden} htmlFor={`value-${configItem.id}`}>
+          Value
+        </label>
+        <textarea
+          className={cx(
+            styles.valueField,
+            !isEditing && styles.readonlyField,
+            isMarkedForDeletion && styles.markedForDeletionField,
+          )}
+          disabled={!isEditing || isSaving || isMarkedForDeletion}
+          id={`value-${configItem.id}`}
+          onClick={handleValueFieldFocus}
+          onFocus={handleValueFieldFocus}
+          onChange={(event) => onDraftValueChange(event.target.value)}
+          onKeyDown={handleKeyDown}
+          readOnly={!isEditing || isMarkedForDeletion || isValueFieldLocked}
+          ref={valueFieldRef}
+          rows={1}
+          value={isEditing ? renderEditingValue() : renderValue()}
+        />
       </td>
       <td className={styles.actionsColumn}>
         <div className={styles.rowActions}>
+          {configItem.hasValue ? (
+            <button
+              className={cx(
+                styles.iconAction,
+                styles.iconActionReveal,
+                isMarkedForDeletion && styles.iconActionRevealMuted,
+              )}
+              disabled={isRevealing}
+              onClick={() => onReveal(configItem)}
+              type="button"
+            >
+              <span className={styles.visuallyHidden}>
+                {isValueRevealed ? `Hide ${configItem.key}` : `Reveal ${configItem.key}`}
+              </span>
+              {isValueRevealed ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          ) : null}
           {isEditing ? (
-            <>
-              <button
-                className={cx(styles.rowAction, styles.rowActionPrimary)}
-                disabled={isSaveDisabled}
-                onClick={onSaveEdit}
-                type="button"
-              >
-                {isSaving ? 'Saving' : 'Save'}
-              </button>
-              <button
-                className={styles.rowAction}
-                disabled={isSaving}
-                onClick={onCancelEdit}
-                type="button"
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
-            <>
-              {configItem.hasValue ? (
-                <button
-                  aria-label={
-                    isValueRevealed
-                      ? `Hide ${configItem.key}`
-                      : `Reveal ${configItem.key}`
-                  }
-                  className={styles.rowAction}
-                  disabled={isRevealing}
-                  onClick={() => onReveal(configItem)}
-                  type="button"
-                >
-                  {isRevealing ? 'Revealing' : isValueRevealed ? 'Hide' : 'Reveal'}
-                </button>
-              ) : null}
-              <button
-                aria-label={`Edit ${configItem.key}`}
-                className={styles.rowAction}
-                onClick={() => onEdit(configItem)}
-                type="button"
-              >
-                Edit
-              </button>
-              <button
-                aria-label={`Delete ${configItem.key}`}
-                className={styles.rowAction}
-                onClick={() => onDelete(configItem)}
-                type="button"
-              >
-                Delete
-              </button>
-            </>
-          )}
+            <button
+              className={cx(
+                styles.iconAction,
+                styles.iconActionDelete,
+                isMarkedForDeletion && styles.iconActionDeleteActive,
+              )}
+              disabled={isSaving}
+              onClick={() => onDeleteToggle(configItem)}
+              type="button"
+            >
+              <span className={styles.visuallyHidden}>
+                {isMarkedForDeletion
+                  ? `Undo delete ${configItem.key}`
+                  : `Delete ${configItem.key}`}
+              </span>
+              {isMarkedForDeletion ? <UndoIcon /> : <TrashIcon />}
+            </button>
+          ) : null}
         </div>
       </td>
     </tr>
+  )
+}
+
+function EyeIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.iconGlyph}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M2.8 12c2.3-4.1 5.7-6.2 9.2-6.2s6.9 2.1 9.2 6.2c-2.3 4.1-5.7 6.2-9.2 6.2S5.1 16.1 2.8 12Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="3.1"
+        stroke="currentColor"
+        strokeWidth="1.9"
+      />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.iconGlyph}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M2.8 12c2.3-4.1 5.7-6.2 9.2-6.2s6.9 2.1 9.2 6.2c-2.3 4.1-5.7 6.2-9.2 6.2S5.1 16.1 2.8 12Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="3.1"
+        stroke="currentColor"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M4.5 4.5 19.5 19.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.iconGlyph}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M8.5 5.2h7"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M6.2 7.6h11.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M8 7.6v10.1c0 .8.6 1.4 1.4 1.4h5.2c.8 0 1.4-.6 1.4-1.4V7.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M10.2 10.2v6.1M13.8 10.2v6.1"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.9"
+      />
+    </svg>
+  )
+}
+
+function UndoIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.iconGlyph}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M9.2 8.4 5.8 11.8l3.4 3.4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M6.3 11.8h8.5a4.8 4.8 0 1 1 0 9.6h-2.4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+    </svg>
   )
 }

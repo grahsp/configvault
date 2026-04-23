@@ -42,6 +42,15 @@ function getMutationCalls(fetchMock: ReturnType<typeof vi.fn>, method: string) {
   return fetchMock.mock.calls.filter(([, init]) => init?.method === method)
 }
 
+function getBulkSaveCalls(fetchMock: ReturnType<typeof vi.fn>) {
+  return fetchMock.mock.calls.filter(
+    ([input, init]) =>
+      input.toString().includes('/config-items') &&
+      !input.toString().includes('/value') &&
+      init?.method === 'PUT',
+  )
+}
+
 function getValueEndpointCalls(fetchMock: ReturnType<typeof vi.fn>) {
   return fetchMock.mock.calls.filter(([input]) =>
     input.toString().includes('/value?'),
@@ -94,7 +103,7 @@ describe('ProjectSecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     expect(
-      await screen.findByRole('heading', { name: 'Secrets' }),
+      await screen.findByRole('heading', { name: 'Environment Variables' }),
     ).toBeInTheDocument()
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
@@ -150,7 +159,7 @@ describe('ProjectSecretsPage', () => {
 
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
 
-    await user.click(screen.getAllByRole('button', { name: 'Add Secret' })[1])
+    await user.click(screen.getByRole('button', { name: 'Add Secret' }))
 
     expect(
       screen.getByRole('dialog', { name: 'Add secret' }),
@@ -195,10 +204,10 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
 
     const apiKeyRow = within(table).getByRole('row', {
-      name: /API_KEY \*{4} Reveal Edit Delete/,
+      name: /Key API_KEY Value\*{12} Reveal/,
     })
     const databaseRow = within(table).getByRole('row', {
-      name: /DATABASE_URL \(empty\) Edit Delete/,
+      name: /Key DATABASE_URL Value\(empty\)/,
     })
 
     expect(apiKeyRow).toBeInTheDocument()
@@ -290,8 +299,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items/config-1',
-        method: 'PATCH',
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
         status: 204,
       },
       {
@@ -302,13 +311,11 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
     expect(screen.queryByRole('dialog', { name: 'Rename secret' })).not.toBeInTheDocument()
     await user.clear(screen.getByRole('textbox', { name: 'Key' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'PUBLIC_KEY')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret renamed')).toBeInTheDocument()
     expect(
@@ -316,10 +323,14 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items/config-1'),
+      expect.stringContaining('/projects/project-1/config-items'),
       expect.objectContaining({
-        method: 'PATCH',
-        body: JSON.stringify({ key: 'PUBLIC_KEY' }),
+        method: 'PUT',
+        body: JSON.stringify({
+          environment: 'production',
+          updates: [{ configItemId: 'config-1', key: 'PUBLIC_KEY' }],
+          deleteConfigItemIds: [],
+        }),
       }),
     )
   })
@@ -357,12 +368,12 @@ describe('ProjectSecretsPage', () => {
 
     expect(
       await screen.findByRole('row', {
-        name: /API_KEY secret-value Hide Edit Delete/,
+        name: /Key API_KEY Valuesecret-value Hide/,
       }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('row', {
-        name: /DATABASE_URL \*{4} Reveal Edit Delete/,
+        name: /Key DATABASE_URL Value\*{12} Reveal/,
       }),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
@@ -377,7 +388,7 @@ describe('ProjectSecretsPage', () => {
 
     expect(
       screen.getByRole('row', {
-        name: /API_KEY \*{4} Reveal Edit Delete/,
+        name: /Key API_KEY Value\*{12} Reveal/,
       }),
     ).toBeInTheDocument()
 
@@ -385,7 +396,7 @@ describe('ProjectSecretsPage', () => {
 
     expect(
       screen.getByRole('row', {
-        name: /API_KEY secret-value Hide Edit Delete/,
+        name: /Key API_KEY Valuesecret-value Hide/,
       }),
     ).toBeInTheDocument()
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
@@ -433,7 +444,7 @@ describe('ProjectSecretsPage', () => {
 
     expect(
       await screen.findByRole('row', {
-        name: /API_KEY production-secret-value Hide Edit Delete/,
+        name: /Key API_KEY Valueproduction-secret-value Hide/,
       }),
     ).toBeInTheDocument()
 
@@ -445,7 +456,7 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
     expect(
       await screen.findByRole('row', {
-        name: /API_KEY \*{4} Reveal Edit Delete/,
+        name: /Key API_KEY Value\*{12} Reveal/,
       }),
     ).toBeInTheDocument()
     expect(screen.queryByText('production-secret-value')).not.toBeInTheDocument()
@@ -458,7 +469,7 @@ describe('ProjectSecretsPage', () => {
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
   })
 
-  it('enters and cancels inline config item key and value editing', async () => {
+  it('enters and cancels section edit mode for config item keys and values', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -470,39 +481,51 @@ describe('ProjectSecretsPage', () => {
         path: '/projects/project-1/config-items',
         body: [apiKeyConfigItem],
       },
+      {
+        path: '/projects/project-1/config-items/config-1/value',
+        body: { value: 'secret-value' },
+      },
     ])
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
 
     const keyInput = screen.getByRole('textbox', { name: 'Key' })
     const valueInput = screen.getByRole('textbox', { name: 'Value' })
 
     expect(keyInput).toHaveValue('API_KEY')
-    expect(valueInput).toHaveValue('')
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(valueInput).toHaveValue('************')
     expect(
-      screen.queryByRole('button', { name: 'Delete API_KEY' }),
-    ).not.toBeInTheDocument()
+      screen.getByRole('button', { name: 'Save Changes' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reveal API_KEY' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete API_KEY' })).toBeInTheDocument()
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(0)
+
+    await user.click(valueInput)
+
+    expect(await screen.findByDisplayValue('secret-value')).toHaveFocus()
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue('secret-value')
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveProperty(
+      'selectionStart',
+      'secret-value'.length,
+    )
+    expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
 
     await user.clear(keyInput)
     await user.type(keyInput, 'PUBLIC_KEY')
     await user.type(valueInput, 'draft-value')
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.queryByRole('textbox', { name: 'Key' })).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('textbox', { name: 'Value' }),
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Value' })).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('API_KEY')
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue('************')
     expect(screen.getByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Delete API_KEY' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete API_KEY' })).not.toBeInTheDocument()
   })
 
   it('saves only a config item value when the key is unchanged', async () => {
@@ -524,37 +547,47 @@ describe('ProjectSecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items/config-1/value',
+        path: '/projects/project-1/config-items',
         method: 'PUT',
         status: 204,
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+          },
+        ],
       },
     ])
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
 
     const valueInput = screen.getByRole('textbox', { name: 'Value' })
 
     await user.type(valueInput, 'new-secret-value')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret value saved')).toBeInTheDocument()
     expect(
       await screen.findByRole('row', {
-        name: /API_KEY \*{4} Reveal Edit Delete/,
+        name: /Key API_KEY Value\*{12} Reveal/,
       }),
     ).toBeInTheDocument()
-    expect(getMutationCalls(fetchMock, 'PATCH')).toHaveLength(0)
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining(
-        '/projects/project-1/config-items/config-1/value?environment=production',
-      ),
+      expect.stringContaining('/projects/project-1/config-items'),
       expect.objectContaining({
         method: 'PUT',
-        body: JSON.stringify({ value: 'new-secret-value' }),
+        body: JSON.stringify({
+          environment: 'production',
+          updates: [{ configItemId: 'config-1', value: 'new-secret-value' }],
+          deleteConfigItemIds: [],
+        }),
       }),
     )
   })
@@ -572,34 +605,92 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items/config-1',
-        method: 'PATCH',
+        path: '/projects/project-1/config-items/config-1/value',
+        body: { value: 'secret-value' },
+      },
+      {
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
         status: 204,
       },
       {
         path: '/projects/project-1/config-items',
-        body: [publicKeyConfigItem],
-      },
-      {
-        path: '/projects/project-1/config-items/config-1/value',
-        method: 'PUT',
-        status: 204,
+        body: [
+          {
+            ...publicKeyConfigItem,
+            hasValue: true,
+          },
+        ],
       },
     ])
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.clear(screen.getByRole('textbox', { name: 'Key' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'PUBLIC_KEY')
+    await user.click(screen.getByRole('textbox', { name: 'Value' }))
+    await screen.findByDisplayValue('secret-value')
+    await user.clear(screen.getByRole('textbox', { name: 'Value' }))
     await user.type(screen.getByRole('textbox', { name: 'Value' }), 'new-value')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret updated')).toBeInTheDocument()
-    expect(getMutationCalls(fetchMock, 'PATCH')).toHaveLength(1)
-    expect(getMutationCalls(fetchMock, 'PUT')).toHaveLength(1)
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
+  })
+
+  it('saves a value change for one item and a deletion for another in the same edit action', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [
+          apiKeyConfigItem,
+          {
+            id: 'config-2',
+            key: 'DATABASE_URL',
+            hasValue: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [
+          {
+            id: 'config-2',
+            key: 'DATABASE_URL',
+            hasValue: true,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Delete API_KEY' }))
+    await user.type(
+      screen.getAllByRole('textbox', { name: 'Value' })[1],
+      'new-database-value',
+    )
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+    expect(await screen.findByText('Secrets updated')).toBeInTheDocument()
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
+    expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
+    expect(
+      await screen.findByRole('row', { name: /DATABASE_URL/ }),
+    ).toBeInTheDocument()
   })
 
   it('disables inline rename save for empty and space-containing keys', async () => {
@@ -619,22 +710,20 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
 
     const keyInput = screen.getByRole('textbox', { name: 'Key' })
 
     await user.clear(keyInput)
 
-    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
 
     await user.type(keyInput, 'API KEY')
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Key cannot contain spaces.',
     )
-    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
   })
 
   it('exits inline rename without saving unchanged keys', async () => {
@@ -653,18 +742,16 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
-    expect(screen.queryByRole('textbox', { name: 'Key' })).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('API_KEY')
     expect(screen.getByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
-    expect(getMutationCalls(fetchMock, 'PATCH')).toHaveLength(0)
-    expect(getMutationCalls(fetchMock, 'PUT')).toHaveLength(0)
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(0)
   })
 
-  it('shows inline rename API failures and keeps edit mode open', async () => {
+  it('shows rename API failures and keeps section edit mode open', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -678,8 +765,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items/config-1',
-        method: 'PATCH',
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
         body: { message: 'Rename rejected.' },
         status: 500,
       },
@@ -687,12 +774,10 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.clear(screen.getByRole('textbox', { name: 'Key' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'PUBLIC_KEY')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Rename rejected.',
@@ -702,7 +787,7 @@ describe('ProjectSecretsPage', () => {
     )
   })
 
-  it('supports inline rename keyboard shortcuts', async () => {
+  it('supports section edit keyboard shortcuts', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -715,8 +800,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items/config-1',
-        method: 'PATCH',
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
         status: 204,
       },
       {
@@ -727,30 +812,25 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.clear(screen.getByRole('textbox', { name: 'Key' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'PUBLIC_KEY')
     await user.keyboard('{Enter}')
 
     expect(await screen.findByText('Secret renamed')).toBeInTheDocument()
-    expect(getMutationCalls(fetchMock, 'PATCH')).toHaveLength(1)
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Edit PUBLIC_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
     await user.clear(screen.getByRole('textbox', { name: 'Key' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
     await user.keyboard('{Escape}')
 
-    expect(screen.queryByRole('textbox', { name: 'Key' })).not.toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Delete PUBLIC_KEY' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('PUBLIC_KEY')
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
   })
 
-  it('deletes a config item after confirmation', async () => {
+  it('marks a config item for deletion and deletes it on save', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -769,8 +849,8 @@ describe('ProjectSecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items/config-1',
-        method: 'DELETE',
+        path: '/projects/project-1/config-items',
+        method: 'PUT',
         status: 204,
       },
       {
@@ -781,25 +861,87 @@ describe('ProjectSecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Delete API_KEY' }),
-    )
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete API_KEY' }))
 
-    expect(
-      screen.getByRole('dialog', { name: 'Delete secret?' }),
-    ).toHaveTextContent('API_KEY')
+    const keyInput = screen.getByRole('textbox', { name: 'Key' })
+    const valueInput = screen.getByRole('textbox', { name: 'Value' })
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    expect(screen.getByRole('button', { name: 'Undo delete API_KEY' })).toBeInTheDocument()
+    expect(keyInput).toHaveValue('API_KEY')
+    expect(valueInput).toHaveValue('')
+    expect(getMutationCalls(fetchMock, 'DELETE')).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret deleted')).toBeInTheDocument()
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items/config-1'),
+      expect.stringContaining('/projects/project-1/config-items'),
       expect.objectContaining({
-        method: 'DELETE',
+        method: 'PUT',
+        body: JSON.stringify({
+          environment: 'production',
+          updates: [],
+          deleteConfigItemIds: ['config-1'],
+        }),
       }),
     )
+  })
+
+  it('undoes a pending deletion before save', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete API_KEY' }))
+
+    expect(screen.getByRole('button', { name: 'Undo delete API_KEY' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Undo delete API_KEY' }))
+
+    expect(screen.getByRole('button', { name: 'Delete API_KEY' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Value' })).toHaveValue('************')
+    expect(getMutationCalls(fetchMock, 'DELETE')).toHaveLength(0)
+  })
+
+  it('does not delete config items marked for deletion when edit mode is cancelled', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete API_KEY' }))
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Undo delete API_KEY' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete API_KEY' })).not.toBeInTheDocument()
+    expect(getMutationCalls(fetchMock, 'DELETE')).toHaveLength(0)
   })
 
   it('shows mutation error feedback', async () => {

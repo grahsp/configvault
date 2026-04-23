@@ -6,6 +6,7 @@ import {
   getConfigItemValue,
   getConfigItems,
   renameConfigItem,
+  saveConfigItems,
   upsertConfigItemValue,
 } from './configItemsApi'
 
@@ -49,6 +50,35 @@ describe('config items api', () => {
       {
         method: 'POST',
         body: JSON.stringify({ key: 'API_KEY' }),
+      },
+    )
+  })
+
+  it('saves config item updates and deletions with the environment name', async () => {
+    const client = createMockClient()
+    vi.mocked(client.request).mockResolvedValue(undefined)
+
+    await expect(
+      saveConfigItems(
+        client,
+        'project/with space',
+        'prod/eu west',
+        [{ configItemId: 'config-1', key: 'API_KEY', value: 'secret-value' }],
+        ['config-2'],
+      ),
+    ).resolves.toBeUndefined()
+
+    expect(client.request).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/config-items',
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          environment: 'prod/eu west',
+          updates: [
+            { configItemId: 'config-1', key: 'API_KEY', value: 'secret-value' },
+          ],
+          deleteConfigItemIds: ['config-2'],
+        }),
       },
     )
   })

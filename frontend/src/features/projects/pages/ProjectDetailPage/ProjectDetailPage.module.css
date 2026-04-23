@@ -98,6 +98,20 @@
   gap: 16px;
 }
 
+.environmentPicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.environmentLabel {
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .membersSection {
   display: grid;
   gap: 16px;
@@ -393,6 +407,11 @@
 
   .actions {
     justify-items: stretch;
+    width: 100%;
+  }
+
+  .environmentPicker {
+    justify-content: space-between;
   }
 
   .meta {
