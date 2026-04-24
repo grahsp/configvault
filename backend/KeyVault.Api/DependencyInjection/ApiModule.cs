@@ -32,6 +32,8 @@ public static class ApiModule
 		{
 			options.AddPolicy(CorsOptions.PolicyName, policy =>
 			{
+				Console.WriteLine("CORS: " + string.Join(',', allowedOrigins));
+				
 				if (allowedOrigins.Length == 0)
 				{
 					return;
