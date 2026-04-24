@@ -1,8 +1,9 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Authentication;
 using KeyVault.Application.ConfigItems;
-using KeyVault.Application.ConfigItems.Commands.GetConfigValue;
-using KeyVault.Application.ConfigItems.Commands.SetConfigValue;
+using GetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Handler;
+using GetConfigValueQuery = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Query;
+using ExecuteBatchProcessor = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Processor;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
@@ -10,8 +11,6 @@ using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Domain.Users;
 using Microsoft.Extensions.Time.Testing;
-using GetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Handler;
-using GetConfigValueQuery = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Query;
 using SetConfigValueCommand = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Command;
 using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Handler;
 
@@ -23,13 +22,8 @@ public sealed class ConfigValueEncryptionHandlerTests
 	public async Task SetConfigValue_ShouldEncryptPlaintextBeforeStoring()
 	{
 		var fixture = new Fixture();
-		var sut = new SetConfigValueHandler(
-			fixture.User,
-			fixture.Projects,
-			fixture.Configurations,
-			fixture.Uow,
-			fixture.Time,
-			fixture.Encryption);
+		var processor = fixture.CreateProcessor();
+		var sut = new SetConfigValueHandler(processor);
 		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret");
 
 		await sut.HandleAsync(command, CancellationToken.None);
@@ -98,6 +92,14 @@ public sealed class ConfigValueEncryptionHandlerTests
 			Projects.Project = Project;
 			Configurations.Configuration = Configuration;
 		}
+
+		public ExecuteBatchProcessor CreateProcessor()
+			=> new(
+				User,
+				Projects,
+				Configurations,
+				Uow,
+				new KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Executor(Encryption, Time));
 	}
 
 	private sealed class FakeUserContext : IUserContext
