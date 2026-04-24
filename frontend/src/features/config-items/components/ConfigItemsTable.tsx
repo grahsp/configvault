@@ -264,43 +264,38 @@ export function ConfigItemsTable({
     }
 
     const pendingDeletionIdSet = new Set(pendingDeletionIds)
-    const existingOperations = configItems
-      .map((configItem) => {
-        const draft = drafts[configItem.id]
-        const nextKey = draft?.key ?? configItem.key
-        const nextValue = draft?.value ?? ''
-        const trimmedKey = nextKey.trim()
+    const existingOperations: ConfigItemBatchOperation[] = []
 
-        return {
-          isPendingDelete: pendingDeletionIdSet.has(configItem.id),
-          operations: [
-            ...(trimmedKey !== configItem.key
-              ? [
-                  {
-                    type: 'rename' as const,
-                    configItemId: configItem.id,
-                    key: trimmedKey,
-                  },
-                ]
-              : []),
-            ...(nextValue !== ''
-              ? [
-                  {
-                    type: 'set-value' as const,
-                    configItemId: configItem.id,
-                    value: nextValue,
-                  },
-                ]
-              : []),
-          ],
+    for (const configItem of configItems) {
+      const draft = drafts[configItem.id]
+      const nextKey = draft?.key ?? configItem.key
+      const nextValue = draft?.value ?? ''
+      const trimmedKey = nextKey.trim()
+
+      if (pendingDeletionIdSet.has(configItem.id)) {
+        existingOperations.push({
+          type: 'delete',
           configItemId: configItem.id,
-        }
-      })
-      .flatMap(({ isPendingDelete, operations, configItemId }) =>
-        isPendingDelete
-          ? [{ type: 'delete' as const, configItemId }]
-          : operations,
-      )
+        })
+        continue
+      }
+
+      if (trimmedKey !== configItem.key) {
+        existingOperations.push({
+          type: 'rename',
+          configItemId: configItem.id,
+          key: trimmedKey,
+        })
+      }
+
+      if (nextValue !== '') {
+        existingOperations.push({
+          type: 'set-value',
+          configItemId: configItem.id,
+          value: nextValue,
+        })
+      }
+    }
 
     const createOperations: ConfigItemBatchOperation[] = newConfigItems.map(
       (configItem) => ({
