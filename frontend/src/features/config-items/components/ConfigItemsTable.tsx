@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
+import type { ConfigItemBatchOperation } from '../api/configItemsApi'
 import { useConfigItems } from '../hooks/useConfigItems'
 import { useRevealConfigItemValue } from '../hooks/useRevealConfigItemValue'
 import { useSaveConfigItems } from '../hooks/useSaveConfigItems'
 import type { ConfigItem } from '../types/ConfigItem'
 import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
+import { AddConfigItemModal } from './AddConfigItemModal'
 import { ConfigItemRow } from './ConfigItemRow'
 import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemsTableProps {
   environmentName: string
   focusedConfigItemId?: string | null
-  onAddConfigItem: () => void
+  onFocusConfigItem: (configItemId: string | null) => void
   projectId: string
 }
 
@@ -21,10 +23,16 @@ interface ConfigItemDraft {
   value: string | null
 }
 
+interface NewConfigItemDraft {
+  id: string
+  key: string
+  value: string
+}
+
 export function ConfigItemsTable({
   environmentName,
   focusedConfigItemId,
-  onAddConfigItem,
+  onFocusConfigItem,
   projectId,
 }: ConfigItemsTableProps) {
   const { addToast } = useToast()
@@ -36,7 +44,9 @@ export function ConfigItemsTable({
   )
   const saveConfigItemsMutation = useSaveConfigItems(projectId, environmentName)
   const [isEditing, setIsEditing] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [drafts, setDrafts] = useState<Record<string, ConfigItemDraft>>({})
+  const [newConfigItems, setNewConfigItems] = useState<NewConfigItemDraft[]>([])
   const [pendingDeletionIds, setPendingDeletionIds] = useState<string[]>([])
   const [revealedValues, setRevealedValues] = useState<Record<string, string>>(
     {},
@@ -48,27 +58,33 @@ export function ConfigItemsTable({
   const resetRevealMutation = revealConfigItemValueMutation.reset
   const resetSaveMutation = saveConfigItemsMutation.reset
   const isSaving = saveConfigItemsMutation.isPending
+  const tableConfigItems = useMemo(
+    () => [...configItems, ...newConfigItems.map(toLocalConfigItem)],
+    [configItems, newConfigItems],
+  )
 
   const validationErrors = useMemo(
     () =>
       Object.fromEntries(
-        configItems.map((configItem) => [
+        tableConfigItems.map((configItem) => [
           configItem.id,
           pendingDeletionIds.includes(configItem.id)
             ? undefined
             : getConfigItemKeyValidationError(
-                drafts[configItem.id]?.key ?? configItem.key,
+                getDraftKey(configItem, drafts, newConfigItems),
               ),
         ]),
       ),
-    [configItems, drafts, pendingDeletionIds],
+    [drafts, newConfigItems, pendingDeletionIds, tableConfigItems],
   )
 
   const hasValidationError = Object.values(validationErrors).some(Boolean)
 
   useEffect(() => {
     setIsEditing(false)
+    setIsAddModalOpen(false)
     setDrafts({})
+    setNewConfigItems([])
     setPendingDeletionIds([])
     setRevealedValues({})
     setVisibleRevealedValues({})
@@ -100,19 +116,56 @@ export function ConfigItemsTable({
     setIsEditing(true)
   }
 
+  function handleOpenAddConfigItem() {
+    if (!isEditing) {
+      resetSaveMutation()
+      setDrafts(createDrafts(configItems))
+      setPendingDeletionIds([])
+      setIsEditing(true)
+    }
+
+    setIsAddModalOpen(true)
+  }
+
   function handleCancelEdit() {
     resetSaveMutation()
+    setIsAddModalOpen(false)
     setDrafts({})
+    setNewConfigItems([])
     setPendingDeletionIds([])
     setIsEditing(false)
+    onFocusConfigItem(null)
   }
 
   function handleDeleteToggle(configItem: ConfigItem) {
+    if (isLocalConfigItemId(configItem.id)) {
+      setNewConfigItems((current) =>
+        current.filter((item) => item.id !== configItem.id),
+      )
+      return
+    }
+
     setPendingDeletionIds((current) =>
       current.includes(configItem.id)
         ? current.filter((id) => id !== configItem.id)
         : [...current, configItem.id],
     )
+  }
+
+  function handleCreateConfigItem(key: string) {
+    const id = createLocalConfigItemId()
+
+    resetSaveMutation()
+    setNewConfigItems((current) => [
+      ...current,
+      {
+        id,
+        key,
+        value: '',
+      },
+    ])
+    setIsAddModalOpen(false)
+    onFocusConfigItem(id)
   }
 
   async function handleReveal(configItem: ConfigItem) {
@@ -211,7 +264,7 @@ export function ConfigItemsTable({
     }
 
     const pendingDeletionIdSet = new Set(pendingDeletionIds)
-    const pendingUpdates = configItems
+    const existingOperations = configItems
       .map((configItem) => {
         const draft = drafts[configItem.id]
         const nextKey = draft?.key ?? configItem.key
@@ -220,38 +273,73 @@ export function ConfigItemsTable({
 
         return {
           isPendingDelete: pendingDeletionIdSet.has(configItem.id),
-          key: trimmedKey !== configItem.key ? trimmedKey : undefined,
-          value: nextValue !== '' ? nextValue : undefined,
+          operations: [
+            ...(trimmedKey !== configItem.key
+              ? [
+                  {
+                    type: 'rename' as const,
+                    configItemId: configItem.id,
+                    key: trimmedKey,
+                  },
+                ]
+              : []),
+            ...(nextValue !== ''
+              ? [
+                  {
+                    type: 'set-value' as const,
+                    configItemId: configItem.id,
+                    value: nextValue,
+                  },
+                ]
+              : []),
+          ],
           configItemId: configItem.id,
         }
       })
-      .filter(
-        (update) =>
-          !update.isPendingDelete &&
-          (update.key !== undefined || update.value !== undefined),
+      .flatMap(({ isPendingDelete, operations, configItemId }) =>
+        isPendingDelete
+          ? [{ type: 'delete' as const, configItemId }]
+          : operations,
       )
 
-    const updates = pendingUpdates.map(({ configItemId, key, value }) => ({
-      configItemId,
-      ...(key !== undefined ? { key } : {}),
-      ...(value !== undefined ? { value } : {}),
-    }))
-    const deleteConfigItemIds = [...pendingDeletionIdSet]
+    const createOperations: ConfigItemBatchOperation[] = newConfigItems.map(
+      (configItem) => ({
+        type: 'create',
+        key: configItem.key.trim(),
+        ...(configItem.value !== ''
+          ? { initialValue: configItem.value }
+          : {}),
+      }),
+    )
 
-    if (updates.length === 0 && deleteConfigItemIds.length === 0) {
+    const operations = [...existingOperations, ...createOperations]
+
+    if (operations.length === 0) {
       handleCancelEdit()
       return
     }
 
     try {
-      await saveConfigItemsMutation.mutateAsync({
-        deleteConfigItemIds,
-        updates,
-      })
+      await saveConfigItemsMutation.mutateAsync({ operations })
 
-      const configItemIdsWithUpdatedValues = updates
-        .filter((update) => update.value !== undefined)
-        .map((update) => update.configItemId)
+      const configItemIdsWithUpdatedValues = existingOperations
+        .filter(
+          (
+            operation,
+          ): operation is Extract<
+            ConfigItemBatchOperation,
+            { type: 'set-value' }
+          > => operation.type === 'set-value',
+        )
+        .map((operation) => operation.configItemId)
+      const deleteConfigItemIds = existingOperations
+        .filter(
+          (
+            operation,
+          ): operation is Extract<ConfigItemBatchOperation, { type: 'delete' }> =>
+            operation.type === 'delete',
+        )
+        .map((operation) => operation.configItemId)
 
       const affectedValueIds = new Set([
         ...configItemIdsWithUpdatedValues,
@@ -270,7 +358,7 @@ export function ConfigItemsTable({
       )
 
       addToast({
-        message: getSuccessMessage(updates, deleteConfigItemIds.length),
+        message: getSuccessMessage(operations),
         type: 'success',
       })
       handleCancelEdit()
@@ -339,7 +427,7 @@ export function ConfigItemsTable({
       {environmentName &&
       !configItemsQuery.isLoading &&
       !configItemsQuery.isError &&
-      configItems.length === 0 ? (
+      tableConfigItems.length === 0 ? (
         <div className={styles.state}>
           <p className={styles.stateTitle}>No secrets yet</p>
           <p className={styles.stateCopy}>
@@ -347,7 +435,7 @@ export function ConfigItemsTable({
           </p>
           <button
             className={cx(styles.button, styles.buttonPrimary)}
-            onClick={onAddConfigItem}
+            onClick={handleOpenAddConfigItem}
             type="button"
           >
             Add Secret
@@ -358,7 +446,7 @@ export function ConfigItemsTable({
       {environmentName &&
       !configItemsQuery.isLoading &&
       !configItemsQuery.isError &&
-      configItems.length > 0 ? (
+      tableConfigItems.length > 0 ? (
         <>
           <div className={styles.tableWrapper}>
             <table className={styles.configItemsTable}>
@@ -375,12 +463,12 @@ export function ConfigItemsTable({
                 </tr>
               </thead>
               <tbody>
-                {configItems.map((configItem) => (
+                {tableConfigItems.map((configItem) => (
                   <ConfigItemRow
                     configItem={configItem}
-                  draftKey={drafts[configItem.id]?.key ?? configItem.key}
-                  draftValue={drafts[configItem.id]?.value ?? null}
-                  isEditing={isEditing}
+                    draftKey={getDraftKey(configItem, drafts, newConfigItems)}
+                    draftValue={getDraftValue(configItem, drafts, newConfigItems)}
+                    isEditing={isEditing}
                     isMarkedForDeletion={pendingDeletionIds.includes(configItem.id)}
                     isRevealing={revealingId === configItem.id}
                     isSaving={isSaving}
@@ -390,32 +478,56 @@ export function ConfigItemsTable({
                     key={configItem.id}
                     onCancelEdit={handleCancelEdit}
                     onDeleteToggle={handleDeleteToggle}
-                  onDraftKeyChange={(nextDraftKey) => {
-                    resetSaveMutation()
-                    setDrafts((current) => ({
-                      ...current,
-                      [configItem.id]: {
-                        key: nextDraftKey,
-                        value: current[configItem.id]?.value ?? null,
-                      },
-                    }))
-                  }}
-                  onDraftValueChange={(nextDraftValue) => {
-                    resetSaveMutation()
-                    setDrafts((current) => ({
-                      ...current,
-                      [configItem.id]: {
-                        key: current[configItem.id]?.key ?? configItem.key,
-                        value: nextDraftValue,
-                      },
-                    }))
-                  }}
-                  onReveal={handleReveal}
-                  onSaveEdit={handleSaveEdit}
-                  onStartValueEdit={handleStartValueEdit}
-                  revealedValue={
-                    visibleRevealedValues[configItem.id]
-                      ? revealedValues[configItem.id]
+                    onDraftKeyChange={(nextDraftKey) => {
+                      resetSaveMutation()
+
+                      if (isLocalConfigItemId(configItem.id)) {
+                        setNewConfigItems((current) =>
+                          current.map((item) =>
+                            item.id === configItem.id
+                              ? { ...item, key: nextDraftKey }
+                              : item,
+                          ),
+                        )
+                        return
+                      }
+
+                      setDrafts((current) => ({
+                        ...current,
+                        [configItem.id]: {
+                          key: nextDraftKey,
+                          value: current[configItem.id]?.value ?? null,
+                        },
+                      }))
+                    }}
+                    onDraftValueChange={(nextDraftValue) => {
+                      resetSaveMutation()
+
+                      if (isLocalConfigItemId(configItem.id)) {
+                        setNewConfigItems((current) =>
+                          current.map((item) =>
+                            item.id === configItem.id
+                              ? { ...item, value: nextDraftValue }
+                              : item,
+                          ),
+                        )
+                        return
+                      }
+
+                      setDrafts((current) => ({
+                        ...current,
+                        [configItem.id]: {
+                          key: current[configItem.id]?.key ?? configItem.key,
+                          value: nextDraftValue,
+                        },
+                      }))
+                    }}
+                    onReveal={handleReveal}
+                    onSaveEdit={handleSaveEdit}
+                    onStartValueEdit={handleStartValueEdit}
+                    revealedValue={
+                      visibleRevealedValues[configItem.id]
+                        ? revealedValues[configItem.id]
                         : undefined
                     }
                     shouldFocus={configItem.id === focusedConfigItemId}
@@ -432,7 +544,7 @@ export function ConfigItemsTable({
                 <button
                   className={cx(styles.button, styles.buttonPrimary)}
                   disabled={isSaving}
-                  onClick={onAddConfigItem}
+                  onClick={handleOpenAddConfigItem}
                   type="button"
                 >
                   Add Secret
@@ -460,18 +572,33 @@ export function ConfigItemsTable({
           ) : null}
         </>
       ) : null}
+
+      {isAddModalOpen ? (
+        <AddConfigItemModal
+          onCancel={() => setIsAddModalOpen(false)}
+          onCreate={handleCreateConfigItem}
+        />
+      ) : null}
     </section>
   )
 }
 
-function getSuccessMessage(
-  updates: Array<{
-    key?: string
-    value?: string
-  }>,
-  deleteCount: number,
-) {
-  if (deleteCount > 0 && updates.length > 0) {
+function getSuccessMessage(operations: ConfigItemBatchOperation[]) {
+  const createCount = operations.filter(
+    (operation) => operation.type === 'create',
+  ).length
+  const renameCount = operations.filter(
+    (operation) => operation.type === 'rename',
+  ).length
+  const valueCount = operations.filter(
+    (operation) => operation.type === 'set-value',
+  ).length
+  const deleteCount = operations.filter(
+    (operation) => operation.type === 'delete',
+  ).length
+  const updateCount = createCount + renameCount + valueCount
+
+  if (deleteCount > 0 && updateCount > 0) {
     return 'Secrets updated'
   }
 
@@ -483,21 +610,63 @@ function getSuccessMessage(
     return 'Secret deleted'
   }
 
-  if (updates.length > 1) {
+  if (createCount > 0 && renameCount === 0 && valueCount === 0) {
+    return createCount > 1 ? 'Secrets created' : 'Secret created'
+  }
+
+  if (updateCount > 1) {
     return 'Secrets updated'
   }
 
-  const [update] = updates
-
-  if (update.key !== undefined && update.value !== undefined) {
-    return 'Secret updated'
-  }
-
-  if (update.key !== undefined) {
+  if (renameCount === 1) {
     return 'Secret renamed'
   }
 
+  if (createCount === 1) {
+    return 'Secret created'
+  }
+
   return 'Secret value saved'
+}
+
+function isLocalConfigItemId(configItemId: string) {
+  return configItemId.startsWith('local-config-item-')
+}
+
+function createLocalConfigItemId() {
+  return `local-config-item-${crypto.randomUUID()}`
+}
+
+function toLocalConfigItem(configItem: NewConfigItemDraft): ConfigItem {
+  return {
+    id: configItem.id,
+    key: configItem.key,
+    hasValue: false,
+  }
+}
+
+function getDraftKey(
+  configItem: ConfigItem,
+  drafts: Record<string, ConfigItemDraft>,
+  newConfigItems: NewConfigItemDraft[],
+) {
+  if (isLocalConfigItemId(configItem.id)) {
+    return newConfigItems.find((item) => item.id === configItem.id)?.key ?? configItem.key
+  }
+
+  return drafts[configItem.id]?.key ?? configItem.key
+}
+
+function getDraftValue(
+  configItem: ConfigItem,
+  drafts: Record<string, ConfigItemDraft>,
+  newConfigItems: NewConfigItemDraft[],
+) {
+  if (isLocalConfigItemId(configItem.id)) {
+    return newConfigItems.find((item) => item.id === configItem.id)?.value ?? ''
+  }
+
+  return drafts[configItem.id]?.value ?? null
 }
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {

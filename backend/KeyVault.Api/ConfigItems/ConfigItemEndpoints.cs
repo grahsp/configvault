@@ -1,4 +1,5 @@
 using KeyVault.Api.Authorization;
+using KeyVault.Api.ConfigItems.BatchOperations;
 
 namespace KeyVault.Api.ConfigItems;
 
@@ -13,6 +14,7 @@ public static class ConfigItemEndpoints
 		configItems.MapGet("", GetConfigItems.Endpoint.Handle);
 		configItems.MapPost("", AddConfigItem.Endpoint.Handle);
 		configItems.MapPut("", SaveConfigItems.Endpoint.Handle);
+		configItems.MapPost("/operations", BatchOperationsEndpoint.Handle);
 		configItems.MapPatch("/{configItemId}", RenameConfigItem.Endpoint.Handle);
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		

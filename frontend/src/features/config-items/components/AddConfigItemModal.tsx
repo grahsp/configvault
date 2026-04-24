@@ -1,50 +1,30 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
-import { useCreateConfigItem } from '../hooks/useCreateConfigItem'
 import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
 import styles from './ConfigItemsTable.module.css'
 
 interface AddConfigItemModalProps {
-  environmentName: string
   onCancel: () => void
-  onCreated: () => void
-  projectId: string
+  onCreate: (key: string) => void
 }
 
 export function AddConfigItemModal({
-  environmentName,
   onCancel,
-  onCreated,
-  projectId,
+  onCreate,
 }: AddConfigItemModalProps) {
-  const { addToast } = useToast()
   const [key, setKey] = useState('')
-  const createConfigItemMutation = useCreateConfigItem(
-    projectId,
-    environmentName,
-  )
   const validationError = getConfigItemKeyValidationError(key)
   const visibleError = validationError
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (validationError) {
       return
     }
 
-    try {
-      await createConfigItemMutation.mutateAsync(key.trim())
-      addToast({ message: 'Secret created', type: 'success' })
-      onCreated()
-    } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to create secret'),
-        type: 'error',
-      })
-    }
+    onCreate(key.trim())
   }
 
   return (
@@ -68,9 +48,7 @@ export function AddConfigItemModal({
                 visibleError ? 'add-config-item-key-error' : undefined
               }
               aria-invalid={Boolean(visibleError)}
-              disabled={createConfigItemMutation.isPending}
               onChange={(event) => {
-                createConfigItemMutation.reset()
                 setKey(event.target.value)
               }}
               placeholder="API_KEY"
@@ -93,7 +71,6 @@ export function AddConfigItemModal({
           <div className={styles.formActions}>
             <button
               className={cx(styles.button, styles.buttonSecondary)}
-              disabled={createConfigItemMutation.isPending}
               onClick={onCancel}
               type="button"
             >
@@ -101,20 +78,14 @@ export function AddConfigItemModal({
             </button>
             <button
               className={cx(styles.button, styles.buttonPrimary)}
-              disabled={
-                createConfigItemMutation.isPending || Boolean(validationError)
-              }
+              disabled={Boolean(validationError)}
               type="submit"
             >
-              {createConfigItemMutation.isPending ? 'Creating' : 'Create'}
+              Create
             </button>
           </div>
         </form>
       </div>
     </div>
   )
-}
-
-function getErrorMessage(error: unknown, fallbackMessage: string) {
-  return error instanceof Error ? error.message : fallbackMessage
 }

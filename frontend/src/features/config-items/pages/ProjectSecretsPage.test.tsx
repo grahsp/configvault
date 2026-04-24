@@ -45,9 +45,9 @@ function getMutationCalls(fetchMock: ReturnType<typeof vi.fn>, method: string) {
 function getBulkSaveCalls(fetchMock: ReturnType<typeof vi.fn>) {
   return fetchMock.mock.calls.filter(
     ([input, init]) =>
-      input.toString().includes('/config-items') &&
+      input.toString().includes('/config-items/operations') &&
       !input.toString().includes('/value') &&
-      init?.method === 'PUT',
+      init?.method === 'POST',
   )
 }
 
@@ -261,7 +261,7 @@ describe('ProjectSecretsPage', () => {
         body: [],
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/config-items/operations',
         method: 'POST',
         status: 204,
       },
@@ -282,14 +282,19 @@ describe('ProjectSecretsPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
     await user.click(screen.getByRole('button', { name: 'Create' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret created')).toBeInTheDocument()
     expect(await screen.findByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ key: 'API_KEY' }),
+        body: JSON.stringify({
+          environment: 'production',
+          operations: [{ type: 'create', key: 'API_KEY' }],
+        }),
       }),
     )
   })
@@ -307,8 +312,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -331,13 +336,14 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({
           environment: 'production',
-          updates: [{ configItemId: 'config-1', key: 'PUBLIC_KEY' }],
-          deleteConfigItemIds: [],
+          operations: [
+            { type: 'rename', configItemId: 'config-1', key: 'PUBLIC_KEY' },
+          ],
         }),
       }),
     )
@@ -555,8 +561,8 @@ describe('ProjectSecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -588,13 +594,18 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
     expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({
           environment: 'production',
-          updates: [{ configItemId: 'config-1', value: 'new-secret-value' }],
-          deleteConfigItemIds: [],
+          operations: [
+            {
+              type: 'set-value',
+              configItemId: 'config-1',
+              value: 'new-secret-value',
+            },
+          ],
         }),
       }),
     )
@@ -617,8 +628,8 @@ describe('ProjectSecretsPage', () => {
         body: { value: 'secret-value' },
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -643,7 +654,7 @@ describe('ProjectSecretsPage', () => {
     await user.type(screen.getByRole('textbox', { name: 'Value' }), 'new-value')
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
-    expect(await screen.findByText('Secret updated')).toBeInTheDocument()
+    expect(await screen.findByText('Secrets updated')).toBeInTheDocument()
     expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
   })
 
@@ -667,8 +678,8 @@ describe('ProjectSecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -773,8 +784,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         body: { message: 'Rename rejected.' },
         status: 500,
       },
@@ -808,8 +819,8 @@ describe('ProjectSecretsPage', () => {
         body: [apiKeyConfigItem],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -857,8 +868,8 @@ describe('ProjectSecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
-        method: 'PUT',
+        path: '/projects/project-1/config-items/operations',
+        method: 'POST',
         status: 204,
       },
       {
@@ -886,13 +897,12 @@ describe('ProjectSecretsPage', () => {
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({
           environment: 'production',
-          updates: [],
-          deleteConfigItemIds: ['config-1'],
+          operations: [{ type: 'delete', configItemId: 'config-1' }],
         }),
       }),
     )
@@ -966,7 +976,7 @@ describe('ProjectSecretsPage', () => {
         body: [],
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/config-items/operations',
         method: 'POST',
         body: { message: 'Create rejected.' },
         status: 500,
@@ -978,12 +988,11 @@ describe('ProjectSecretsPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
     await user.click(screen.getByRole('button', { name: 'Create' }))
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Create rejected.',
     )
-    expect(
-      screen.getByRole('dialog', { name: 'Add secret' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
   })
 })

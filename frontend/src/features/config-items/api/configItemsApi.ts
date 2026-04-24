@@ -1,14 +1,41 @@
 import type { ApiClient } from '../../../api/apiClient'
 import type { ConfigItem, ConfigItemValue } from '../types/ConfigItem'
 
-interface SaveConfigItemsUpdate {
-  configItemId: string
-  key?: string
-  value?: string
+export interface CreateConfigItemOperation {
+  type: 'create'
+  key: string
+  initialValue?: string
 }
+
+export interface RenameConfigItemOperation {
+  type: 'rename'
+  configItemId: string
+  key: string
+}
+
+export interface SetConfigItemValueOperation {
+  type: 'set-value'
+  configItemId: string
+  value: string
+}
+
+export interface DeleteConfigItemOperation {
+  type: 'delete'
+  configItemId: string
+}
+
+export type ConfigItemBatchOperation =
+  | CreateConfigItemOperation
+  | RenameConfigItemOperation
+  | SetConfigItemValueOperation
+  | DeleteConfigItemOperation
 
 function buildConfigItemsPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/config-items`
+}
+
+function buildConfigItemOperationsPath(projectId: string) {
+  return `${buildConfigItemsPath(projectId)}/operations`
 }
 
 function buildConfigItemPath(projectId: string, configItemId: string) {
@@ -57,15 +84,13 @@ export function saveConfigItems(
   client: ApiClient,
   projectId: string,
   environmentName: string,
-  updates: SaveConfigItemsUpdate[],
-  deleteConfigItemIds: string[],
+  operations: ConfigItemBatchOperation[],
 ) {
-  return client.request<void>(buildConfigItemsPath(projectId), {
-    method: 'PUT',
+  return client.request<void>(buildConfigItemOperationsPath(projectId), {
+    method: 'POST',
     body: JSON.stringify({
       environment: environmentName,
-      updates,
-      deleteConfigItemIds,
+      operations,
     }),
   })
 }

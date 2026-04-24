@@ -1,15 +1,19 @@
-using KeyVault.Domain.ConfigItems;
-
+using System.Text.Json.Serialization;
 namespace KeyVault.Api.ConfigItems.BatchOperations;
 
 public sealed record BatchRequest(
 	string Environment,
 	IReadOnlyList<Operation> Operations);
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(CreateItem), "create")]
+[JsonDerivedType(typeof(SetValue), "set-value")]
+[JsonDerivedType(typeof(RenameItem), "rename")]
+[JsonDerivedType(typeof(DeleteItem), "delete")]
 public abstract record Operation;
 
 public sealed record CreateItem(
-	ConfigKey Key,
+	string Key,
 	string? InitialValue) : Operation;
 
 public sealed record SetValue(
@@ -18,7 +22,7 @@ public sealed record SetValue(
 
 public sealed record RenameItem(
 	Guid ConfigItemId,
-	ConfigKey Key) : Operation;
+	string Key) : Operation;
 
 public sealed record DeleteItem(
 	Guid ConfigItemId) : Operation;

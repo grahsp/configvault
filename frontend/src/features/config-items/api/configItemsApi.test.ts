@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ApiClient } from '../../../api/apiClient'
 import {
-  createConfigItem,
   deleteConfigItem,
   getConfigItemValue,
   getConfigItems,
@@ -37,24 +36,7 @@ describe('config items api', () => {
     )
   })
 
-  it('creates a config item with an encoded project id and requested key', async () => {
-    const client = createMockClient()
-    vi.mocked(client.request).mockResolvedValue(undefined)
-
-    await expect(
-      createConfigItem(client, 'project/with space', 'API_KEY'),
-    ).resolves.toBeUndefined()
-
-    expect(client.request).toHaveBeenCalledWith(
-      '/projects/project%2Fwith%20space/config-items',
-      {
-        method: 'POST',
-        body: JSON.stringify({ key: 'API_KEY' }),
-      },
-    )
-  })
-
-  it('saves config item updates and deletions with the environment name', async () => {
+  it('saves config item operations with the environment name', async () => {
     const client = createMockClient()
     vi.mocked(client.request).mockResolvedValue(undefined)
 
@@ -63,21 +45,27 @@ describe('config items api', () => {
         client,
         'project/with space',
         'prod/eu west',
-        [{ configItemId: 'config-1', key: 'API_KEY', value: 'secret-value' }],
-        ['config-2'],
+        [
+          { type: 'create', key: 'NEW_KEY', initialValue: 'secret-value' },
+          { type: 'rename', configItemId: 'config-1', key: 'API_KEY' },
+          { type: 'set-value', configItemId: 'config-1', value: 'secret-value' },
+          { type: 'delete', configItemId: 'config-2' },
+        ],
       ),
     ).resolves.toBeUndefined()
 
     expect(client.request).toHaveBeenCalledWith(
-      '/projects/project%2Fwith%20space/config-items',
+      '/projects/project%2Fwith%20space/config-items/operations',
       {
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({
           environment: 'prod/eu west',
-          updates: [
-            { configItemId: 'config-1', key: 'API_KEY', value: 'secret-value' },
+          operations: [
+            { type: 'create', key: 'NEW_KEY', initialValue: 'secret-value' },
+            { type: 'rename', configItemId: 'config-1', key: 'API_KEY' },
+            { type: 'set-value', configItemId: 'config-1', value: 'secret-value' },
+            { type: 'delete', configItemId: 'config-2' },
           ],
-          deleteConfigItemIds: ['config-2'],
         }),
       },
     )
