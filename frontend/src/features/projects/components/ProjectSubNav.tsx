@@ -11,6 +11,13 @@ export function ProjectSubNav({ projectId }: ProjectSubNavProps) {
   const currentSearch = location.search
   const tabs = [
     {
+      label: 'General',
+      to: {
+        pathname: `/projects/${projectId}/general`,
+        search: currentSearch,
+      },
+    },
+    {
       label: 'Secrets',
       to: {
         pathname: `/projects/${projectId}/secrets`,

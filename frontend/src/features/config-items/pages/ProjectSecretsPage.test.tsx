@@ -105,6 +105,14 @@ describe('ProjectSecretsPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Environment Variables' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByText('Environment', { selector: 'span' }),
+    ).toBeInTheDocument()
+    expect(
+      screen
+        .getByRole('heading', { name: 'Environment Variables' })
+        .closest('section'),
+    ).not.toContainElement(screen.getByText('Environment', { selector: 'span' }))
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(

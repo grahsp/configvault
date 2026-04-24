@@ -5,6 +5,7 @@ import {
   ProtectedRoute,
 } from '../features/auth/components/ProtectedRoute'
 import { ProjectSecretsPage } from '../features/config-items/pages/ProjectSecretsPage'
+import { GeneralPage } from '../features/projects/pages/GeneralPage'
 import { MembersPage } from '../features/projects/pages/MembersPage'
 import { ProjectLayout } from '../features/projects/pages/ProjectLayout'
 import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Navigate to="secrets" replace />,
+          },
+          {
+            path: 'general',
+            element: <GeneralPage />,
           },
           {
             path: 'secrets',

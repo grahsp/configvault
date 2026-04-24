@@ -99,15 +99,27 @@ describe('ProjectDetailPage', () => {
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
 
+    const generalLink = screen.getByRole('link', { name: 'General' })
     const secretsLink = screen.getByRole('link', { name: 'Secrets' })
     const membersLink = screen.getByRole('link', { name: 'Members' })
 
+    expect(generalLink).toHaveAttribute('href', '/projects/project-1/general')
+    expect(generalLink).not.toHaveAttribute('aria-current')
     expect(secretsLink).toHaveAttribute('href', '/projects/project-1/secrets')
     expect(secretsLink).toHaveAttribute('aria-current', 'page')
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add Secret' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Delete project' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Created /)).not.toBeInTheDocument()
+    expect(
+      screen
+        .getByRole('heading', { name: 'Production secrets' })
+        .closest('section'),
+    ).toContainElement(screen.getByText('Environment', { selector: 'span' }))
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -144,6 +156,11 @@ describe('ProjectDetailPage', () => {
         name: /^Staging$/,
       }),
     ).toBeInTheDocument()
+    expect(
+      screen
+        .getByRole('heading', { name: 'Production secrets' })
+        .closest('section'),
+    ).toContainElement(screen.getByText('Environment', { selector: 'span' }))
     expect(router.state.location.search).toBe('?environmentId=env-staging')
   })
 
@@ -225,6 +242,64 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByRole('form', { name: 'Add member' }),
     ).toBeInTheDocument()
+  })
+
+  it('renders the general route directly', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/general')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Production secrets' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'General' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'General' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.getByText('Project name')).toBeInTheDocument()
+    expect(screen.getByText('Description')).toBeInTheDocument()
+    expect(screen.getByText('Created')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Delete project' }),
+    ).toBeInTheDocument()
+  })
+
+  it('deletes the project from the general route', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1',
+        method: 'DELETE',
+        status: 204,
+      },
+    ])
+
+    const { router } = renderProjectDetail('/projects/project-1/general')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Delete project' }),
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: 'Delete project' }),
+    ).toHaveTextContent('Delete Production secrets? This cannot be undone.')
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/projects')
+    })
   })
 
   it('shows the members loading state before member data is available', async () => {

@@ -1,17 +1,12 @@
 import { useCallback, useState } from 'react'
-import { Link, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Outlet, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { EnvironmentDropdown } from '../../environments/components/EnvironmentDropdown'
 import type { Environment } from '../../environments/types'
 import { cx } from '../../../shared/utils/cx'
-import { ProjectDeleteDialog } from '../components/ProjectDeleteDialog'
 import { ProjectSubNav } from '../components/ProjectSubNav'
-import {
-  useDeleteProject,
-  useProject,
-} from '../hooks/useProjects'
+import { useProject } from '../hooks/useProjects'
 import type { ProjectDetails } from '../types'
 import {
-  formatCreatedDate,
   getErrorMessage,
   isAuthError,
   isNotFoundError,
@@ -19,15 +14,12 @@ import {
 import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
 
 export function ProjectLayout() {
-  const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { projectId } = useParams()
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState('')
 
   const projectQuery = useProject(projectId ?? '')
-  const deleteProjectMutation = useDeleteProject()
   const project = projectQuery.data
   const selectedEnvironmentId = searchParams.get('environmentId') ?? ''
   const isSecretsRoute = location.pathname.endsWith('/secrets')
@@ -52,25 +44,6 @@ export function ProjectLayout() {
     },
     [],
   )
-
-  function closeDeleteModal() {
-    if (deleteProjectMutation.isPending) {
-      return
-    }
-
-    setIsDeleteModalOpen(false)
-    deleteProjectMutation.reset()
-  }
-
-  function confirmDeleteProject() {
-    if (!projectId) {
-      return
-    }
-
-    deleteProjectMutation.mutate(projectId, {
-      onSuccess: () => navigate('/projects'),
-    })
-  }
 
   if (!projectId) {
     return (
@@ -153,39 +126,24 @@ export function ProjectLayout() {
         {!projectQuery.isPending && !projectQuery.isError && project ? (
           <>
             <div className={cx(styles.cardHeader, styles.detailHeader)}>
-              <div>
+              <div className={styles.titleSection}>
                 <Link className={styles.backLink} to="/projects">
                   Back to projects
                 </Link>
-                <h1 id="project-detail-title">{project.name}</h1>
-              </div>
-
-              <div className={styles.actions}>
-                {isSecretsRoute ? (
-                  <div className={styles.environmentPicker}>
-                    <span className={styles.environmentLabel}>Environment</span>
-                    <EnvironmentDropdown
-                      onEnvironmentChange={handleEnvironmentChange}
-                      onSelectedEnvironmentChange={handleSelectedEnvironmentChange}
-                      projectId={project.id}
-                      selectedEnvironmentId={selectedEnvironmentId}
-                    />
-                  </div>
-                ) : null}
-                <button
-                  className={cx(styles.button, styles.buttonDanger)}
-                  disabled={deleteProjectMutation.isPending}
-                  onClick={() => {
-                    deleteProjectMutation.reset()
-                    setIsDeleteModalOpen(true)
-                  }}
-                  type="button"
-                >
-                  Delete project
-                </button>
-                <p className={styles.meta}>
-                  Created {formatCreatedDate(project.createdAt)}
-                </p>
+                <div className={styles.titleBar}>
+                  <h1 id="project-detail-title">{project.name}</h1>
+                  {isSecretsRoute ? (
+                    <div className={styles.environmentPicker}>
+                      <span className={styles.environmentLabel}>Environment</span>
+                      <EnvironmentDropdown
+                        onEnvironmentChange={handleEnvironmentChange}
+                        onSelectedEnvironmentChange={handleSelectedEnvironmentChange}
+                        projectId={project.id}
+                        selectedEnvironmentId={selectedEnvironmentId}
+                      />
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -198,17 +156,6 @@ export function ProjectLayout() {
           </>
         ) : null}
       </section>
-
-      {isDeleteModalOpen && project ? (
-        <ProjectDeleteDialog
-          errorClassName={styles.formError}
-          formActionsClassName={styles.formActions}
-          mutation={deleteProjectMutation}
-          onCancel={closeDeleteModal}
-          onConfirm={confirmDeleteProject}
-          projectName={project.name}
-        />
-      ) : null}
     </main>
   )
 }

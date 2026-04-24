@@ -291,7 +291,11 @@ export function ConfigItemsTable({
           updates from one edit state.
         </p>
 
-        {!isEditing && environmentName && !configItemsQuery.isLoading && !configItemsQuery.isError && configItems.length > 0 ? (
+        {!isEditing &&
+        environmentName &&
+        !configItemsQuery.isLoading &&
+        !configItemsQuery.isError &&
+        configItems.length > 0 ? (
           <div className={styles.sectionHeaderActions}>
             <button
               className={cx(styles.button, styles.buttonSecondary)}

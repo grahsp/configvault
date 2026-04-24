@@ -6,6 +6,7 @@ import { vi } from 'vitest'
 import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
 import { LocationProbe } from './LocationProbe.testComponent'
+import { GeneralPage } from '../GeneralPage'
 import { MembersPage } from '../MembersPage'
 import { ProjectLayout } from '../ProjectLayout'
 
@@ -91,6 +92,10 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
           {
             index: true,
             element: <Navigate to="secrets" replace />,
+          },
+          {
+            path: 'general',
+            element: <GeneralPage />,
           },
           {
             path: 'secrets',
