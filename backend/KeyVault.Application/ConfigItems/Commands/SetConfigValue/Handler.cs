@@ -1,43 +1,17 @@
-using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Authentication;
-using KeyVault.Application.ConfigItems.Exceptions;
-using KeyVault.Application.Exceptions;
-using KeyVault.Application.Persistence;
-using KeyVault.Application.Projects;
-using KeyVault.Application.Projects.Exceptions;
-using KeyVault.Domain.Projects;
+using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 
 namespace KeyVault.Application.ConfigItems.Commands.SetConfigValue;
 
 public sealed class Handler(
-	IUserContext user,
-	IProjectRepository projects,
-	IConfigItemRepository configurations,
-	IUnitOfWork uow,
-	TimeProvider time,
-	IEnvelopeEncryptionService encryption)
+	IProcessor processor)
 	: ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
-		var configuration = await configurations.GetByIdAsync(command.ConfigItemId, ct)
-		                    ?? throw new ConfigItemNotFoundException(command.ConfigItemId);
-		
-		if (configuration.ProjectId != command.ProjectId)
-			throw new ConfigItemNotFoundException(command.ConfigItemId);
-		
-		var project = await projects.GetByIdAsync(configuration.ProjectId, ct)
-		              ?? throw new ProjectNotFoundException(configuration.ProjectId);
-		
-		if (!project.TryGetEnvironment(command.EnvironmentName, out var environment))
-			throw new EnvironmentNotFoundException(command.EnvironmentName);
-
-		project.RequireMemberWithRole(user.UserId, ProjectRole.Admin);
-		
-		var encryptedValue = encryption.EncryptSecret(command.Value, project.CurrentDataKey.Value);
-		configuration.SetValue(environment.Id, encryptedValue, user.UserId, time.GetUtcNow());
-		await uow.SaveChangesAsync(ct);
+		var batch = new BatchRequest([new SetValue(command.ConfigItemId, command.Value)]);
+		var batchCommand = new ExecuteBatchOperations.Command(command.ProjectId, command.EnvironmentName, batch);
+		await processor.ExecuteAsync(batchCommand, ct);
 		
 		return Unit.Value;
 	}

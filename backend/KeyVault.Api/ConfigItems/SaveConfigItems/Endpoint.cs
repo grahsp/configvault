@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Commands.SaveConfigItems;
+using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 
@@ -13,26 +13,29 @@ internal static class Endpoint
 		Request request,
 		CancellationToken ct)
 	{
-		var updates = request.Updates.Select(update =>
-		{
-			ConfigKey? key = null;
+		var operations = new List<Operation>();
 
+		foreach (var update in request.Updates)
+		{
 			if (update.Key is not null)
 			{
 				if (!ConfigKey.TryParse(update.Key, out var parsedKey))
 					throw new ValidationException("Invalid key format");
 
-				key = parsedKey;
+				operations.Add(new RenameItem(update.ConfigItemId, parsedKey));
 			}
 
-			return new ConfigItemUpdate(update.ConfigItemId, key, update.Value);
-		}).ToArray();
+			if (update.Value is not null)
+				operations.Add(new SetValue(update.ConfigItemId, update.Value));
+		}
+
+		foreach (var configItemId in request.DeleteConfigItemIds)
+			operations.Add(new DeleteItem(configItemId));
 
 		var command = new Command(
 			projectId,
 			request.Environment,
-			updates,
-			request.DeleteConfigItemIds);
+			new BatchRequest(operations));
 
 		await dispatcher.DispatchAsync(command, ct);
 
