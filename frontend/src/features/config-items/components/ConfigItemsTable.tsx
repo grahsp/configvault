@@ -7,7 +7,6 @@ import { useRevealConfigItemValue } from '../hooks/useRevealConfigItemValue'
 import { useSaveConfigItems } from '../hooks/useSaveConfigItems'
 import type { ConfigItem } from '../types/ConfigItem'
 import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
-import { AddConfigItemModal } from './AddConfigItemModal'
 import { ConfigItemRow } from './ConfigItemRow'
 import styles from './ConfigItemsTable.module.css'
 
@@ -44,9 +43,11 @@ export function ConfigItemsTable({
   )
   const saveConfigItemsMutation = useSaveConfigItems(projectId, environmentName)
   const [isEditing, setIsEditing] = useState(false)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [drafts, setDrafts] = useState<Record<string, ConfigItemDraft>>({})
   const [newConfigItems, setNewConfigItems] = useState<NewConfigItemDraft[]>([])
+  const [highlightedValidationIds, setHighlightedValidationIds] = useState<
+    string[]
+  >([])
   const [pendingDeletionIds, setPendingDeletionIds] = useState<string[]>([])
   const [revealedValues, setRevealedValues] = useState<Record<string, string>>(
     {},
@@ -78,13 +79,11 @@ export function ConfigItemsTable({
     [drafts, newConfigItems, pendingDeletionIds, tableConfigItems],
   )
 
-  const hasValidationError = Object.values(validationErrors).some(Boolean)
-
   useEffect(() => {
     setIsEditing(false)
-    setIsAddModalOpen(false)
     setDrafts({})
     setNewConfigItems([])
+    setHighlightedValidationIds([])
     setPendingDeletionIds([])
     setRevealedValues({})
     setVisibleRevealedValues({})
@@ -112,6 +111,7 @@ export function ConfigItemsTable({
   function handleStartEdit() {
     resetSaveMutation()
     setDrafts(createDrafts(configItems))
+    setHighlightedValidationIds([])
     setPendingDeletionIds([])
     setIsEditing(true)
   }
@@ -120,18 +120,30 @@ export function ConfigItemsTable({
     if (!isEditing) {
       resetSaveMutation()
       setDrafts(createDrafts(configItems))
+      setHighlightedValidationIds([])
       setPendingDeletionIds([])
       setIsEditing(true)
     }
 
-    setIsAddModalOpen(true)
+    const id = createLocalConfigItemId()
+
+    resetSaveMutation()
+    setNewConfigItems((current) => [
+      ...current,
+      {
+        id,
+        key: '',
+        value: '',
+      },
+    ])
+    onFocusConfigItem(id)
   }
 
   function handleCancelEdit() {
     resetSaveMutation()
-    setIsAddModalOpen(false)
     setDrafts({})
     setNewConfigItems([])
+    setHighlightedValidationIds([])
     setPendingDeletionIds([])
     setIsEditing(false)
     onFocusConfigItem(null)
@@ -142,6 +154,9 @@ export function ConfigItemsTable({
       setNewConfigItems((current) =>
         current.filter((item) => item.id !== configItem.id),
       )
+      setHighlightedValidationIds((current) =>
+        current.filter((id) => id !== configItem.id),
+      )
       return
     }
 
@@ -150,22 +165,6 @@ export function ConfigItemsTable({
         ? current.filter((id) => id !== configItem.id)
         : [...current, configItem.id],
     )
-  }
-
-  function handleCreateConfigItem(key: string) {
-    const id = createLocalConfigItemId()
-
-    resetSaveMutation()
-    setNewConfigItems((current) => [
-      ...current,
-      {
-        id,
-        key,
-        value: '',
-      },
-    ])
-    setIsAddModalOpen(false)
-    onFocusConfigItem(id)
   }
 
   async function handleReveal(configItem: ConfigItem) {
@@ -259,7 +258,12 @@ export function ConfigItemsTable({
   }
 
   async function handleSaveEdit() {
-    if (hasValidationError) {
+    const invalidConfigItemIds = Object.entries(validationErrors)
+      .filter(([, error]) => Boolean(error))
+      .map(([configItemId]) => configItemId)
+
+    if (invalidConfigItemIds.length > 0) {
+      setHighlightedValidationIds(invalidConfigItemIds)
       return
     }
 
@@ -484,6 +488,13 @@ export function ConfigItemsTable({
                               : item,
                           ),
                         )
+                        setHighlightedValidationIds((current) =>
+                          getConfigItemKeyValidationError(nextDraftKey)
+                            ? current.includes(configItem.id)
+                              ? current
+                              : [...current, configItem.id]
+                            : current.filter((id) => id !== configItem.id),
+                        )
                         return
                       }
 
@@ -494,6 +505,13 @@ export function ConfigItemsTable({
                           value: current[configItem.id]?.value ?? null,
                         },
                       }))
+                      setHighlightedValidationIds((current) =>
+                        getConfigItemKeyValidationError(nextDraftKey)
+                          ? current.includes(configItem.id)
+                            ? current
+                            : [...current, configItem.id]
+                          : current.filter((id) => id !== configItem.id),
+                      )
                     }}
                     onDraftValueChange={(nextDraftValue) => {
                       resetSaveMutation()
@@ -526,7 +544,12 @@ export function ConfigItemsTable({
                         : undefined
                     }
                     shouldFocus={configItem.id === focusedConfigItemId}
-                    validationError={isEditing ? validationErrors[configItem.id] : undefined}
+                    validationError={
+                      isEditing &&
+                      highlightedValidationIds.includes(configItem.id)
+                        ? validationErrors[configItem.id]
+                        : undefined
+                    }
                   />
                 ))}
               </tbody>
@@ -548,7 +571,7 @@ export function ConfigItemsTable({
               <div className={styles.sectionFooterSecondaryActions}>
                 <button
                   className={cx(styles.button, styles.buttonPrimary)}
-                  disabled={isSaving || hasValidationError}
+                  disabled={isSaving}
                   onClick={handleSaveEdit}
                   type="button"
                 >
@@ -566,13 +589,6 @@ export function ConfigItemsTable({
             </div>
           ) : null}
         </>
-      ) : null}
-
-      {isAddModalOpen ? (
-        <AddConfigItemModal
-          onCancel={() => setIsAddModalOpen(false)}
-          onCreate={handleCreateConfigItem}
-        />
       ) : null}
     </section>
   )

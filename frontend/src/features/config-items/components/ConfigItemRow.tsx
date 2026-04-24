@@ -49,13 +49,23 @@ export function ConfigItemRow({
   validationError,
 }: ConfigItemRowProps) {
   const keyCellRef = useRef<HTMLTableCellElement>(null)
+  const keyFieldRef = useRef<HTMLInputElement>(null)
   const valueFieldRef = useRef<HTMLTextAreaElement>(null)
   const shouldMoveCaretRef = useRef(false)
   const isStartingValueEditRef = useRef(false)
   const errorId = `config-item-${configItem.id}-key-error`
 
   useEffect(() => {
-    if (shouldFocus && !isEditing) {
+    if (!shouldFocus) {
+      return
+    }
+
+    if (isEditing) {
+      keyFieldRef.current?.focus()
+      return
+    }
+
+    if (!isEditing) {
       keyCellRef.current?.focus()
     }
   }, [isEditing, shouldFocus])
@@ -162,6 +172,7 @@ export function ConfigItemRow({
             onChange={(event) => onDraftKeyChange(event.target.value)}
             onKeyDown={handleKeyDown}
             readOnly={!isEditing || isMarkedForDeletion}
+            ref={keyFieldRef}
             type="text"
             value={(isEditing ? draftKey : configItem.key)}
           />

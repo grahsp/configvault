@@ -148,7 +148,7 @@ describe('ProjectSecretsPage', () => {
     configItemsResponse.resolve(jsonResponse([]))
   })
 
-  it('opens the add secret dialog from the empty state action', async () => {
+  it('adds an empty editable secret row from the empty state action', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -169,9 +169,9 @@ describe('ProjectSecretsPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add Secret' }))
 
-    expect(
-      screen.getByRole('dialog', { name: 'Add secret' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
   })
 
   it('shows loaded config item rows with a masked value column', async () => {
@@ -222,7 +222,7 @@ describe('ProjectSecretsPage', () => {
     expect(databaseRow).toBeInTheDocument()
   })
 
-  it('validates the create form before submitting', async () => {
+  it('highlights a missing key when saving a new empty item', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -240,12 +240,12 @@ describe('ProjectSecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
-    await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API KEY')
+    const keyInput = screen.getByRole('textbox', { name: 'Key' })
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Key cannot contain spaces.',
-    )
-    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Key is required.')
+    expect(keyInput).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
   })
 
   it('creates a config item successfully', async () => {
@@ -281,7 +281,6 @@ describe('ProjectSecretsPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
-    await user.click(screen.getByRole('button', { name: 'Create' }))
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret created')).toBeInTheDocument()
@@ -712,7 +711,7 @@ describe('ProjectSecretsPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('disables inline rename save for empty and space-containing keys', async () => {
+  it('shows inline key validation after a save attempt for invalid keys', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -734,15 +733,18 @@ describe('ProjectSecretsPage', () => {
     const keyInput = screen.getByRole('textbox', { name: 'Key' })
 
     await user.clear(keyInput)
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
-    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Key is required.')
+    expect(keyInput).toHaveAttribute('aria-invalid', 'true')
 
     await user.type(keyInput, 'API KEY')
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Key cannot contain spaces.',
     )
-    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
   })
 
   it('exits inline rename without saving unchanged keys', async () => {
@@ -987,7 +989,6 @@ describe('ProjectSecretsPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
-    await user.click(screen.getByRole('button', { name: 'Create' }))
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
