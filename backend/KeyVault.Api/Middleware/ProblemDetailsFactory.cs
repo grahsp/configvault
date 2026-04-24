@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using KeyVault.Api.Authentication.Exceptions;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.Exceptions;
@@ -15,6 +16,7 @@ public static class ProblemDetailsFactory
 		return ex switch
 		{
 			ValidationException => Create(StatusCodes.Status400BadRequest, "Validation failed", ex.Message),
+			JsonException => Create(StatusCodes.Status400BadRequest, "Validation failed", ex.Message),
 			MissingAuthenticationClaimException => Create(StatusCodes.Status401Unauthorized, "Authentication failed", ex.Message),
 			ForbiddenException => Create(StatusCodes.Status403Forbidden, "Access denied", ex.Message),
 			NotFoundException => Create(StatusCodes.Status404NotFound, "Resource not found", ex.Message),

@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
 using KeyVault.Api.ConfigItems.BatchOperations;
 using KeyVault.Application.Abstractions.Messaging;
 using ExecuteBatchCommand = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Command;
@@ -74,6 +76,20 @@ public sealed class BatchOperationsEndpointTests
 		Assert.Null(dispatcher.CapturedCommand);
 	}
 
+	[Fact]
+	public async Task Handle_ShouldThrowValidationException_ForInvalidRenameKey()
+	{
+		var dispatcher = new CapturingCommandDispatcher();
+		var request = new BatchRequest(
+			"development",
+			[
+				new RenameItem(Guid.NewGuid(), "not valid"),
+			]);
+
+		await Assert.ThrowsAsync<ValidationException>(() => InvokeHandleAsync(dispatcher, Guid.NewGuid(), request));
+		Assert.Null(dispatcher.CapturedCommand);
+	}
+
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
@@ -85,14 +101,18 @@ public sealed class BatchOperationsEndpointTests
 			"Handle",
 			BindingFlags.Static | BindingFlags.NonPublic,
 			[
+				typeof(HttpRequest),
 				typeof(ICommandDispatcher),
 				typeof(Guid),
-				typeof(BatchRequest),
 				typeof(CancellationToken)
 			])
 			?? throw new InvalidOperationException("BatchOperations endpoint handler not found.");
 
-		var task = (Task<IResult>)handle.Invoke(null, [dispatcher, projectId, request, CancellationToken.None])!;
+		var context = new DefaultHttpContext();
+		context.Request.ContentType = "application/json";
+		context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request)));
+
+		var task = (Task<IResult>)handle.Invoke(null, [context.Request, dispatcher, projectId, CancellationToken.None])!;
 		return await task;
 	}
 

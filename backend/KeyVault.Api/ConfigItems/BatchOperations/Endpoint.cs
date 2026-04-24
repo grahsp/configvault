@@ -1,3 +1,4 @@
+using System.Text.Json;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 using KeyVault.Application.Exceptions;
@@ -8,11 +9,12 @@ namespace KeyVault.Api.ConfigItems.BatchOperations;
 internal static class BatchOperationsEndpoint
 {
 	internal static async Task<IResult> Handle(
+		HttpRequest httpRequest,
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		BatchRequest request,
 		CancellationToken ct)
 	{
+		var request = await ReadRequestAsync(httpRequest, ct);
 		var operations = new List<KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Operation>(request.Operations.Count);
 
 		foreach (var operation in request.Operations)
@@ -28,8 +30,29 @@ internal static class BatchOperationsEndpoint
 		return Results.NoContent();
 	}
 
+	private static async Task<BatchRequest> ReadRequestAsync(HttpRequest httpRequest, CancellationToken ct)
+	{
+		try
+		{
+			var request = await httpRequest.ReadFromJsonAsync<BatchRequest>(cancellationToken: ct);
+
+			if (request is null)
+				throw new ValidationException("Request body is required.");
+
+			return request;
+		}
+		catch (JsonException ex)
+		{
+			throw new ValidationException(ex.Message);
+		}
+		catch (NotSupportedException ex)
+		{
+			throw new ValidationException(ex.Message);
+		}
+	}
+
 	private static KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Operation MapOperation(
-		ConfigItems.BatchOperations.Operation operation)
+		Operation operation)
 		=> operation switch
 		{
 			CreateItem create => MapCreate(create),

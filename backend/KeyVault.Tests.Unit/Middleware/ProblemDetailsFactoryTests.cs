@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using KeyVault.Api.Middleware;
 using KeyVault.Api.Authentication.Exceptions;
 using KeyVault.Application.Exceptions;
@@ -35,6 +36,16 @@ public sealed class ProblemDetailsFactoryTests
 
 		Assert.Equal(409, problem.Status);
 		Assert.Equal("Conflict with current state", problem.Title);
+	}
+
+	[Fact]
+	public void Create_ShouldMapJsonException_ToBadRequest()
+	{
+		var problem = ProblemDetailsFactory.Create(new JsonException("Bad JSON payload"));
+
+		Assert.Equal(400, problem.Status);
+		Assert.Equal("Validation failed", problem.Title);
+		Assert.Equal("Bad JSON payload", problem.Detail);
 	}
 
 	[Theory]
