@@ -24,8 +24,20 @@ public static class InfrastructureModule
 		services.AddOptions<DatabaseOptions>()
 			.Bind(configuration.GetSection(DatabaseOptions.Section))
 			.Validate(option =>
-					!string.IsNullOrWhiteSpace(option.ConnectionString),
-				"Database connection string must be configured!")
+					!string.IsNullOrWhiteSpace(option.Host),
+				"Database host must be configured!")
+			.Validate(option =>
+					option.Port > 0,
+				"Database port must be greater than zero!")
+			.Validate(option =>
+					!string.IsNullOrWhiteSpace(option.Database),
+				"Database name must be configured!")
+			.Validate(option =>
+					!string.IsNullOrWhiteSpace(option.Username),
+				"Database username must be configured!")
+			.Validate(option =>
+					!string.IsNullOrWhiteSpace(option.Password),
+				"Database password must be configured!")
 			.ValidateOnStart();
 
 		services.AddOptions<EncryptionOptions>()

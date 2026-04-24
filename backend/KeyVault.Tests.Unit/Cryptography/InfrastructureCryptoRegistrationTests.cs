@@ -5,6 +5,7 @@ using KeyVault.Infrastructure.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace KeyVault.Tests.Unit.Cryptography;
 
@@ -35,12 +36,49 @@ public sealed class InfrastructureCryptoRegistrationTests
 			provider.GetRequiredService<IOptions<EncryptionOptions>>().Value);
 	}
 
+	[Theory]
+	[InlineData(false, false, SslMode.Disable, false)]
+	[InlineData(true, true, SslMode.Require, true)]
+	public void DatabaseOptions_ShouldBuildExpectedConnectionString(
+		bool ssl,
+		bool trustServerCertificate,
+		SslMode expectedSslMode,
+		bool expectedTrustServerCertificate)
+	{
+		var options = new DatabaseOptions
+		{
+			Host = "localhost",
+			Port = 5432,
+			Database = "keyvault",
+			Username = "test",
+			Password = "secret",
+			Ssl = ssl,
+			TrustServerCertificate = trustServerCertificate
+		};
+
+		var connectionStringBuilder = new NpgsqlConnectionStringBuilder(options.ConnectionString);
+
+		Assert.Equal("localhost", connectionStringBuilder.Host);
+		Assert.Equal(5432, connectionStringBuilder.Port);
+		Assert.Equal("keyvault", connectionStringBuilder.Database);
+		Assert.Equal("test", connectionStringBuilder.Username);
+		Assert.Equal("secret", connectionStringBuilder.Password);
+		Assert.Equal(expectedSslMode, connectionStringBuilder.SslMode);
+		Assert.Equal(expectedTrustServerCertificate.ToString(), connectionStringBuilder["Trust Server Certificate"]?.ToString());
+	}
+
 	private static IServiceCollection CreateServices(string masterKey)
 	{
 		var configuration = new ConfigurationBuilder()
 			.AddInMemoryCollection(new Dictionary<string, string?>
 			{
-				[$"{DatabaseOptions.Section}:ConnectionString"] = "Host=localhost;Database=keyvault;Username=test;Password=test",
+				[$"{DatabaseOptions.Section}:Host"] = "localhost",
+				[$"{DatabaseOptions.Section}:Port"] = "5432",
+				[$"{DatabaseOptions.Section}:Database"] = "keyvault",
+				[$"{DatabaseOptions.Section}:Username"] = "test",
+				[$"{DatabaseOptions.Section}:Password"] = "test",
+				[$"{DatabaseOptions.Section}:Ssl"] = "false",
+				[$"{DatabaseOptions.Section}:TrustServerCertificate"] = "false",
 				[$"{EncryptionOptions.Section}:MasterKey"] = masterKey
 			})
 			.Build();

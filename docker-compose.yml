@@ -8,7 +8,13 @@ services:
       - "3030:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      Database__ConnectionString: ${DB_CONNECTION_STRING}
+      Database__Host: db
+      Database__Port: 5432
+      Database__Database: keyvault
+      Database__Username: postgres
+      Database__Password: postgres
+      Database__Ssl: false
+      Database__TrustServerCertificate: false
       Encryption__MasterKey: ${ENCRYPTION_MASTERKEY}
       IdentityProvider__Authority: ${IDP_AUTHORITY}
       IdentityProvider__Audience: ${IDP_AUDIENCE}
