@@ -1,3 +1,3 @@
 namespace KeyVault.Application.Exceptions;
 
-public class ForbiddenException(string message) : AppException(message);
+public class ForbiddenException() : AppException("Access denied.");

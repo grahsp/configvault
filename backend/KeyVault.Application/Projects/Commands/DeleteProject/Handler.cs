@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
-using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
+using KeyVault.Application.Projects.Exceptions;
 
 namespace KeyVault.Application.Projects.Commands.DeleteProject;
 
@@ -9,10 +9,8 @@ public sealed class Handler(IUserContext user, IProjectRepository repository, IU
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
-		var project = await repository.GetByIdAsync(command.Id, ct);
-
-		if (project is null)
-			throw new NotFoundException("Project not found");
+		var project = await repository.GetByIdAsync(command.Id, ct)
+			?? throw new ProjectNotFoundException(command.Id);
 
 		project.EnsureCanDelete(user.UserId);
 

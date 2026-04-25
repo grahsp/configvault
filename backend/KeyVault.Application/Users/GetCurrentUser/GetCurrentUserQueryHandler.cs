@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
-using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
+using KeyVault.Application.Users.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.Users.GetCurrentUser;
@@ -16,6 +16,6 @@ public sealed class GetCurrentUserQueryHandler(IUserContext currentUser, IReadDb
 			.Select(x => new UserView(x.Id, x.DisplayName, x.Status.ToString(), x.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 
-		return user ?? throw new NotFoundException("User not found");
+		return user ?? throw new UserNotFoundException(currentUser.UserId);
 	}
 }

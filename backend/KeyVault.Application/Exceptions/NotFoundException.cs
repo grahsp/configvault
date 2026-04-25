@@ -1,3 +1,3 @@
 namespace KeyVault.Application.Exceptions;
 
-public class NotFoundException(string message) : AppException(message);
+public class NotFoundException() : AppException("Resource not found.");

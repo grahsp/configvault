@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
-using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
+using KeyVault.Application.Users.Exceptions;
 
 namespace KeyVault.Application.Users.ActivateUser;
 
@@ -15,7 +15,7 @@ public class ActivateUserCommandHandler(
 	public async Task<Unit> HandleAsync(ActivateUserCommand command, CancellationToken ct)
 	{
 		var user = await repository.GetByIdAsync(userContext.UserId, ct)
-			?? throw new NotFoundException("User not found");
+			?? throw new UserNotFoundException(userContext.UserId);
 
 		user.Activate(command.DisplayName, time.GetUtcNow());
 		await persistence.SaveChangesAsync(ct);

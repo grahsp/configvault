@@ -17,7 +17,7 @@ public class Handler(IUserContext user, IReadDbContext db)
 				x.UserId == user.UserId, ct);
 
 		if (!isMember)
-			throw new ForbiddenException("Caller does not have access");
+			throw new ForbiddenException();
 		
 		return await db.ProjectMembers
 			.Where(x => x.ProjectId == query.ProjectId)
