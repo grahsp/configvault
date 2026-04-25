@@ -3,7 +3,9 @@ using KeyVault.Domain.Users;
 
 namespace KeyVault.Api.Authentication;
 
-public class UserContextContext(IHttpContextAccessor accessor) : IUserContext
+// TODO: should inherit IActorContext once implemented everywhere
+// TODO: should not be registered in DI - Constructor should accept AuthenticatedUser
+public class UserActorContext(IHttpContextAccessor accessor) : IUserContext
 {
 	public ActorType Type => ActorType.User;
 		

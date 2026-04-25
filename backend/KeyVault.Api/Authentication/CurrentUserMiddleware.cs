@@ -8,11 +8,11 @@ public class CurrentUserMiddleware(RequestDelegate next)
 	{
 		var principal = context.User;
 
-		if (principal.Identity?.IsAuthenticated == true)
+		if (principal.Identity?.IsAuthenticated == true && !principal.IsMachine())
 		{
-			var userContext = factory.Create(principal);
+			var identity = factory.Create(principal);
 
-			var user = await provisioner.GetOrProvisionUserAsync(userContext, context.RequestAborted);
+			var user = await provisioner.GetOrProvisionUserAsync(identity, context.RequestAborted);
 			context.SetCurrentUser(user);
 		}
 

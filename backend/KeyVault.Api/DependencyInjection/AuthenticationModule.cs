@@ -66,6 +66,14 @@ public static class AuthenticationModule
 		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();
 		
 		services.AddScoped<IUserContextFactory, UserContextFactory>();
-		services.AddScoped<IUserContext, UserContextContext>();
+		// TODO: should not be registered once IActorContext is in use
+		services.AddScoped<IUserContext, UserActorContext>();
+
+		services.AddScoped<IActorContextFactory, ActorContextFactory>();
+		services.AddScoped<IActorContext>(sp =>
+		{
+			var factory = sp.GetRequiredService<IActorContextFactory>();
+			return factory.Create();
+		});
 	}
 }
