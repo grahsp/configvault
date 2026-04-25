@@ -2,7 +2,7 @@ using KeyVault.Domain.Users;
 
 namespace KeyVault.Application.Authentication;
 
-public interface IUserContext
+public interface IUserContext : IActorContext
 {
 	Guid UserId { get; }
 	UserStatus Status { get; }

@@ -25,8 +25,8 @@ public sealed class ProblemDetailsFactoryTests
 	{
 		var problem = ProblemDetailsFactory.Create(new InsufficientProjectRoleException());
 
-		Assert.Equal(403, problem.Status);
-		Assert.Equal("Access denied", problem.Title);
+		Assert.Equal(409, problem.Status);
+		Assert.Equal("Conflict with current state", problem.Title);
 	}
 
 	[Fact]

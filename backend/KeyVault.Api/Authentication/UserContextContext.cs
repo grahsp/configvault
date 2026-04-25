@@ -5,6 +5,8 @@ namespace KeyVault.Api.Authentication;
 
 public class UserContextContext(IHttpContextAccessor accessor) : IUserContext
 {
+	public ActorType Type => ActorType.User;
+		
 	private AuthenticatedUser? User => accessor.HttpContext?.GetCurrentUser();
 	public bool IsAuthenticated => User is not null;
 
