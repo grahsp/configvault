@@ -1,15 +1,16 @@
 using KeyVault.Application.Abstractions.Cryptography;
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Authorization;
 using KeyVault.Application.ConfigItems;
-using GetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Handler;
-using GetConfigValueQuery = KeyVault.Application.ConfigItems.Commands.GetConfigValue.Query;
+using KeyVault.Application.Exceptions;
+using GetConfigValueHandler = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Handler;
+using GetConfigValueQuery = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Query;
 using ExecuteBatchProcessor = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Processor;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
-using KeyVault.Domain.Users;
+using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
 using SetConfigValueCommand = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Command;
 using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Handler;
@@ -41,7 +42,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 		var fixture = new Fixture();
 		var encryptedValue = fixture.Encryption.EncryptedSecret;
 		fixture.Configuration.SetValue(fixture.DevelopmentEnvironment.Id, encryptedValue, fixture.User.UserId, fixture.Time.GetUtcNow());
-		var sut = new GetConfigValueHandler(fixture.User, fixture.Projects, fixture.Configurations, fixture.Encryption);
+		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
 
 		var result = await sut.HandleAsync(query, CancellationToken.None);
@@ -53,7 +54,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	}
 
 	[Fact]
-	public async Task GetConfigValue_ShouldReturnNull_WhenUserIsNotProjectMember()
+	public async Task GetConfigValue_ShouldThrowForbidden_WhenUserIsNotProjectMember()
 	{
 		var fixture = new Fixture();
 		fixture.User.UserId = Guid.NewGuid();
@@ -62,12 +63,10 @@ public sealed class ConfigValueEncryptionHandlerTests
 			fixture.Encryption.EncryptedSecret,
 			fixture.Project.Members[0].UserId,
 			fixture.Time.GetUtcNow());
-		var sut = new GetConfigValueHandler(fixture.User, fixture.Projects, fixture.Configurations, fixture.Encryption);
+		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
 
-		var result = await sut.HandleAsync(query, CancellationToken.None);
-
-		Assert.Null(result);
+		await Assert.ThrowsAsync<ForbiddenException>(() => sut.HandleAsync(query, CancellationToken.None));
 		Assert.Null(fixture.Encryption.DecryptedValue);
 	}
 
@@ -76,9 +75,11 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public FakeUserContext User { get; } = new();
 		public FakeProjectRepository Projects { get; } = new();
 		public FakeConfigItemRepository Configurations { get; } = new();
+		public FakeReadDbContext Db { get; }
 		public FakeUnitOfWork Uow { get; } = new();
 		public FakeTimeProvider Time { get; } = new();
 		public FakeEnvelopeEncryptionService Encryption { get; } = new();
+		public IActorAuthorizationService ActorAuthorization { get; }
 		public Project Project { get; }
 		public ConfigItem Configuration { get; }
 		public KeyVault.Domain.Projects.Environment DevelopmentEnvironment { get; }
@@ -91,6 +92,8 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 			Projects.Project = Project;
 			Configurations.Configuration = Configuration;
+			Db = new FakeReadDbContext(Project);
+			ActorAuthorization = new ActorAuthorizationService(Db);
 		}
 
 		public ExecuteBatchProcessor CreateProcessor()
@@ -100,14 +103,9 @@ public sealed class ConfigValueEncryptionHandlerTests
 				Configurations,
 				Uow,
 				new KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Executor(Encryption, Time));
-	}
 
-	private sealed class FakeUserContext : IUserContext
-	{
-		public Guid UserId { get; set; } = Guid.NewGuid();
-		public UserStatus Status => UserStatus.Active;
-		public bool IsActive => true;
-		public bool IsAuthenticated => true;
+		public GetConfigValueHandler CreateGetConfigValueHandler()
+			=> new(User, ActorAuthorization, Projects, Configurations, Encryption);
 	}
 
 	private sealed class FakeProjectRepository : IProjectRepository
@@ -128,9 +126,27 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
 			=> Task.FromResult(Configuration?.Id == id ? Configuration : null);
 
+		public Task<ConfigItem?> GetByIdAndProjectAsync(Guid projectId, Guid configItemId, CancellationToken ct)
+			=> Task.FromResult(
+				Configuration is not null &&
+				Configuration.Id == configItemId &&
+				Configuration.ProjectId == projectId
+					? Configuration
+					: null);
+
 		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct) => throw new NotImplementedException();
 		public void Add(ConfigItem configItem) => throw new NotImplementedException();
 		public void Remove(ConfigItem configItem) => throw new NotImplementedException();
+	}
+
+	private sealed class FakeReadDbContext(Project project) : IReadDbContext
+	{
+		public IQueryable<KeyVault.Domain.Users.User> Users => Enumerable.Empty<KeyVault.Domain.Users.User>().AsQueryable();
+		public IQueryable<Project> Projects => new[] { project }.AsQueryable();
+		public IQueryable<KeyVault.Domain.Projects.Environment> Environments => project.Environments.AsQueryable();
+		public IQueryable<ConfigItem> ConfigItems => Enumerable.Empty<ConfigItem>().AsQueryable();
+		public IQueryable<ConfigValue> ConfigValues => Enumerable.Empty<ConfigValue>().AsQueryable();
+		public IQueryable<ProjectMember> ProjectMembers => project.Members.AsQueryable();
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork

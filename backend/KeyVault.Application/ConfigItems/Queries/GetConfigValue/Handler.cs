@@ -1,13 +1,17 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
+using KeyVault.Application.Authorization;
+using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Projects;
+using KeyVault.Application.Projects.Exceptions;
 
-namespace KeyVault.Application.ConfigItems.Commands.GetConfigValue;
+namespace KeyVault.Application.ConfigItems.Queries.GetConfigValue;
 
 public sealed class Handler(
-	IUserContext user,
+	IActorContext actor,
+	IActorAuthorizationService actorAuthorization,
 	IProjectRepository projects,
 	IConfigItemRepository configurations,
 	IEnvelopeEncryptionService encryption)
@@ -15,21 +19,21 @@ public sealed class Handler(
 {
 	public async Task<ConfigValueView?> HandleAsync(Query query, CancellationToken ct)
 	{
-		var project = await projects.GetByIdAsync(query.ProjectId, ct);
+		var project = await projects.GetByIdAsync(query.ProjectId, ct)
+			?? throw new ProjectNotFoundException(query.ProjectId);
 
-		if (project is null || !project.IsMember(user.UserId))
-			return null;
-
+		actorAuthorization.EnsureCanAccessProject(project, actor);
+		
 		if (!project.TryGetEnvironment(query.EnvironmentName, out var environment))
-			return null;
+			throw new EnvironmentNotFoundException(query.EnvironmentName);
 
-		var configuration = await configurations.GetByIdAsync(query.ConfigItemId, ct);
-
-		if (configuration is null || configuration.ProjectId != query.ProjectId)
-			return null;
+		
+		var configuration = await configurations.GetByIdAndProjectAsync(query.ProjectId, query.ConfigItemId, ct)
+			?? throw new ConfigItemNotFoundException(query.ConfigItemId);
 
 		if (!configuration.TryGetValue(environment.Id, out var value))
 			return null;
+
 
 		var decrypted = encryption.DecryptSecret(value.Value, project.CurrentDataKey.Value);
 		return new ConfigValueView(decrypted, value.LastModifiedAt);

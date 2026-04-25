@@ -1,11 +1,10 @@
 using KeyVault.Application.Abstractions.Cryptography;
-using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Projects.Commands.CreateProject;
 using KeyVault.Domain;
 using KeyVault.Domain.Projects;
-using KeyVault.Domain.Users;
+using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
 
 namespace KeyVault.Tests.Unit.Projects;
@@ -31,13 +30,6 @@ public sealed class CreateProjectHandlerTests
 		Assert.True(uow.SaveChangesCalled);
 	}
 
-	private sealed class FakeUserContext : IUserContext
-	{
-		public Guid UserId { get; } = Guid.NewGuid();
-		public UserStatus Status => UserStatus.Active;
-		public bool IsActive => true;
-		public bool IsAuthenticated => true;
-	}
 
 	private sealed class FakeProjectRepository : IProjectRepository
 	{

@@ -1,5 +1,4 @@
 using KeyVault.Application.Abstractions.Cryptography;
-using KeyVault.Application.Authentication;
 using KeyVault.Application.ConfigItems;
 using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 using KeyVault.Application.ConfigItems.Exceptions;
@@ -9,7 +8,7 @@ using KeyVault.Application.Projects;
 using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
-using KeyVault.Domain.Users;
+using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
 
 namespace KeyVault.Tests.Unit.ConfigItems;
@@ -155,14 +154,6 @@ public sealed class ExecuteBatchOperationsProcessorTests
 				new Executor(Encryption, Time));
 	}
 
-	private sealed class FakeUserContext : IUserContext
-	{
-		public Guid UserId { get; set; } = Guid.NewGuid();
-		public UserStatus Status => UserStatus.Active;
-		public bool IsActive => true;
-		public bool IsAuthenticated => true;
-	}
-
 	private sealed class FakeProjectRepository : IProjectRepository
 	{
 		public Project? Project { get; set; }
@@ -181,6 +172,12 @@ public sealed class ExecuteBatchOperationsProcessorTests
 
 		public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
 			=> Task.FromResult(ConfigItems.TryGetValue(id, out var configItem) ? configItem : null);
+
+		public Task<ConfigItem?> GetByIdAndProjectAsync(Guid projectId, Guid configItemId, CancellationToken ct)
+			=> Task.FromResult(
+				ConfigItems.TryGetValue(configItemId, out var configItem) && configItem.ProjectId == projectId
+					? configItem
+					: null);
 
 		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct)
 			=> Task.FromResult(ConfigItems.Values.Any(item => item.ProjectId == projectId && item.Key == key));

@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Commands.GetConfigValue;
+using KeyVault.Application.ConfigItems.Queries.GetConfigValue;
 
 namespace KeyVault.Api.ConfigItems.GetConfigValue;
 
