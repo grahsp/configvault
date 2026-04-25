@@ -1,3 +1,4 @@
+using KeyVault.Application.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 
@@ -9,5 +10,7 @@ public static class ApplicationModule
 	{
 		services.AddScoped<IExecutor, Executor>();
 		services.AddScoped<IProcessor, Processor>();
+
+		services.AddScoped<IActorAuthorizationService, ActorAuthorizationService>();
 	}
 }
