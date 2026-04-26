@@ -11,7 +11,7 @@ namespace KeyVault.Application.ConfigItems.Commands.SetConfigValue;
 
 public sealed class Handler(
 	IProjectRepository projects,
-	IActorContext actor,
+	IUserContext actor,
 	IActorAuthorizationService authorization,
 	IConfigItemOperationAuthorizer operationAuthorizer,
 	IConfigItemBatchPlanner planner,
