@@ -12,7 +12,7 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 	{
 		return actor switch
 		{
-			IUserContext user => project.IsMember(user.UserId),
+			IUserContext user => project.IsMember(user.Id),
 			_ => false
 		};
 	}

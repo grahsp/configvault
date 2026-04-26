@@ -12,7 +12,7 @@ public sealed class ConfigItemOperationAuthorizer : IConfigItemOperationAuthoriz
 		if (actor is not IUserContext user)
 			throw new ForbiddenException();
 		
-		var member = project.RequireMember(user.UserId);
+		var member = project.RequireMember(user.Id);
 		
 		foreach (var operation in batch.Operations)
 		{

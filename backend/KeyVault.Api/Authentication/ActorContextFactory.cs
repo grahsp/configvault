@@ -10,8 +10,7 @@ public sealed class ActorContextFactory(IHttpContextAccessor http) : IActorConte
 		var context = http.HttpContext!;
 
 		if (context.GetCurrentUser() is {} user)
-			// TODO: Should pass user
-			return new UserActorContext(http);
+			return new UserActorContext(user);
 
 		throw new UnauthorizedException();
 	}
