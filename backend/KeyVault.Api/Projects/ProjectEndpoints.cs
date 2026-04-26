@@ -22,7 +22,7 @@ public static class ProjectEndpoints
 			.WithTags("Members");
 
 		members.MapGet("", GetMembers.Endpoint.Handle);
-		members.MapPost("", AddMember.Endpoint.Handle);
+		members.MapPost("/{actorId}", AddMember.Endpoint.Handle);
 		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
 		members.MapDelete("/{userId}", RemoveMember.Endpoint.Handle);
 
