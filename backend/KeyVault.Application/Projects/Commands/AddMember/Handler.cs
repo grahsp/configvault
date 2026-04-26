@@ -7,17 +7,17 @@ using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Projects.Commands.AddMember;
 
-public class Handler(IUserContext user, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
+public class Handler(IUserContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{
-		if (command.UserId == user.UserId)
+		if (command.UserId == actor.Id)
 			throw new BusinessRuleViolationException("Cannot add yourself to a project");
 		
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 		
-		project.AddMember(user.UserId, command.UserId, ProjectRole.Member);
+		project.AddMember(actor.Id, command.UserId, ProjectRole.Member);
 		await uow.SaveChangesAsync(ct);
 
 		return Unit.Value;

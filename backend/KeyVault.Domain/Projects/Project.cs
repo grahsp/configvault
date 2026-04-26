@@ -58,19 +58,17 @@ public sealed class Project
 	}
 
 
-	public bool IsMember(Guid id) => TryGetMember(id, out _);
+	public bool IsMember(ActorId id) => TryGetMember(id, out _);
 	
-	public ProjectMember RequireMember(Guid id)
+	public ProjectMember RequireMember(ActorId id)
 	{
-		// TODO: update method signature when ActorId fully implemented
-		return Members.SingleOrDefault(m => m.UserId == ActorId.User(id))
+		return Members.SingleOrDefault(m => m.UserId == id)
 		       ?? throw new ProjectMemberNotFoundException();
 	}
 
-	public bool TryGetMember(Guid id, [NotNullWhen(true)] out ProjectMember? member)
+	public bool TryGetMember(ActorId id, [NotNullWhen(true)] out ProjectMember? member)
 	{
-		// TODO: update method signature when ActorId fully implemented
-		member = Members.SingleOrDefault(m => m.UserId == ActorId.User(id));
+		member = Members.SingleOrDefault(m => m.UserId == id);
 		return member != null;
 	}
 	
@@ -91,7 +89,7 @@ public sealed class Project
 	public void EnsureCanDelete(ActorId actorId)
 		=> RequireMemberWithRole(actorId, ProjectRole.Owner);
 
-	public void AddMember(Guid actorId, Guid userId, ProjectRole role)
+	public void AddMember(ActorId actorId, ActorId userId, ProjectRole role)
 	{
 		RequireMemberWithRole(actorId, ProjectRole.Admin);
 
@@ -104,7 +102,7 @@ public sealed class Project
 		_members.Add(new ProjectMember(Id, userId, role));
 	}
 	
-	public void RemoveMember(Guid actorId, Guid userId)
+	public void RemoveMember(ActorId actorId, ActorId userId)
 	{
 		RequireMemberWithRole(actorId, ProjectRole.Admin);
 		
@@ -117,7 +115,7 @@ public sealed class Project
 		_members.Remove(member);
 	}
 
-	public void SetRole(Guid actorId, Guid userId, ProjectRole role)
+	public void SetRole(ActorId actorId, ActorId userId, ProjectRole role)
 	{
 		if (role == ProjectRole.Owner)
 			throw new InvalidRoleException();

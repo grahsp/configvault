@@ -11,10 +11,10 @@ public sealed class ProjectMember
 	
 	private ProjectMember() {}
 
-	internal ProjectMember(Guid projectId, Guid userId, ProjectRole role)
+	internal ProjectMember(Guid projectId, ActorId userId, ProjectRole role)
 	{
 		ProjectId = projectId;
-		UserId = ActorId.User(userId);
+		UserId = userId;
 		Role = role;
 	}
 	
