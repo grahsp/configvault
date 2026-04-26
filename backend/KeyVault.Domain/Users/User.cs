@@ -1,10 +1,11 @@
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Users.Exceptions;
 
 namespace KeyVault.Domain.Users;
 
 public sealed class User
 {
-	public Guid Id { get; private init; }
+	public ActorId Id { get; } = null!;
 	
 	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
@@ -19,7 +20,7 @@ public sealed class User
 
 	private User(Guid id, DateTimeOffset now)
 	{ 
-		Id = id;
+		Id = ActorId.User(id);
 		CreatedAt = now;
 	}
 

@@ -1,9 +1,11 @@
+using KeyVault.Domain.Actors;
+
 namespace KeyVault.Domain.Projects;
 
 public sealed class ProjectMember
 {
 	public Guid ProjectId { get; private init; }
-	public Guid UserId { get; private init; }
+	public ActorId UserId { get; private init; } = null!;
 	
 	public ProjectRole Role { get; private set; }
 	
@@ -12,7 +14,7 @@ public sealed class ProjectMember
 	internal ProjectMember(Guid projectId, Guid userId, ProjectRole role)
 	{
 		ProjectId = projectId;
-		UserId = userId;
+		UserId = ActorId.User(userId);
 		Role = role;
 	}
 	

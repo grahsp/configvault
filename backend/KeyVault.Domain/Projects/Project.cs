@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Exceptions;
 using KeyVault.Domain.Projects.Exceptions;
 
@@ -61,13 +62,15 @@ public sealed class Project
 	
 	public ProjectMember RequireMember(Guid id)
 	{
-		return Members.SingleOrDefault(m => m.UserId == id)
+		// TODO: update method signature when ActorId fully implemented
+		return Members.SingleOrDefault(m => m.UserId == ActorId.User(id))
 		       ?? throw new ProjectMemberNotFoundException();
 	}
 
 	public bool TryGetMember(Guid id, [NotNullWhen(true)] out ProjectMember? member)
 	{
-		member = Members.SingleOrDefault(m => m.UserId == id);
+		// TODO: update method signature when ActorId fully implemented
+		member = Members.SingleOrDefault(m => m.UserId == ActorId.User(id));
 		return member != null;
 	}
 	
