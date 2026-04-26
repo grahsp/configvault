@@ -14,7 +14,7 @@ public sealed class UserTests
 		var now = _time.GetUtcNow();
 		var user = User.Create("github", "123", now);
 
-		Assert.NotEqual(Guid.Empty, user.Id);
+		Assert.NotEqual(string.Empty, user.Id.Value);
 		Assert.Null(user.DisplayName);
 		Assert.Equal(UserStatus.Pending, user.Status);
 		Assert.Equal(now, user.CreatedAt);
@@ -22,7 +22,7 @@ public sealed class UserTests
 		var login = Assert.Single(user.ExternalLogins);
 		Assert.Equal("github", login.Issuer);
 		Assert.Equal("123", login.Subject);
-		Assert.Equal(user.Id, login.UserId);
+		Assert.Equal(user.Id, login.ActorId);
 	}
 
 	[Fact]
@@ -37,7 +37,7 @@ public sealed class UserTests
 		var login = Assert.Single(user.ExternalLogins, l => l.Issuer == "github" && l.Subject == "123");
 		Assert.Equal("github", login.Issuer);
 		Assert.Equal("123", login.Subject);
-		Assert.Equal(user.Id, login.UserId);
+		Assert.Equal(user.Id, login.ActorId);
 	}
 
 	[Fact]

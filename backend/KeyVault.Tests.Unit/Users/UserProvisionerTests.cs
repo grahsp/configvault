@@ -1,6 +1,7 @@
 using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Users;
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Users;
 using Microsoft.Extensions.Time.Testing;
 
@@ -70,7 +71,7 @@ public sealed class UserProvisionerTests
 
 		public AuthenticatedUser GivenExistingUser(AuthenticatedUser? existingUser = null)
 		{
-			var user = existingUser ?? new AuthenticatedUser(Guid.NewGuid(), UserStatus.Active);
+			var user = existingUser ?? new AuthenticatedUser(ActorId.User(Guid.NewGuid()), UserStatus.Active);
 			Resolver.SetUserToReturn(user);
 			
 			return user;
@@ -93,7 +94,7 @@ public sealed class UserProvisionerTests
 
 		public void Add(User user) => AddedUser = user;
 		public void Remove(User user) => throw new NotImplementedException();
-		public Task<User?> GetByIdAsync(Guid id, CancellationToken ct) => throw new NotImplementedException();
+		public Task<User?> GetByIdAsync(ActorId id, CancellationToken ct) => throw new NotImplementedException();
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork
