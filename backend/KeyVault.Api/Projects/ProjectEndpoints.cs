@@ -23,8 +23,8 @@ public static class ProjectEndpoints
 
 		members.MapGet("", GetMembers.Endpoint.Handle);
 		members.MapPost("/{actorId}", AddMember.Endpoint.Handle);
-		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
-		members.MapDelete("/{userId}", RemoveMember.Endpoint.Handle);
+		members.MapPut("/{actorId}", SetRole.Endpoint.Handle);
+		members.MapDelete("/{actorId}", RemoveMember.Endpoint.Handle);
 
 		var environments = builder.MapGroup("/projects/{projectId}/environments")
 			.RequireAuthorization(Policies.ActiveUser)
