@@ -2,7 +2,7 @@ using KeyVault.Application.Exceptions;
 
 namespace KeyVault.Application.ConfigItems.Exceptions;
 
-public sealed class ConfigItemNotFoundException(Guid id) : NotFoundException
+public sealed class ConfigItemNotFoundException(params Guid[] missingIds) : NotFoundException
 {
-	public Guid Id { get; } = id;
+	public IReadOnlyList<Guid> MissingIds { get; } = missingIds;
 }

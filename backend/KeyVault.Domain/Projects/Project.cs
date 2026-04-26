@@ -71,18 +71,18 @@ public sealed class Project
 		return member != null;
 	}
 	
-	public void RequireRole(ProjectRole required, ProjectRole actual)
+	public void RequireRole(ProjectMember member, ProjectRole requiredRole)
 	{
-		if (actual > required)
+		if (member.Role > requiredRole)
 			throw new InsufficientProjectRoleException();
 	}
 	
-	public ProjectMember RequireMemberWithRole(Guid id, ProjectRole role)
+	public ProjectMember RequireMemberWithRole(Guid id, ProjectRole requiredRole)
 	{
-		var actor = RequireMember(id);
-		RequireRole(role, actor.Role);
+		var member = RequireMember(id);
+		RequireRole(member, requiredRole);
 
-		return actor;
+		return member;
 	}
 
 	public void EnsureCanDelete(Guid actorId)

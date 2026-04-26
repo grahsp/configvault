@@ -1,6 +1,7 @@
 using KeyVault.Application.Authorization;
+using KeyVault.Application.ConfigItems.BatchExecution;
+using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using Microsoft.Extensions.DependencyInjection;
-using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
 
 namespace KeyVault.Application.DependencyInjection;
 
@@ -8,9 +9,10 @@ public static class ApplicationModule
 {
 	public static void AddApplicationModule(this IServiceCollection services)
 	{
-		services.AddScoped<IExecutor, Executor>();
-		services.AddScoped<IProcessor, Processor>();
+		services.AddScoped<IConfigItemMutationExecutor, ConfigItemMutationExecutor>();
+		services.AddScoped<IConfigItemBatchPlanner, ConfigItemBatchPlanner>();
 
 		services.AddScoped<IActorAuthorizationService, ActorAuthorizationService>();
+		services.AddScoped<IConfigItemOperationAuthorizer, ConfigItemOperationAuthorizer>();
 	}
 }

@@ -19,6 +19,14 @@ public class EfConfigItemRepository(AppDbContext db) : IConfigItemRepository
 					x.ProjectId == projectId,
 				ct);
 
+	public async Task<IReadOnlyList<ConfigItem>> GetByIdsAsync(Guid projectId, IEnumerable<Guid> configItemIds, CancellationToken ct)
+	{
+		return await db.ConfigItems
+			.Where(x => x.ProjectId == projectId && configItemIds.Contains(x.Id))
+			.Include(x => x.Values)
+			.ToListAsync(ct);
+	}
+
 	public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct)
 		=> db.ConfigItems.AnyAsync(x => x.ProjectId == projectId && x.Key == key, ct);
 

@@ -11,4 +11,6 @@ public sealed class FakeUserContext : IUserContext
 	public UserStatus Status => UserStatus.Active;
 	public bool IsActive => true;
 	public bool IsAuthenticated => true;
+	
+	public ActorId Id => ActorId.User(UserId);
 }
