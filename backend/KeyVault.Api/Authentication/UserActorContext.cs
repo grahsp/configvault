@@ -1,5 +1,6 @@
 using KeyVault.Application.Authentication;
 using KeyVault.Domain;
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Users;
 
 namespace KeyVault.Api.Authentication;
@@ -16,7 +17,7 @@ public class UserActorContext(IHttpContextAccessor accessor) : IUserContext
 	public ActorId Id => ActorId.User(UserId);
 	
 	[Obsolete("Use Id instead")]
-	public Guid UserId => RequireUser().Id;
+	public Guid UserId => Guid.Parse(RequireUser().Id.Value);
 	public UserStatus Status => RequireUser().Status;
 	public bool IsActive => Status == UserStatus.Active;
 

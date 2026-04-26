@@ -1,6 +1,7 @@
 using KeyVault.Api.Authentication;
 using KeyVault.Api.Authorization;
 using KeyVault.Application.Authentication;
+using KeyVault.Application.Exceptions;
 using KeyVault.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,16 +65,20 @@ public static class AuthenticationModule
 		
 		services.AddScoped<IUserProvisioner, UserProvisioner>();
 		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();
-		
-		services.AddScoped<IUserContextFactory, UserContextFactory>();
-		// TODO: should not be registered once IActorContext is in use
-		services.AddScoped<IUserContext, UserActorContext>();
 
 		services.AddScoped<IActorContextFactory, ActorContextFactory>();
 		services.AddScoped<IActorContext>(sp =>
 		{
 			var factory = sp.GetRequiredService<IActorContextFactory>();
 			return factory.Create();
+		});
+		
+		services.AddScoped<IUserContextFactory, UserContextFactory>();	
+		services.AddScoped<IUserContext>(sp =>
+		{
+			var actor = sp.GetRequiredService<IActorContext>();
+			return actor as IUserContext
+			       ?? throw new UnauthorizedException();
 		});
 	}
 }
