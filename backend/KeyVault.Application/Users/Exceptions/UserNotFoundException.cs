@@ -1,8 +1,9 @@
 using KeyVault.Application.Exceptions;
+using KeyVault.Domain.Actors;
 
 namespace KeyVault.Application.Users.Exceptions;
 
-public class UserNotFoundException(Guid id) : NotFoundException
+public class UserNotFoundException(ActorId id) : NotFoundException
 {
-	public Guid Id { get; } = id;
+	public ActorId Id { get; } = id;
 }
