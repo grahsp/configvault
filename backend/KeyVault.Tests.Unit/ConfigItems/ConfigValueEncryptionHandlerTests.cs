@@ -9,6 +9,7 @@ using GetConfigValueQuery = KeyVault.Application.ConfigItems.Queries.GetConfigVa
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
@@ -57,12 +58,13 @@ public sealed class ConfigValueEncryptionHandlerTests
 	public async Task GetConfigValue_ShouldThrowForbidden_WhenUserIsNotProjectMember()
 	{
 		var fixture = new Fixture();
-		fixture.User.UserId = Guid.NewGuid();
+		fixture.User.Id = ActorId.User(Guid.NewGuid());
 		fixture.Configuration.SetValue(
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
 			fixture.Project.Members[0].UserId,
 			fixture.Time.GetUtcNow());
+
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
 
