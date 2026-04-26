@@ -1,3 +1,4 @@
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,7 +14,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.HasKey(x => x.Id);
 
 		builder.Property(x => x.Id)
-			.ValueGeneratedNever();
+			.HasActorIdConversion()
+			.ValueGeneratedNever()
+			.IsRequired();
 
 		builder.Property(x => x.DisplayName)
 			.HasMaxLength(256);
@@ -24,9 +27,9 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.Property(x => x.ActivatedAt)
 			.IsRequired(false);
 
-		builder.HasMany<ExternalLogin>(x => x.ExternalLogins)
+		builder.HasMany(x => x.ExternalLogins)
 			.WithOne()
-			.HasForeignKey(x => x.UserId)
+			.HasForeignKey(x => x.ActorId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		builder.Navigation(x => x.ExternalLogins)
