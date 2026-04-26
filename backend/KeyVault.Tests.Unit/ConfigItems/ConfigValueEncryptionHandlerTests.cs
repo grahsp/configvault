@@ -1,10 +1,11 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.ConfigItems;
+using KeyVault.Application.ConfigItems.BatchExecution;
+using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.Exceptions;
 using GetConfigValueHandler = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Handler;
 using GetConfigValueQuery = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Query;
-using ExecuteBatchProcessor = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Processor;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
@@ -23,8 +24,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	public async Task SetConfigValue_ShouldEncryptPlaintextBeforeStoring()
 	{
 		var fixture = new Fixture();
-		var processor = fixture.CreateProcessor();
-		var sut = new SetConfigValueHandler(processor);
+		var sut = fixture.CreateSetConfigValueHandler();
 		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret");
 
 		await sut.HandleAsync(command, CancellationToken.None);
@@ -61,7 +61,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 		fixture.Configuration.SetValue(
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
-			fixture.Project.Members[0].UserId,
+			Guid.Parse(fixture.Project.Members[0].UserId.Value),
 			fixture.Time.GetUtcNow());
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
@@ -86,7 +86,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		public Fixture()
 		{
-			Project = Project.Create(User.UserId, "project", TestEncryptedValue(1), Time.GetUtcNow());
+			Project = Project.Create(User.ActorId, "project", TestEncryptedValue(1), Time.GetUtcNow());
 			DevelopmentEnvironment = Project.Environments.Single(e => e.Name == "development");
 			Configuration = ConfigItem.Create(Project.Id, ConfigKey.Create("SECRET"), Time.GetUtcNow());
 
@@ -96,13 +96,14 @@ public sealed class ConfigValueEncryptionHandlerTests
 			ActorAuthorization = new ActorAuthorizationService(Db);
 		}
 
-		public ExecuteBatchProcessor CreateProcessor()
+		public SetConfigValueHandler CreateSetConfigValueHandler()
 			=> new(
-				User,
 				Projects,
-				Configurations,
-				Uow,
-				new KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Executor(Encryption, Time));
+				User,
+				ActorAuthorization,
+				new ConfigItemOperationAuthorizer(),
+				new ConfigItemBatchPlanner(Configurations),
+				new ConfigItemMutationExecutor(Configurations, Encryption, Uow, Time));
 
 		public GetConfigValueHandler CreateGetConfigValueHandler()
 			=> new(User, ActorAuthorization, Projects, Configurations, Encryption);
@@ -133,6 +134,18 @@ public sealed class ConfigValueEncryptionHandlerTests
 				Configuration.ProjectId == projectId
 					? Configuration
 					: null);
+
+		public Task<IReadOnlyList<ConfigItem>> GetByIdsAsync(Guid projectId, IEnumerable<Guid> configItemIds, CancellationToken ct)
+		{
+			var ids = configItemIds.ToHashSet();
+			var items = Configuration is not null &&
+			            Configuration.ProjectId == projectId &&
+			            ids.Contains(Configuration.Id)
+				? new[] { Configuration }
+				: [];
+
+			return Task.FromResult<IReadOnlyList<ConfigItem>>(items);
+		}
 
 		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct) => throw new NotImplementedException();
 		public void Add(ConfigItem configItem) => throw new NotImplementedException();

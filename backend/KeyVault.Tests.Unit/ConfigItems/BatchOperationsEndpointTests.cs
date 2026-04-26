@@ -2,8 +2,10 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using KeyVault.Api.ConfigItems.BatchOperations;
+using KeyVault.Api.ConfigItems.BatchOperations.Operations;
 using KeyVault.Application.Abstractions.Messaging;
-using ExecuteBatchCommand = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Command;
+using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using BatchCommand = KeyVault.Application.ConfigItems.Commands.BatchOperations.Command;
 using KeyVault.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -20,44 +22,44 @@ public sealed class BatchOperationsEndpointTests
 		var projectId = Guid.NewGuid();
 		var configItemId = Guid.NewGuid();
 		var deleteId = Guid.NewGuid();
-		var request = new BatchRequest(
+		var request = new Request(
 			"development",
 			[
-				new CreateItem("NEW_SECRET", "initial-secret"),
-				new RenameItem(configItemId, "RENAMED_SECRET"),
-				new SetValue(configItemId, "secret"),
-				new DeleteItem(deleteId),
+				new CreateConfigItemRequest("NEW_SECRET", "initial-secret"),
+				new RenameConfigItemRequest(configItemId, "RENAMED_SECRET"),
+				new SetConfigItemValueRequest(configItemId, "secret"),
+				new DeleteConfigItemRequest(deleteId),
 			]);
 
 		var result = await InvokeHandleAsync(dispatcher, projectId, request);
 
 		Assert.IsType<NoContent>(result);
-		var command = Assert.IsType<ExecuteBatchCommand>(dispatcher.CapturedCommand);
+		var command = Assert.IsType<BatchCommand>(dispatcher.CapturedCommand);
 		Assert.Equal(projectId, command.ProjectId);
-		Assert.Equal("development", command.EnvironmentName);
+		Assert.Equal("development", command.Batch.EnvironmentName);
 		Assert.Collection(
 			command.Batch.Operations,
 			operation =>
 			{
-				var create = Assert.IsType<KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.CreateItem>(operation);
+				var create = Assert.IsType<CreateItem>(operation);
 				Assert.Equal(KeyVault.Domain.ConfigItems.ConfigKey.Create("NEW_SECRET"), create.Key);
 				Assert.Equal("initial-secret", create.InitialValue);
 			},
 			operation =>
 			{
-				var rename = Assert.IsType<KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.RenameItem>(operation);
+				var rename = Assert.IsType<RenameItem>(operation);
 				Assert.Equal(configItemId, rename.ConfigItemId);
 				Assert.Equal(KeyVault.Domain.ConfigItems.ConfigKey.Create("RENAMED_SECRET"), rename.Key);
 			},
 			operation =>
 			{
-				var setValue = Assert.IsType<KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.SetValue>(operation);
+				var setValue = Assert.IsType<SetValue>(operation);
 				Assert.Equal(configItemId, setValue.ConfigItemId);
 				Assert.Equal("secret", setValue.Value);
 			},
 			operation =>
 			{
-				var delete = Assert.IsType<KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.DeleteItem>(operation);
+				var delete = Assert.IsType<DeleteItem>(operation);
 				Assert.Equal(deleteId, delete.ConfigItemId);
 			});
 	}
@@ -66,10 +68,10 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new BatchRequest(
+		var request = new Request(
 			"development",
 			[
-				new CreateItem("not valid", null),
+				new CreateConfigItemRequest("not valid", null),
 			]);
 
 		await Assert.ThrowsAsync<ValidationException>(() => InvokeHandleAsync(dispatcher, Guid.NewGuid(), request));
@@ -80,10 +82,10 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidRenameKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new BatchRequest(
+		var request = new Request(
 			"development",
 			[
-				new RenameItem(Guid.NewGuid(), "not valid"),
+				new RenameConfigItemRequest(Guid.NewGuid(), "not valid"),
 			]);
 
 		await Assert.ThrowsAsync<ValidationException>(() => InvokeHandleAsync(dispatcher, Guid.NewGuid(), request));
@@ -93,9 +95,9 @@ public sealed class BatchOperationsEndpointTests
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		BatchRequest request)
+		Request request)
 	{
-		var endpointType = typeof(BatchRequest).Assembly.GetType("KeyVault.Api.ConfigItems.BatchOperations.BatchOperationsEndpoint")
+		var endpointType = typeof(Request).Assembly.GetType("KeyVault.Api.ConfigItems.BatchOperations.BatchOperationsEndpoint")
 			?? throw new InvalidOperationException("BatchOperations endpoint type not found.");
 		var handle = endpointType.GetMethod(
 			"Handle",

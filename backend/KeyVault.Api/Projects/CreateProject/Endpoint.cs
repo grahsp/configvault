@@ -12,7 +12,7 @@ internal static class Endpoint
 		
 		return Results.CreatedAtRoute(
 			nameof(GetProject),
-			new RouteValueDictionary { ["id"] = id },
+			new RouteValueDictionary { ["projectId"] = id },
 			new { id });
 	}
 }

@@ -1,8 +1,8 @@
 using System.Reflection;
 using KeyVault.Api.ConfigItems.SaveConfigItems;
 using KeyVault.Application.Abstractions.Messaging;
-using ExecuteBatchCommand = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations.Command;
-using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
+using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using BatchCommand = KeyVault.Application.ConfigItems.Commands.BatchOperations.Command;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 using Microsoft.AspNetCore.Http;
@@ -30,9 +30,9 @@ public sealed class SaveConfigItemsEndpointTests
 		var result = await InvokeHandleAsync(dispatcher, projectId, request);
 
 		Assert.IsType<NoContent>(result);
-		var command = Assert.IsType<ExecuteBatchCommand>(dispatcher.CapturedCommand);
+		var command = Assert.IsType<BatchCommand>(dispatcher.CapturedCommand);
 		Assert.Equal(projectId, command.ProjectId);
-		Assert.Equal("development", command.EnvironmentName);
+		Assert.Equal("development", command.Batch.EnvironmentName);
 		Assert.Collection(
 			command.Batch.Operations,
 			operation =>

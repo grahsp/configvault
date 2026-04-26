@@ -1,221 +1,144 @@
-using KeyVault.Application.Abstractions.Cryptography;
-using KeyVault.Application.ConfigItems;
-using KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperations;
-using KeyVault.Application.ConfigItems.Exceptions;
-using KeyVault.Application.Exceptions;
-using KeyVault.Application.Persistence;
+using KeyVault.Application.Authorization;
+using KeyVault.Application.ConfigItems.BatchExecution;
+using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
+using BatchCommand = KeyVault.Application.ConfigItems.Commands.BatchOperations.Command;
+using BatchHandler = KeyVault.Application.ConfigItems.Commands.BatchOperations.Handler;
 
 namespace KeyVault.Tests.Unit.ConfigItems;
 
-public sealed class ExecuteBatchOperationsProcessorTests
+public sealed class ExecuteBatchOperationsHandlerTests
 {
 	[Fact]
-	public async Task HandleAsync_ShouldExecuteOperationsInOrder_AndSaveOnce()
+	public async Task HandleAsync_ShouldLoadAuthorizePlanAndExecuteBatch()
 	{
 		var fixture = new Fixture();
-		var sut = fixture.CreateProcessor();
-		var command = new Command(
-			fixture.Project.Id,
-			"development",
-			new BatchRequest(
+		var batch = new OperationBatch(
 			[
-				new RenameItem(fixture.SecondConfigItem.Id, ConfigKey.Create("SECOND_RENAMED")),
-				new RenameItem(fixture.ConfigItem.Id, ConfigKey.Create("SECOND")),
-				new SetValue(fixture.ConfigItem.Id, "secret")
-			]));
+				new RenameItem(Guid.NewGuid(), ConfigKey.Create("RENAMED_SECRET")),
+				new SetValue(Guid.NewGuid(), "secret")
+			],
+			"development");
+		var command = new BatchCommand(fixture.Project.Id, batch);
+		var sut = new BatchHandler(
+			fixture.Projects,
+			fixture.Actor,
+			fixture.Authorization,
+			fixture.OperationAuthorizer,
+			fixture.Planner,
+			fixture.Executor);
 
-		await sut.ExecuteAsync(command, CancellationToken.None);
+		await sut.HandleAsync(command, CancellationToken.None);
 
-		Assert.Equal(ConfigKey.Create("SECOND"), fixture.ConfigItem.Key);
-		Assert.Equal(ConfigKey.Create("SECOND_RENAMED"), fixture.SecondConfigItem.Key);
-
-		var storedValue = Assert.Single(fixture.ConfigItem.Values);
-		Assert.Equal(fixture.Encryption.EncryptedSecret.Payload.ToArray(), storedValue.Value.Payload.ToArray());
-		Assert.Equal("secret", fixture.Encryption.EncryptedPlaintext);
-		Assert.Equal(1, fixture.Uow.SaveChangesCallCount);
-	}
-
-	[Fact]
-	public async Task HandleAsync_ShouldTreatOperationsAfterDelete_AsMissing()
-	{
-		var fixture = new Fixture();
-		var sut = fixture.CreateProcessor();
-		var command = new Command(
-			fixture.Project.Id,
-			"development",
-			new BatchRequest(
-			[
-				new DeleteItem(fixture.ConfigItem.Id),
-				new SetValue(fixture.ConfigItem.Id, "secret")
-			]));
-
-		await Assert.ThrowsAsync<ConfigItemNotFoundException>(() => sut.ExecuteAsync(command, CancellationToken.None));
-
-		Assert.True(fixture.Configurations.ConfigItems.ContainsKey(fixture.ConfigItem.Id));
-		Assert.Equal(0, fixture.Uow.SaveChangesCallCount);
-	}
-
-	[Fact]
-	public async Task HandleAsync_ShouldCreateItemWithInitialValue_InSameBatch()
-	{
-		var fixture = new Fixture();
-		var sut = fixture.CreateProcessor();
-		var command = new Command(
-			fixture.Project.Id,
-			"development",
-			new BatchRequest(
-			[
-				new CreateItem(ConfigKey.Create("NEW_SECRET"), "initial-secret")
-			]));
-
-		await sut.ExecuteAsync(command, CancellationToken.None);
-
-		var createdItem = Assert.Single(fixture.Configurations.AddedItems);
-		Assert.Equal(ConfigKey.Create("NEW_SECRET"), createdItem.Key);
-
-		var storedValue = Assert.Single(createdItem.Values);
-		Assert.Equal(fixture.Encryption.EncryptedSecret.Payload.ToArray(), storedValue.Value.Payload.ToArray());
-		Assert.Equal("initial-secret", fixture.Encryption.EncryptedPlaintext);
-		Assert.Equal(1, fixture.Uow.SaveChangesCallCount);
-	}
-
-	[Fact]
-	public async Task HandleAsync_ShouldAllowDeleteWithoutEnvironment()
-	{
-		var fixture = new Fixture();
-		var sut = fixture.CreateProcessor();
-		var command = new Command(
-			fixture.Project.Id,
-			null,
-			new BatchRequest(
-			[
-				new DeleteItem(fixture.ConfigItem.Id)
-			]));
-
-		await sut.ExecuteAsync(command, CancellationToken.None);
-
-		Assert.False(fixture.Configurations.ConfigItems.ContainsKey(fixture.ConfigItem.Id));
-		Assert.Equal(1, fixture.Uow.SaveChangesCallCount);
-	}
-
-	[Fact]
-	public async Task HandleAsync_ShouldRequireEnvironment_WhenOperationNeedsIt()
-	{
-		var fixture = new Fixture();
-		var sut = fixture.CreateProcessor();
-		var command = new Command(
-			fixture.Project.Id,
-			null,
-			new BatchRequest(
-			[
-				new SetValue(fixture.ConfigItem.Id, "secret")
-			]));
-
-		await Assert.ThrowsAsync<ValidationException>(() => sut.ExecuteAsync(command, CancellationToken.None));
-
-		Assert.Equal(0, fixture.Uow.SaveChangesCallCount);
+		Assert.Equal(fixture.Project.Id, fixture.Projects.LastRequestedId);
+		Assert.Same(fixture.Project, fixture.Authorization.Project);
+		Assert.Same(fixture.Actor, fixture.Authorization.Actor);
+		Assert.Same(fixture.Actor, fixture.OperationAuthorizer.Actor);
+		Assert.Same(fixture.Project, fixture.OperationAuthorizer.Project);
+		Assert.Same(batch, fixture.OperationAuthorizer.Batch);
+		Assert.Same(fixture.Actor, fixture.Planner.Actor);
+		Assert.Same(fixture.Project, fixture.Planner.Project);
+		Assert.Same(batch, fixture.Planner.Batch);
+		Assert.Same(fixture.PreparedBatch, fixture.Executor.Batch);
 	}
 
 	private sealed class Fixture
 	{
-		public FakeUserContext User { get; } = new();
-		public FakeProjectRepository Projects { get; } = new();
-		public FakeConfigItemRepository Configurations { get; } = new();
-		public FakeUnitOfWork Uow { get; } = new();
-		public FakeTimeProvider Time { get; } = new();
-		public FakeEnvelopeEncryptionService Encryption { get; } = new();
+		public FakeUserContext Actor { get; } = new();
+		public FakeProjectRepository Projects { get; }
+		public CapturingAuthorizationService Authorization { get; } = new();
+		public CapturingOperationAuthorizer OperationAuthorizer { get; } = new();
+		public CapturingPlanner Planner { get; } = new();
+		public CapturingExecutor Executor { get; } = new();
 		public Project Project { get; }
-		public ConfigItem ConfigItem { get; }
-		public ConfigItem SecondConfigItem { get; }
+		public PreparedBatch PreparedBatch { get; }
 
 		public Fixture()
 		{
-			Project = Project.Create(User.UserId, "project", TestEncryptedValue(1), Time.GetUtcNow());
-			ConfigItem = ConfigItem.Create(Project.Id, ConfigKey.Create("FIRST"), Time.GetUtcNow());
-			SecondConfigItem = ConfigItem.Create(Project.Id, ConfigKey.Create("SECOND"), Time.GetUtcNow());
-
-			Projects.Project = Project;
-			Configurations.ConfigItems[ConfigItem.Id] = ConfigItem;
-			Configurations.ConfigItems[SecondConfigItem.Id] = SecondConfigItem;
+			var time = new FakeTimeProvider();
+			Project = Project.Create(Actor.ActorId, "project", TestEncryptedValue(1), time.GetUtcNow());
+			Projects = new FakeProjectRepository(Project);
+			PreparedBatch = new PreparedBatch(Actor, Project, null, [], [new DeleteItem(Guid.NewGuid())], Actor.UserId);
+			Planner.PreparedBatch = PreparedBatch;
 		}
-
-		public Processor CreateProcessor()
-			=> new(
-				User,
-				Projects,
-				Configurations,
-				Uow,
-				new Executor(Encryption, Time));
 	}
 
-	private sealed class FakeProjectRepository : IProjectRepository
+	private sealed class FakeProjectRepository(Project project) : IProjectRepository
 	{
-		public Project? Project { get; set; }
+		public Guid? LastRequestedId { get; private set; }
 
 		public Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
-			=> Task.FromResult(Project?.Id == id ? Project : null);
+		{
+			LastRequestedId = id;
+			return Task.FromResult(project.Id == id ? project : null);
+		}
 
 		public void Add(Project project) => throw new NotImplementedException();
 		public void Remove(Project project) => throw new NotImplementedException();
 	}
 
-	private sealed class FakeConfigItemRepository : IConfigItemRepository
+	private sealed class CapturingAuthorizationService : IActorAuthorizationService
 	{
-		public Dictionary<Guid, ConfigItem> ConfigItems { get; } = [];
-		public List<ConfigItem> AddedItems { get; } = [];
+		public Project? Project { get; private set; }
+		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
 
-		public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
-			=> Task.FromResult(ConfigItems.TryGetValue(id, out var configItem) ? configItem : null);
+		public bool CanAccessProject(Project project, KeyVault.Application.Authentication.IActorContext actor) => true;
+		public Task<bool> CanAccessProjectAsync(Guid projectId, KeyVault.Application.Authentication.IActorContext actor, CancellationToken ct) => Task.FromResult(true);
 
-		public Task<ConfigItem?> GetByIdAndProjectAsync(Guid projectId, Guid configItemId, CancellationToken ct)
-			=> Task.FromResult(
-				ConfigItems.TryGetValue(configItemId, out var configItem) && configItem.ProjectId == projectId
-					? configItem
-					: null);
-
-		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct)
-			=> Task.FromResult(ConfigItems.Values.Any(item => item.ProjectId == projectId && item.Key == key));
-
-		public void Add(ConfigItem configItem)
+		public void EnsureCanAccessProject(Project project, KeyVault.Application.Authentication.IActorContext actor)
 		{
-			ConfigItems[configItem.Id] = configItem;
-			AddedItems.Add(configItem);
+			Project = project;
+			Actor = actor;
 		}
 
-		public void Remove(ConfigItem configItem) => ConfigItems.Remove(configItem.Id);
+		public Task EnsureCanAccessProjectAsync(Guid projectId, KeyVault.Application.Authentication.IActorContext actor, CancellationToken ct) => Task.CompletedTask;
 	}
 
-	private sealed class FakeUnitOfWork : IUnitOfWork
+	private sealed class CapturingOperationAuthorizer : IConfigItemOperationAuthorizer
 	{
-		public int SaveChangesCallCount { get; private set; }
+		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
+		public Project? Project { get; private set; }
+		public OperationBatch? Batch { get; private set; }
 
-		public Task<int> SaveChangesAsync(CancellationToken ct = default)
+		public void Authorize(KeyVault.Application.Authentication.IActorContext actor, Project project, OperationBatch batch)
 		{
-			SaveChangesCallCount++;
-			return Task.FromResult(1);
+			Actor = actor;
+			Project = project;
+			Batch = batch;
 		}
 	}
 
-	private sealed class FakeEnvelopeEncryptionService : IEnvelopeEncryptionService
+	private sealed class CapturingPlanner : IConfigItemBatchPlanner
 	{
-		public EncryptedValue EncryptedSecret { get; } = TestEncryptedValue(80);
-		public string? EncryptedPlaintext { get; private set; }
+		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
+		public Project? Project { get; private set; }
+		public OperationBatch? Batch { get; private set; }
+		public PreparedBatch PreparedBatch { get; set; } = null!;
 
-		public EncryptedValue GenerateDataKey() => throw new NotImplementedException();
-
-		public EncryptedValue EncryptSecret(string plainText, EncryptedValue wrappedKey)
+		public Task<PreparedBatch> PrepareAsync(KeyVault.Application.Authentication.IActorContext actor, Project project, OperationBatch batch, CancellationToken ct)
 		{
-			EncryptedPlaintext = plainText;
-			return EncryptedSecret;
+			Actor = actor;
+			Project = project;
+			Batch = batch;
+			return Task.FromResult(PreparedBatch);
 		}
+	}
 
-		public string DecryptSecret(EncryptedValue value, EncryptedValue wrappedKey) => throw new NotImplementedException();
+	private sealed class CapturingExecutor : IConfigItemMutationExecutor
+	{
+		public PreparedBatch? Batch { get; private set; }
+
+		public Task ExecuteAsync(PreparedBatch batch, CancellationToken ct)
+		{
+			Batch = batch;
+			return Task.CompletedTask;
+		}
 	}
 
 	private static EncryptedValue TestEncryptedValue(byte seed)
