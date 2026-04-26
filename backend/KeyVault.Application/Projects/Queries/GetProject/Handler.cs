@@ -1,28 +1,31 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authentication;
+using KeyVault.Application.Authorization;
 using KeyVault.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.Projects.Queries.GetProject;
 
-public sealed class Handler(IUserContext user, IReadDbContext db)
+public sealed class Handler(
+	IUserContext actor,
+	IActorAuthorizationService authorizaton,
+	IReadDbContext db)
 	: IQueryHandler<Query, Response?>
 {
-	public Task<Response?> HandleAsync(Query query, CancellationToken ct)
+	public async Task<Response?> HandleAsync(Query query, CancellationToken ct)
 	{
-		return db.Projects
-			.Where(p => p.Id == query.Id)
-			.Select(p => new
-			{
-				Project = p,
-				Membership = p.Members.SingleOrDefault(m => m.UserId == user.UserId)
-			})
-			.Where(x => x.Membership != null)
-			.Select(x => new Response(
-				x.Project.Id,
-				x.Project.Name,
-				x.Membership!.Role,
-				x.Project.CreatedAt))
+		await authorizaton.EnsureCanAccessProjectAsync(query.ProjectId, actor, ct);
+		
+		return await db.Projects
+			.Where(p => p.Id == query.ProjectId)
+			.Select(p => new Response(
+				p.Id,
+				p.Name,
+				p.Members
+					.Where(m => m.UserId == actor.Id)
+					.Select(m => m.Role)
+					.Single(),
+				p.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 	}
 }

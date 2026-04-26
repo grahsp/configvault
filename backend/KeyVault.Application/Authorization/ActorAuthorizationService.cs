@@ -27,11 +27,8 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 	{
 		return actor switch
 		{
-			IUserContext user => await db.Projects
-				.Where(p => p.Id == projectId)
-				.AnyAsync(p => p.Members
-						.Any(m => m.UserId == user.UserId),
-					ct),
+			IUserContext => await db.ProjectMembers
+				.AnyAsync(x => x.ProjectId == projectId && x.UserId == actor.Id, ct),
 			_ => false
 		};
 	}
