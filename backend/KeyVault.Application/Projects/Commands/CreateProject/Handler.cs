@@ -7,7 +7,7 @@ using KeyVault.Domain.Projects;
 namespace KeyVault.Application.Projects.Commands.CreateProject;
 
 public sealed class Handler(
-	IUserContext user,
+	IUserContext actor,
 	IProjectRepository repository,
 	IUnitOfWork uow,
 	TimeProvider time,
@@ -17,7 +17,7 @@ public sealed class Handler(
 	public async Task<Guid> HandleAsync(Command command, CancellationToken ct)
 	{
 		var encryptedDataKey = encryption.GenerateDataKey();
-		var project = Project.Create(user.UserId, command.Name, encryptedDataKey, time.GetUtcNow());
+		var project = Project.Create(actor.Id, command.Name, encryptedDataKey, time.GetUtcNow());
 		
 		repository.Add(project);
 		await uow.SaveChangesAsync(ct);

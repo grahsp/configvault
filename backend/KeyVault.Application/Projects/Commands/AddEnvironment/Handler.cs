@@ -7,7 +7,7 @@ using KeyVault.Application.Projects.Queries.GetEnvironments;
 namespace KeyVault.Application.Projects.Commands.AddEnvironment;
 
 public sealed class Handler(
-	IUserContext user,
+	IUserContext actor,
 	IProjectRepository repository,
 	IUnitOfWork uow,
 	TimeProvider time)
@@ -18,7 +18,7 @@ public sealed class Handler(
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 
-		var environment = project.AddEnvironment(user.UserId, command.EnvironmentName, time.GetUtcNow());
+		var environment = project.AddEnvironment(actor.Id, command.EnvironmentName, time.GetUtcNow());
 		await uow.SaveChangesAsync(ct);
 
 		return new Response(environment.Id, environment.Name);

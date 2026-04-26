@@ -7,7 +7,7 @@ namespace KeyVault.Domain.Projects;
 
 public sealed class Project
 {
-	public Guid Id { get; private init; }
+	public Guid Id { get; }
 
 	public string Name { get; private set; } = null!;
 
@@ -22,7 +22,7 @@ public sealed class Project
 	private readonly List<ProjectMember> _members = [];
 	public IReadOnlyList<ProjectMember> Members => _members;
 	
-	public DateTimeOffset CreatedAt { get; private init; }
+	public DateTimeOffset CreatedAt { get; }
 
 	private Project() {}
 
@@ -37,7 +37,7 @@ public sealed class Project
 		_dataKeys.Add(ProjectDataKey.Create(Id, encryptedDataKey, now));
 	}
 
-	public static Project Create(Guid userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
+	public static Project Create(ActorId userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		
@@ -48,7 +48,7 @@ public sealed class Project
 		return project;
 	}
 
-	private void SetInitialOwner(Guid id)
+	private void SetInitialOwner(ActorId id)
 		=> _members.Add(new ProjectMember(Id, id, ProjectRole.Owner));
 
 	private void SetInitialEnvironments()
@@ -80,7 +80,7 @@ public sealed class Project
 			throw new InsufficientProjectRoleException();
 	}
 	
-	public ProjectMember RequireMemberWithRole(Guid id, ProjectRole requiredRole)
+	public ProjectMember RequireMemberWithRole(ActorId id, ProjectRole requiredRole)
 	{
 		var member = RequireMember(id);
 		RequireRole(member, requiredRole);
@@ -88,7 +88,7 @@ public sealed class Project
 		return member;
 	}
 
-	public void EnsureCanDelete(Guid actorId)
+	public void EnsureCanDelete(ActorId actorId)
 		=> RequireMemberWithRole(actorId, ProjectRole.Owner);
 
 	public void AddMember(Guid actorId, Guid userId, ProjectRole role)
@@ -157,7 +157,7 @@ public sealed class Project
 		return environment != null;
 	}
 
-	public Environment AddEnvironment(Guid actorId, string name, DateTimeOffset now)
+	public Environment AddEnvironment(ActorId actorId, string name, DateTimeOffset now)
 	{
 		var normalizedName = NormalizeEnvironmentName(name);
 		
@@ -173,7 +173,7 @@ public sealed class Project
 		return environment;
 	}
 
-	public void RemoveEnvironment(Guid actorId, Guid environmentId)
+	public void RemoveEnvironment(ActorId actorId, Guid environmentId)
 	{
 		RequireMemberWithRole(actorId, ProjectRole.Admin);
 
