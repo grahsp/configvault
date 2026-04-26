@@ -11,10 +11,10 @@ public static class ProjectEndpoints
 			.WithTags("Projects");
 
 		projects.MapPost("", CreateProject.Endpoint.Handle);
-		projects.MapDelete("/{id}", DeleteProject.Endpoint.Handle);
+		projects.MapDelete("/{projectId}", DeleteProject.Endpoint.Handle);
 		
 		projects.MapGet("", GetProjects.Endpoint.Handle);
-		projects.MapGet("/{id}", GetProject.Endpoint.Handle)
+		projects.MapGet("/{projectId}", GetProject.Endpoint.Handle)
 			.WithName(nameof(GetProject));
 
 		var members = builder.MapGroup("/projects/{projectId}/members")

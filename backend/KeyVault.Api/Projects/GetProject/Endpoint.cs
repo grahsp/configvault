@@ -7,10 +7,10 @@ internal static class Endpoint
 {
 	internal static async Task<IResult> Handle(
 		IQueryDispatcher dispatcher,
-		Guid id,
+		Guid projectId,
 		CancellationToken ct)
 	{
-		var query = new Query(id);
+		var query = new Query(projectId);
 		var project = await dispatcher.DispatchAsync(query, ct);
 
 		if (project is null)
