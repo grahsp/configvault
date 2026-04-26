@@ -41,7 +41,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	{
 		var fixture = new Fixture();
 		var encryptedValue = fixture.Encryption.EncryptedSecret;
-		fixture.Configuration.SetValue(fixture.DevelopmentEnvironment.Id, encryptedValue, fixture.User.UserId, fixture.Time.GetUtcNow());
+		fixture.Configuration.SetValue(fixture.DevelopmentEnvironment.Id, encryptedValue, fixture.User.Id, fixture.Time.GetUtcNow());
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
 
@@ -61,7 +61,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 		fixture.Configuration.SetValue(
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
-			Guid.Parse(fixture.Project.Members[0].UserId.Value),
+			fixture.Project.Members[0].UserId,
 			fixture.Time.GetUtcNow());
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
@@ -86,7 +86,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		public Fixture()
 		{
-			Project = Project.Create(User.ActorId, "project", TestEncryptedValue(1), Time.GetUtcNow());
+			Project = Project.Create(User.Id, "project", TestEncryptedValue(1), Time.GetUtcNow());
 			DevelopmentEnvironment = Project.Environments.Single(e => e.Name == "development");
 			Configuration = ConfigItem.Create(Project.Id, ConfigKey.Create("SECRET"), Time.GetUtcNow());
 

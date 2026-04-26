@@ -119,12 +119,8 @@ public sealed class ConfigItemMutationExecutor(
 		var environment = batch.Environment
 			?? throw new InvalidOperationException("Environment is required.");
 
-		// TODO: TEMP during migration
-		var actorId = batch.UserId
-		    ?? throw new InvalidOperationException("UserId required during migration.");
-
 		var encrypted = encryption.EncryptSecret(value, batch.Project.CurrentDataKey.Value);
-		item.SetValue(environment.Id, encrypted, actorId, time.GetUtcNow());
+		item.SetValue(environment.Id, encrypted, batch.Actor.Id, time.GetUtcNow());
 	}
 	
 	private static ConfigKey FindCreatedKey(IEnumerable<Operation> operations)

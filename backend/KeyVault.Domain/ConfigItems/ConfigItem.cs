@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using KeyVault.Domain.Actors;
 using KeyVault.Domain.Projects;
 
 namespace KeyVault.Domain.ConfigItems;
@@ -39,7 +40,7 @@ public sealed class ConfigItem
 		return value != null;
 	}
 
-	public void SetValue(Guid environmentId, EncryptedValue value, Guid actorId, DateTimeOffset now)
+	public void SetValue(Guid environmentId, EncryptedValue value, ActorId actorId, DateTimeOffset now)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 

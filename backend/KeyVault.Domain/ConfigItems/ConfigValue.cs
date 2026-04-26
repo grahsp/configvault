@@ -1,3 +1,4 @@
+using KeyVault.Domain.Actors;
 using Environment = KeyVault.Domain.Projects.Environment;
 
 namespace KeyVault.Domain.ConfigItems;
@@ -11,13 +12,13 @@ public sealed class ConfigValue
 	public Environment Environment { get; private init; } = null!;
 	
 	public EncryptedValue Value { get; private set; } = null!;
-	
-	public Guid LastModifiedBy { get; private set; }
+
+	public ActorId LastModifiedBy { get; private set; } = null!;
 	public DateTimeOffset LastModifiedAt { get; private set; }
 	
 	private ConfigValue() {}
 
-	internal ConfigValue(Guid configItemId, Guid environmentId, EncryptedValue value, Guid actorId, DateTimeOffset now)
+	internal ConfigValue(Guid configItemId, Guid environmentId, EncryptedValue value, ActorId actorId, DateTimeOffset now)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
@@ -29,7 +30,7 @@ public sealed class ConfigValue
 		LastModifiedAt = now;
 	}
 
-	public void SetValue(EncryptedValue value, Guid actorId, DateTimeOffset now)
+	public void SetValue(EncryptedValue value, ActorId actorId, DateTimeOffset now)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 

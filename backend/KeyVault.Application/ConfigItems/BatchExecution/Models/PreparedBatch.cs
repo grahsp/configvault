@@ -18,16 +18,12 @@ public sealed class PreparedBatch
 
 	public IReadOnlyList<Operation> Operations { get; }
 
-	// TODO: TEMP during migration
-	public Guid? UserId { get; }
-
 	public PreparedBatch(
 		IActorContext actor,
 		Project project,
 		Environment? environment,
 		Dictionary<Guid, ConfigItem> items,
-		IReadOnlyList<Operation> operations,
-		Guid? userId)
+		IReadOnlyList<Operation> operations)
 	{
 		Actor = actor;
 		Project = project;
@@ -35,7 +31,5 @@ public sealed class PreparedBatch
 
 		Items = items;
 		Operations = operations;
-
-		UserId = userId;
 	}
 }

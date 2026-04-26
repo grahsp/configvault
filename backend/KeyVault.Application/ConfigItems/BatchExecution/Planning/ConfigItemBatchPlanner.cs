@@ -35,8 +35,7 @@ public sealed class ConfigItemBatchPlanner(
 			project,
 			environment,
 			items,
-			ordered,
-			Guid.Parse(actor.Id.Value));
+			ordered);
 	}
 	
 	private static ReductionResult Reduce(IEnumerable<Operation> operations)
