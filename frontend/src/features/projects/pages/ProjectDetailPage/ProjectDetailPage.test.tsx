@@ -640,7 +640,7 @@ describe('ProjectDetailPage', () => {
       },
       {
         method: 'POST',
-        path: '/projects/project-1/members',
+        path: '/projects/project-1/members/new-user',
         status: 204,
       },
       {
@@ -679,9 +679,8 @@ describe('ProjectDetailPage', () => {
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/projects/project-1/members'),
+        expect.stringContaining('/projects/project-1/members/new-user'),
         expect.objectContaining({
-          body: JSON.stringify({ role: 'member', userId: 'new-user' }),
           method: 'POST',
         }),
       ),
@@ -713,7 +712,7 @@ describe('ProjectDetailPage', () => {
       },
       {
         method: 'POST',
-        path: '/projects/project-1/members',
+        path: '/projects/project-1/members/new-user',
         body: { message: 'Member could not be invited.' },
         status: 409,
       },
