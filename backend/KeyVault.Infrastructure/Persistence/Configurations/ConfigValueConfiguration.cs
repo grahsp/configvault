@@ -31,6 +31,7 @@ public class ConfigValueConfiguration : IEntityTypeConfiguration<ConfigValue>
 				payload => EncryptedValue.FromPayload(payload));
 
 		builder.Property(x => x.LastModifiedBy)
+			.HasActorIdConversion()
 			.IsRequired();
 		
 		builder.Property(x => x.LastModifiedAt)
