@@ -1,10 +1,12 @@
 using System.Reflection;
 using KeyVault.Application.Abstractions.Cryptography;
+using KeyVault.Application.Abstractions.Identity;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Users;
+using KeyVault.Infrastructure.Authentication;
 using KeyVault.Infrastructure.Configuration;
 using KeyVault.Infrastructure.Cryptography;
 using KeyVault.Infrastructure.Dispatchers;
@@ -78,6 +80,8 @@ public static class InfrastructureModule
 		services.RegisterHandlers();
 		services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 		services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+
+		services.AddSingleton<IScopeCapabilityMapper, ScopeCapabilityMapper>();
 	}
 
 	private static void RegisterHandlers(this IServiceCollection services)

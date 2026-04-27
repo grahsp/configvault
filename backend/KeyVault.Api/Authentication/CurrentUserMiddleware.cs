@@ -4,13 +4,13 @@ namespace KeyVault.Api.Authentication;
 
 public class CurrentUserMiddleware(RequestDelegate next)
 {
-	public async Task InvokeAsync(HttpContext context, IUserProvisioner provisioner, IUserContextFactory factory)
+	public async Task InvokeAsync(HttpContext context, IUserProvisioner provisioner)
 	{
 		var principal = context.User;
 
 		if (principal.Identity?.IsAuthenticated == true && !principal.IsMachine())
 		{
-			var identity = factory.Create(principal);
+			var identity = principal.GetExternalIdentity();
 
 			var user = await provisioner.GetOrProvisionUserAsync(identity, context.RequestAborted);
 			context.SetCurrentUser(user);

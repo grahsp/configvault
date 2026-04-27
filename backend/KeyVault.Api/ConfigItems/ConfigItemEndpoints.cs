@@ -19,7 +19,7 @@ public static class ConfigItemEndpoints
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		
 		var configValues = builder.MapGroup("/projects/{projectId}/config-items/{configItemId}/value")
-			.RequireAuthorization(Policies.ActiveUser)
+			// .RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Config Values");
 		
 		configValues.MapPut("", SetConfigValue.Endpoint.Handle);
