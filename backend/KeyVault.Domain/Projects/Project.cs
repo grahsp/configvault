@@ -77,6 +77,12 @@ public sealed class Project
 		if (member.Role > requiredRole)
 			throw new InsufficientProjectRoleException();
 	}
+
+	public void RequireCapability(Actor actor, ProjectCapability capability)
+	{
+		if (!actor.Has(capability))
+			throw new MissingCapabilityException(capability);
+	}
 	
 	public ProjectMember RequireMemberWithRole(ActorId id, ProjectRole requiredRole)
 	{
