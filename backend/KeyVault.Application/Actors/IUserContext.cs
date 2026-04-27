@@ -1,6 +1,6 @@
 using KeyVault.Domain.Users;
 
-namespace KeyVault.Application.Authentication;
+namespace KeyVault.Application.Actors;
 
 public interface IUserContext : IActorContext
 {

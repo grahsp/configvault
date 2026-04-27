@@ -1,4 +1,4 @@
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Actors;
 using Microsoft.AspNetCore.Authorization;
 
 namespace KeyVault.Api.Authorization;

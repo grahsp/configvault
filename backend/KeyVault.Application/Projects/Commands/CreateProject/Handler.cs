@@ -1,6 +1,6 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Actors;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.Projects;
 

@@ -1,4 +1,4 @@
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Actors;
 using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.Projects;

@@ -1,4 +1,4 @@
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Actors;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Domain.Projects;
 

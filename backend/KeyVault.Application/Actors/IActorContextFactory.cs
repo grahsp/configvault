@@ -1,4 +1,4 @@
-namespace KeyVault.Application.Authentication;
+namespace KeyVault.Application.Actors;
 
 public interface IActorContextFactory
 {

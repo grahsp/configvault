@@ -1,3 +1,4 @@
+using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
@@ -86,27 +87,27 @@ public sealed class ExecuteBatchOperationsHandlerTests
 	private sealed class CapturingAuthorizationService : IActorAuthorizationService
 	{
 		public Project? Project { get; private set; }
-		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
+		public IActorContext? Actor { get; private set; }
 
-		public bool CanAccessProject(Project project, KeyVault.Application.Authentication.IActorContext actor) => true;
-		public Task<bool> CanAccessProjectAsync(Guid projectId, KeyVault.Application.Authentication.IActorContext actor, CancellationToken ct) => Task.FromResult(true);
+		public bool CanAccessProject(Project project, IActorContext actor) => true;
+		public Task<bool> CanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.FromResult(true);
 
-		public void EnsureCanAccessProject(Project project, KeyVault.Application.Authentication.IActorContext actor)
+		public void EnsureCanAccessProject(Project project, IActorContext actor)
 		{
 			Project = project;
 			Actor = actor;
 		}
 
-		public Task EnsureCanAccessProjectAsync(Guid projectId, KeyVault.Application.Authentication.IActorContext actor, CancellationToken ct) => Task.CompletedTask;
+		public Task EnsureCanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.CompletedTask;
 	}
 
 	private sealed class CapturingOperationAuthorizer : IConfigItemOperationAuthorizer
 	{
-		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
+		public IActorContext? Actor { get; private set; }
 		public Project? Project { get; private set; }
 		public OperationBatch? Batch { get; private set; }
 
-		public void Authorize(KeyVault.Application.Authentication.IActorContext actor, Project project, OperationBatch batch)
+		public void Authorize(IActorContext actor, Project project, OperationBatch batch)
 		{
 			Actor = actor;
 			Project = project;
@@ -116,12 +117,12 @@ public sealed class ExecuteBatchOperationsHandlerTests
 
 	private sealed class CapturingPlanner : IConfigItemBatchPlanner
 	{
-		public KeyVault.Application.Authentication.IActorContext? Actor { get; private set; }
+		public IActorContext? Actor { get; private set; }
 		public Project? Project { get; private set; }
 		public OperationBatch? Batch { get; private set; }
 		public PreparedBatch PreparedBatch { get; set; } = null!;
 
-		public Task<PreparedBatch> PrepareAsync(KeyVault.Application.Authentication.IActorContext actor, Project project, OperationBatch batch, CancellationToken ct)
+		public Task<PreparedBatch> PrepareAsync(IActorContext actor, Project project, OperationBatch batch, CancellationToken ct)
 		{
 			Actor = actor;
 			Project = project;

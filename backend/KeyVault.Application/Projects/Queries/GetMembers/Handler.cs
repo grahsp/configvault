@@ -1,7 +1,6 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Authentication;
+using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
-using KeyVault.Application.Exceptions;
 using KeyVault.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 
