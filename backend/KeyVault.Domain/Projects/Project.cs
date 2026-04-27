@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using KeyVault.Domain.Actors;
 using KeyVault.Domain.Exceptions;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects.Exceptions;
 
 namespace KeyVault.Domain.Projects;

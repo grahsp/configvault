@@ -1,4 +1,3 @@
-using KeyVault.Domain.Actors;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

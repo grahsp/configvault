@@ -1,5 +1,5 @@
 using KeyVault.Application.Authentication;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Users;
 
 namespace KeyVault.Api.Authentication;

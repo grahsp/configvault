@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeyVault.Domain.Actors;
+namespace KeyVault.Domain.Identity;
 
 public sealed record ActorId
 {
@@ -13,6 +13,9 @@ public sealed record ActorId
 	
 	public static ActorId User(Guid id)
 		=> new ActorId(id.ToString("N"));
+
+	public static ActorId Machine(string clientId)
+		=> new ActorId(clientId);
 
 	public static ActorId Parse(string value)
 	{

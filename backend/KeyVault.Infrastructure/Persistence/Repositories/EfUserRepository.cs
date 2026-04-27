@@ -1,5 +1,5 @@
 using KeyVault.Application.Users;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 

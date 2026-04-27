@@ -9,8 +9,8 @@ using GetConfigValueQuery = KeyVault.Application.ConfigItems.Queries.GetConfigVa
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
-using KeyVault.Domain.Actors;
 using KeyVault.Domain.ConfigItems;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;

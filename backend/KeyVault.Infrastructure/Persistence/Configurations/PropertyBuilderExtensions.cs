@@ -1,4 +1,4 @@
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KeyVault.Infrastructure.Persistence.Configurations;

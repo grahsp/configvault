@@ -1,6 +1,6 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Projects.Commands.RemoveMember;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 
 namespace KeyVault.Api.Projects.RemoveMember;
 

@@ -1,5 +1,5 @@
 using KeyVault.Application.Exceptions;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 
 namespace KeyVault.Application.Users.Exceptions;
 

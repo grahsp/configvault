@@ -1,7 +1,7 @@
 using KeyVault.Application.Authentication;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Users;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Users;
 using Microsoft.Extensions.Time.Testing;
 

@@ -1,4 +1,4 @@
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 using Environment = KeyVault.Domain.Projects.Environment;
 
 namespace KeyVault.Domain.ConfigItems;

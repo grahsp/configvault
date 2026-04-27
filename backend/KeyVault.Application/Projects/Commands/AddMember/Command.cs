@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Domain.Actors;
+using KeyVault.Domain.Identity;
 
 namespace KeyVault.Application.Projects.Commands.AddMember;
 
