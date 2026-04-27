@@ -4,7 +4,7 @@ using KeyVault.Domain.Users;
 
 namespace KeyVault.Application.Actors;
 
-public class UserActorContext(AuthenticatedUser user) : IUserContext
+public class UserActorContext(AuthenticatedUser user) : IActorContext
 {
 	public ActorType Type => ActorType.User;
 	

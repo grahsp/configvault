@@ -12,7 +12,7 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 	{
 		return actor switch
 		{
-			IUserContext user => project.IsMember(user.Id),
+			UserActorContext user => project.IsMember(user.Id),
 			_ => false
 		};
 	}
@@ -27,7 +27,7 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 	{
 		return actor switch
 		{
-			IUserContext => await db.ProjectMembers
+			UserActorContext => await db.ProjectMembers
 				.AnyAsync(x => x.ProjectId == projectId && x.UserId == actor.Id, ct),
 			_ => false
 		};

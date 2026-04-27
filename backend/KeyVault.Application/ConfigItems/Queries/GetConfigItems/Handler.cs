@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.ConfigItems.Queries.GetConfigItems;
 
-public class Handler(IUserContext actor, IActorAuthorizationService authorization, IReadDbContext db)
+public class Handler(IActorContext actor, IActorAuthorizationService authorization, IReadDbContext db)
 	: IQueryHandler<Query, IReadOnlyList<ConfigItemSummary>>
 {
 	public async Task<IReadOnlyList<ConfigItemSummary>> HandleAsync(Query query, CancellationToken ct)

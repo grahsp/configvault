@@ -6,7 +6,7 @@ using KeyVault.Application.Users.Exceptions;
 namespace KeyVault.Application.Users.ActivateUser;
 
 public class ActivateUserCommandHandler(
-	IUserContext actor,
+	IActorContext actor,
 	IUserRepository repository,
 	IUnitOfWork persistence,
 	TimeProvider time)

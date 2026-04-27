@@ -7,7 +7,7 @@ using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Projects.Commands.AddMember;
 
-public class Handler(IUserContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
+public class Handler(IActorContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{

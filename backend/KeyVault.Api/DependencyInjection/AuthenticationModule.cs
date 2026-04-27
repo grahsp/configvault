@@ -72,12 +72,5 @@ public static class AuthenticationModule
 			var factory = sp.GetRequiredService<IActorContextFactory>();
 			return factory.Create();
 		});
-		
-		services.AddScoped<IUserContextFactory, UserContextFactory>();
-		services.AddScoped<IUserContext>(sp =>
-		{
-			var actor = sp.GetRequiredService<IActorContext>();
-			return actor as IUserContext;
-		});
 	}
 }

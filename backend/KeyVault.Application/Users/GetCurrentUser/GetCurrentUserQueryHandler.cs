@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.Users.GetCurrentUser;
 
-public sealed class GetCurrentUserQueryHandler(IUserContext actor, IReadDbContext db)
+public sealed class GetCurrentUserQueryHandler(IActorContext actor, IReadDbContext db)
 	: IQueryHandler<GetCurrentUserQuery, UserView>
 {
 	public async Task<UserView> HandleAsync(GetCurrentUserQuery query, CancellationToken ct)

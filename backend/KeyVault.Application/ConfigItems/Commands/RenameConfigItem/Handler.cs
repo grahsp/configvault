@@ -11,7 +11,7 @@ namespace KeyVault.Application.ConfigItems.Commands.RenameConfigItem;
 
 public sealed class Handler(
 	IProjectRepository projects,
-	IUserContext actor,
+	IActorContext actor,
 	IActorAuthorizationService authorization,
 	IConfigItemOperationAuthorizer operationAuthorizer,
 	IConfigItemBatchPlanner planner,

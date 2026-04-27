@@ -1,18 +1,11 @@
 using KeyVault.Application.Abstractions.Identity;
 using KeyVault.Application.Exceptions;
-using KeyVault.Application.Persistence;
 using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
-using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.Actors;
 
-public interface IActorResolver
-{
-	Task<Actor> ResolveAsync(IActorContext context, Project project, CancellationToken ct);
-}
-
-public sealed class ActorResolver(IReadDbContext db, IScopeCapabilityMapper mapper) : IActorResolver
+public sealed class ActorResolver(IScopeCapabilityMapper mapper) : IActorResolver
 {
 	public async Task<Actor> ResolveAsync(IActorContext context, Project project, CancellationToken ct)
 	{
@@ -26,12 +19,11 @@ public sealed class ActorResolver(IReadDbContext db, IScopeCapabilityMapper mapp
 
 		if (context is UserActorContext user)
 		{
-			var role = await db.ProjectMembers
-				.Where(x => x.ProjectId == project.Id && x.UserId == user.Id)
-				.Select(x => x.Role)
-				.SingleOrDefaultAsync(ct);
-
-			capabilities.UnionWith(ProjectRoleCapabilities.Get(role));
+			var member = project.Members.SingleOrDefault(x => x.UserId == user.Id);
+			
+			if (member is not null)
+				capabilities.UnionWith(ProjectRoleCapabilities.Get(member.Role));
+			
 			return new Actor(context.Id, capabilities);
 		}
 

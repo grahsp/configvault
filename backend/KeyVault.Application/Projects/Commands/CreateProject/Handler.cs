@@ -7,7 +7,7 @@ using KeyVault.Domain.Projects;
 namespace KeyVault.Application.Projects.Commands.CreateProject;
 
 public sealed class Handler(
-	IUserContext actor,
+	IActorContext actor,
 	IProjectRepository repository,
 	IUnitOfWork uow,
 	TimeProvider time,

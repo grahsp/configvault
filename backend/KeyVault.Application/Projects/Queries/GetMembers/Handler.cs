@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace KeyVault.Application.Projects.Queries.GetMembers;
 
 public class Handler(
-	IUserContext actor,
+	IActorContext actor,
 	IActorAuthorizationService authorization,
 	IReadDbContext db)
 	: IQueryHandler<Query, IReadOnlyList<Response>>

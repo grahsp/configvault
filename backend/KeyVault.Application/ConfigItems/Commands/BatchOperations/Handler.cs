@@ -10,7 +10,7 @@ namespace KeyVault.Application.ConfigItems.Commands.BatchOperations;
 
 public sealed class Handler(
 	IProjectRepository projects,
-	IUserContext actor,
+	IActorContext actor,
 	IActorAuthorizationService authorization,
 	IConfigItemOperationAuthorizer authorizer,
 	IConfigItemBatchPlanner planner,

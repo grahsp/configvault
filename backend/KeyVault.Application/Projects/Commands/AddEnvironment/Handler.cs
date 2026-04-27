@@ -7,7 +7,7 @@ using KeyVault.Application.Projects.Queries.GetEnvironments;
 namespace KeyVault.Application.Projects.Commands.AddEnvironment;
 
 public sealed class Handler(
-	IUserContext actor,
+	IActorContext actor,
 	IProjectRepository repository,
 	IUnitOfWork uow,
 	TimeProvider time)

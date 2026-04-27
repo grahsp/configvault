@@ -4,7 +4,7 @@ using KeyVault.Domain.Users;
 
 namespace KeyVault.Tests.Unit.Fakes;
 
-public sealed class FakeUserContext : IUserContext
+public sealed class FakeUserContext : IActorContext
 {
 	public ActorType Type => ActorType.User;
 

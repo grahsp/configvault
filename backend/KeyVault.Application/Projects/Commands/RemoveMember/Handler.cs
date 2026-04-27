@@ -6,7 +6,7 @@ using KeyVault.Domain.Exceptions;
 
 namespace KeyVault.Application.Projects.Commands.RemoveMember;
 
-public class Handler(IUserContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
+public class Handler(IActorContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{

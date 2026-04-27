@@ -5,7 +5,7 @@ using KeyVault.Application.Projects.Exceptions;
 
 namespace KeyVault.Application.Projects.Commands.DeleteProject;
 
-public sealed class Handler(IUserContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
+public sealed class Handler(IActorContext actor, IProjectRepository repository, IUnitOfWork uow) : ICommandHandler<Command, Unit>
 {
 	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
 	{

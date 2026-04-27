@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.Projects.Queries.GetProjects;
 
-public class Handler(IUserContext actor, IReadDbContext db)
+public class Handler(IActorContext actor, IReadDbContext db)
 	: IQueryHandler<Query, IReadOnlyList<Response>>
 {
 	public async Task<IReadOnlyList<Response>> HandleAsync(Query query, CancellationToken ct)

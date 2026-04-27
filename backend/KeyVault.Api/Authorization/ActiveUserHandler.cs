@@ -7,7 +7,7 @@ public class ActiveUserHandler(IActorContext actor) : AuthorizationHandler<Activ
 {
 	protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ActiveUserRequirement requirement)
 	{
-		if (actor is IUserContext { IsActive: true })
+		if (actor is UserActorContext { IsActive: true })
 			context.Succeed(requirement);
 		
 		return Task.CompletedTask;

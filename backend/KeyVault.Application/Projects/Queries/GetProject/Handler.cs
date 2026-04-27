@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace KeyVault.Application.Projects.Queries.GetProject;
 
 public sealed class Handler(
-	IUserContext actor,
+	IActorContext actor,
 	IActorAuthorizationService authorizaton,
 	IReadDbContext db)
 	: IQueryHandler<Query, Response?>
