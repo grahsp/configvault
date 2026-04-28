@@ -1,4 +1,3 @@
-using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
@@ -32,7 +31,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		var command = new BatchCommand(fixture.Project.Id, batch);
 		var sut = new BatchHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -45,7 +43,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			fixture.Authorization.Capabilities,
 			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage), capability),
 			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), capability));
-		Assert.Same(fixture.Actor, fixture.Planner.Actor);
 		Assert.Same(fixture.Project, fixture.Planner.Project);
 		Assert.Same(batch, fixture.Planner.Batch);
 		Assert.Same(fixture.PreparedBatch, fixture.Executor.Batch);
@@ -63,7 +60,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			"development");
 		var sut = new BatchHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -87,7 +83,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			"development");
 		var sut = new BatchHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -112,7 +107,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			"development");
 		var sut = new BatchHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -138,7 +132,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			"development");
 		var sut = new BatchHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -165,7 +158,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			var time = new FakeTimeProvider();
 			Project = Project.Create(Actor.UserId, "project", TestEncryptedValue(1), time.GetUtcNow());
 			Projects = new FakeProjectRepository(Project);
-			PreparedBatch = new PreparedBatch(Actor, Project, null, [], [new DeleteItem(Guid.NewGuid())]);
+			PreparedBatch = new PreparedBatch(Project, null, [], [new DeleteItem(Guid.NewGuid())]);
 			Planner.PreparedBatch = PreparedBatch;
 		}
 	}
@@ -207,14 +200,12 @@ public sealed class ExecuteBatchOperationsHandlerTests
 
 	private sealed class CapturingPlanner : IConfigItemBatchPlanner
 	{
-		public IActorContext? Actor { get; private set; }
 		public Project? Project { get; private set; }
 		public OperationBatch? Batch { get; private set; }
 		public PreparedBatch PreparedBatch { get; set; } = null!;
 
-		public Task<PreparedBatch> PrepareAsync(IActorContext actor, Project project, OperationBatch batch, CancellationToken ct)
+		public Task<PreparedBatch> PrepareAsync(Project project, OperationBatch batch, CancellationToken ct)
 		{
-			Actor = actor;
 			Project = project;
 			Batch = batch;
 			return Task.FromResult(PreparedBatch);

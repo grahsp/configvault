@@ -104,10 +104,9 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public SetConfigValueHandler CreateSetConfigValueHandler()
 			=> new(
 				Projects,
-				User,
 				ProjectAuthorization,
 				new ConfigItemBatchPlanner(Configurations),
-				new ConfigItemMutationExecutor(Configurations, Encryption, Uow, Time));
+				new ConfigItemMutationExecutor(Configurations, Encryption, User, Uow, Time));
 
 		public GetConfigValueHandler CreateGetConfigValueHandler()
 			=> new(Projects, Configurations, ProjectAuthorization, Encryption);

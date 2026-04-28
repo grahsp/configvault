@@ -1,4 +1,3 @@
-using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
@@ -30,7 +29,6 @@ public sealed class ConfigItemCommandAdapterTests
 		var fixture = new Fixture();
 		var sut = new AddConfigItemHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -41,8 +39,6 @@ public sealed class ConfigItemCommandAdapterTests
 		Assert.Equal(fixture.Project.Id, fixture.Projects.LastRequestedId);
 		Assert.Same(fixture.Project, fixture.Authorization.Project);
 		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), fixture.Authorization.Capability);
-		Assert.Same(fixture.Actor, fixture.Planner.Actor);
-
 		var batch = fixture.Planner.Batch!;
 		Assert.Null(batch.EnvironmentName);
 		var operation = Assert.IsType<CreateItem>(Assert.Single(batch.Operations));
@@ -58,7 +54,6 @@ public sealed class ConfigItemCommandAdapterTests
 		var fixture = new Fixture();
 		var sut = new RenameConfigItemHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -82,7 +77,6 @@ public sealed class ConfigItemCommandAdapterTests
 		var fixture = new Fixture();
 		var sut = new RemoveConfigItemHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -104,7 +98,6 @@ public sealed class ConfigItemCommandAdapterTests
 		var fixture = new Fixture();
 		var sut = new SetConfigValueHandler(
 			fixture.Projects,
-			fixture.Actor,
 			fixture.Authorization,
 			fixture.Planner,
 			fixture.Executor);
@@ -136,7 +129,7 @@ public sealed class ConfigItemCommandAdapterTests
 			var time = new FakeTimeProvider();
 			Project = Project.Create(Actor.UserId, "project", TestEncryptedValue(1), time.GetUtcNow());
 			Projects = new FakeProjectRepository(Project);
-			PreparedBatch = new PreparedBatch(Actor, Project, null, [], [new DeleteItem(Guid.NewGuid())]);
+			PreparedBatch = new PreparedBatch(Project, null, [], [new DeleteItem(Guid.NewGuid())]);
 			Planner.PreparedBatch = PreparedBatch;
 		}
 	}
@@ -177,14 +170,12 @@ public sealed class ConfigItemCommandAdapterTests
 
 	private sealed class CapturingPlanner : IConfigItemBatchPlanner
 	{
-		public IActorContext? Actor { get; private set; }
 		public Project? Project { get; private set; }
 		public OperationBatch? Batch { get; private set; }
 		public PreparedBatch PreparedBatch { get; set; } = null!;
 
-		public Task<PreparedBatch> PrepareAsync(IActorContext actor, Project project, OperationBatch batch, CancellationToken ct)
+		public Task<PreparedBatch> PrepareAsync(Project project, OperationBatch batch, CancellationToken ct)
 		{
-			Actor = actor;
 			Project = project;
 			Batch = batch;
 			return Task.FromResult(PreparedBatch);
