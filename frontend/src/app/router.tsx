@@ -1,15 +1,11 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
-import {
-  ActivationRoute,
-  ProtectedRoute,
-} from '../features/auth/components/ProtectedRoute'
+import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { ProjectSecretsPage } from '../features/config-items/pages/ProjectSecretsPage'
 import { GeneralPage } from '../features/projects/pages/GeneralPage'
 import { MembersPage } from '../features/projects/pages/MembersPage'
 import { ProjectLayout } from '../features/projects/pages/ProjectLayout'
 import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
-import { ActivatePage } from '../features/users/pages/ActivatePage'
 import { ProfilePage } from '../features/users/pages/ProfilePage'
 import { HomePage } from './pages/HomePage'
 
@@ -62,14 +58,6 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <ProfilePage />
           </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'activate',
-        element: (
-          <ActivationRoute>
-            <ActivatePage />
-          </ActivationRoute>
         ),
       },
     ],

@@ -28,15 +28,11 @@ export function ProfilePage() {
             </div>
             <div className={styles.detailsRow}>
               <dt>Email</dt>
-              <dd>{user.email}</dd>
+              <dd>{user.email ?? 'Unavailable'}</dd>
             </div>
             <div className={styles.detailsRow}>
               <dt>Display name</dt>
-              <dd>{user.displayName}</dd>
-            </div>
-            <div className={styles.detailsRow}>
-              <dt>Status</dt>
-              <dd>{user.status}</dd>
+              <dd>{user.displayName ?? 'Unavailable'}</dd>
             </div>
           </dl>
         ) : null}
