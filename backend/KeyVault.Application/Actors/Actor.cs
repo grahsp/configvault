@@ -1,8 +1,11 @@
+using KeyVault.Application.Authorization.Capabilities;
+using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 
-namespace KeyVault.Domain.Identity;
+namespace KeyVault.Application.Actors;
 
-public enum AccessScope{
+public enum AccessScope
+{
 	Global,
 	Project,
 }

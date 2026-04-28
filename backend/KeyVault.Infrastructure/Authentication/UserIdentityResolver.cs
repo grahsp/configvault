@@ -12,7 +12,7 @@ public sealed class UserIdentityResolver(AppDbContext context)
 		return context.Users
 			.Where(u => u.ExternalLogins
 				.Any(l => l.Issuer == issuer && l.Subject == subject))
-			.Select(u => new AuthenticatedUser(u.Id, u.Status))
+			.Select(u => new AuthenticatedUser(u.Id, u.Status, issuer, subject))
 			.SingleOrDefaultAsync(ct);
 	}
 }

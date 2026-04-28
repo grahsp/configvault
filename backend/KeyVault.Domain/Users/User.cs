@@ -5,7 +5,7 @@ namespace KeyVault.Domain.Users;
 
 public sealed class User
 {
-	public ActorId Id { get; } = null!;
+	public UserId Id { get; } = null!;
 	
 	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
@@ -18,15 +18,15 @@ public sealed class User
 
 	private User() {}
 
-	private User(Guid id, DateTimeOffset now)
+	private User(UserId id, DateTimeOffset now)
 	{ 
-		Id = ActorId.User(id);
+		Id = id;
 		CreatedAt = now;
 	}
 
 	public static User Create(string issuer, string subject, DateTimeOffset now)
 	{
-		var user = new User(Guid.NewGuid(), now);
+		var user = new User(UserId.New(), now);
 		user.AddExternalLogin(issuer, subject);
 
 		return user;

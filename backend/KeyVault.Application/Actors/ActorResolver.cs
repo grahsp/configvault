@@ -1,6 +1,6 @@
 using KeyVault.Application.Abstractions.Identity;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.Exceptions;
-using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Actors;
@@ -17,9 +17,9 @@ public sealed class ActorResolver(RoleCapabilities roleCapabilities, IScopeCapab
 			return new Actor(machine.Id, AccessScope.Global, capabilities);
 		}
 
-		if (context is UserActorContext user)
+		if (context.UserId is {} userId)
 		{
-			var member = project.Members.SingleOrDefault(x => x.UserId == user.Id);
+			var member = project.Members.SingleOrDefault(x => x.UserId == userId);
 			
 			if (member is not null)
 				capabilities.UnionWith(roleCapabilities.For(member.Role));

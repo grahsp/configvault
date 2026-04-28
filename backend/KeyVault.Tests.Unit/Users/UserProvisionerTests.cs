@@ -32,7 +32,7 @@ public sealed class UserProvisionerTests
 
 		Assert.NotNull(sut.Users.AddedUser);
 		var addedUser = sut.Users.AddedUser!;
-		Assert.Equal(new AuthenticatedUser(addedUser.Id, addedUser.Status), result);
+		Assert.Equal(new AuthenticatedUser(addedUser.Id, addedUser.Status, sut.Issuer, sut.Subject), result);
 		Assert.Equal(now, addedUser.CreatedAt);
 		Assert.True(sut.Uow.SaveChangesCalled);
 		
@@ -71,7 +71,7 @@ public sealed class UserProvisionerTests
 
 		public AuthenticatedUser GivenExistingUser(AuthenticatedUser? existingUser = null)
 		{
-			var user = existingUser ?? new AuthenticatedUser(ActorId.User(Guid.NewGuid()), UserStatus.Active);
+			var user = existingUser ?? new AuthenticatedUser(UserId.New(), UserStatus.Active, Issuer, Subject);
 			Resolver.SetUserToReturn(user);
 			
 			return user;
@@ -94,7 +94,7 @@ public sealed class UserProvisionerTests
 
 		public void Add(User user) => AddedUser = user;
 		public void Remove(User user) => throw new NotImplementedException();
-		public Task<User?> GetByIdAsync(ActorId id, CancellationToken ct) => throw new NotImplementedException();
+		public Task<User?> GetByIdAsync(UserId id, CancellationToken ct) => throw new NotImplementedException();
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork

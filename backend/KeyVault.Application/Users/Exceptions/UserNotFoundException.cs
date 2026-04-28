@@ -3,7 +3,7 @@ using KeyVault.Domain.Identity;
 
 namespace KeyVault.Application.Users.Exceptions;
 
-public class UserNotFoundException(ActorId id) : NotFoundException
+public class UserNotFoundException(UserId id) : NotFoundException
 {
-	public ActorId Id { get; } = id;
+	public UserId Id { get; } = id;
 }

@@ -8,7 +8,10 @@ public sealed class FakeUserContext : IActorContext
 {
 	public ActorType Type => ActorType.User;
 
-	public ActorId Id { get; set; } = ActorId.User(Guid.NewGuid());
+	public string Issuer { get; set; } = "https://issuer.example";
+	public string Subject { get; set; } = "subject";
+	public ActorId Id => ActorId.User(Issuer, Subject);
+	public UserId UserId { get; set; } = UserId.New();
 	public UserStatus Status { get; set; } = UserStatus.Active;
 	public bool IsActive { get; set; } = true;
 }

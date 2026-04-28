@@ -7,11 +7,12 @@ public sealed class MachineActorContext : IActorContext
 	public ActorType Type => ActorType.Machine;
 	
 	public ActorId Id { get; }
+	public UserId? UserId => null;
 	public IReadOnlyList<string> Scopes { get; }
 
-	public MachineActorContext(string clientId, IEnumerable<string> scopes)
+	public MachineActorContext(string issuer, string clientId, IEnumerable<string> scopes)
 	{
-		Id = ActorId.Machine(clientId);
+		Id = ActorId.Machine(issuer, clientId);
 		Scopes = scopes.ToList();
 	}
 }

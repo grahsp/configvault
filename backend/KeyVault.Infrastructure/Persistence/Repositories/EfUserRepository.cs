@@ -7,7 +7,7 @@ namespace KeyVault.Infrastructure.Persistence.Repositories;
 
 public class EfUserRepository(AppDbContext context) : IUserRepository
 {
-	public Task<User?> GetByIdAsync(ActorId id, CancellationToken ct) =>
+	public Task<User?> GetByIdAsync(UserId id, CancellationToken ct) =>
 		context.Users.SingleOrDefaultAsync(x => x.Id == id, ct);
 	
 	public void Add(User user)

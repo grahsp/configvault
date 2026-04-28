@@ -12,6 +12,7 @@ public sealed class ActorContextFactory(IHttpContextAccessor http) : IActorConte
 
 		if (context.User.IsMachine())
 			return new MachineActorContext(
+				context.User.FindFirstValue("iss") ?? throw new Exception("Missing issuer claim"),
 				context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Missing identifier claim"),
 				context.User.FindAll("scope").Select(c => c.Value));
 		

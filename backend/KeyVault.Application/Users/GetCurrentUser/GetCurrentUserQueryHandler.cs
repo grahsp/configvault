@@ -11,11 +11,13 @@ public sealed class GetCurrentUserQueryHandler(IActorContext actor, IReadDbConte
 {
 	public async Task<UserView> HandleAsync(GetCurrentUserQuery query, CancellationToken ct)
 	{
+		var userId = actor.RequireUserId();
+
 		var user = await db.Users
-			.Where(x => x.Id == actor.Id)
-			.Select(x => new UserView(x.Id.Value, x.DisplayName, x.Status.ToString(), x.CreatedAt))
+			.Where(x => x.Id == userId)
+			.Select(x => new UserView(x.Id.ToString(), x.DisplayName, x.Status.ToString(), x.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 
-		return user ?? throw new UserNotFoundException(actor.Id);
+		return user ?? throw new UserNotFoundException(userId);
 	}
 }

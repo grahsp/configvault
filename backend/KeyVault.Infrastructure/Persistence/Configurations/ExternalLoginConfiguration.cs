@@ -20,8 +20,8 @@ public sealed class ExternalLoginConfiguration : IEntityTypeConfiguration<Extern
 			.HasMaxLength(256)
 			.IsRequired();
 
-		builder.Property(x => x.ActorId)
-			.HasActorIdConversion()
+		builder.Property(x => x.UserId)
+			.HasUserIdConversion()
 			.ValueGeneratedNever()
 			.IsRequired();
 	}

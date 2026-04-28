@@ -1,9 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace KeyVault.Domain.Identity;
 
 public sealed record ActorId
 {
+	private static readonly Regex Pattern = new("^(user|machine):.+:.+$", RegexOptions.Compiled);
+
 	public string Value { get; }
 		
 	private ActorId(string value)
@@ -11,11 +14,21 @@ public sealed record ActorId
 		Value = value;
 	}
 	
-	public static ActorId User(Guid id)
-		=> new ActorId(id.ToString("N"));
+	public static ActorId User(string issuer, string subject)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(issuer);
+		ArgumentException.ThrowIfNullOrWhiteSpace(subject);
 
-	public static ActorId Machine(string clientId)
-		=> new ActorId(clientId);
+		return new ActorId($"user:{issuer}:{subject}");
+	}
+
+	public static ActorId Machine(string issuer, string clientId)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(issuer);
+		ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
+
+		return new ActorId($"machine:{issuer}:{clientId}");
+	}
 
 	public static ActorId Parse(string value)
 	{
@@ -29,10 +42,7 @@ public sealed record ActorId
 	{
 		actorId = null;
 
-		if (string.IsNullOrWhiteSpace(value))
-			return false;
-
-		if (!Guid.TryParseExact(value, "N", out _))
+		if (string.IsNullOrWhiteSpace(value) || !Pattern.IsMatch(value))
 			return false;
 
 		actorId = new ActorId(value);

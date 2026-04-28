@@ -23,6 +23,6 @@ public class UserProvisioner(
 		users.Add(user);
 		await uow.SaveChangesAsync(ct);
 
-		return new AuthenticatedUser(user.Id, user.Status);
+		return new AuthenticatedUser(user.Id, user.Status, identity.Issuer, identity.Subject);
 	}
 }

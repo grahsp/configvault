@@ -13,7 +13,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 		builder.HasKey(x => x.Id);
 
 		builder.Property(x => x.Id)
-			.HasActorIdConversion()
+			.HasUserIdConversion()
 			.ValueGeneratedNever()
 			.IsRequired();
 
@@ -28,7 +28,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
 		builder.HasMany(x => x.ExternalLogins)
 			.WithOne()
-			.HasForeignKey(x => x.ActorId)
+			.HasForeignKey(x => x.UserId)
 			.OnDelete(DeleteBehavior.Cascade);
 
 		builder.Navigation(x => x.ExternalLogins)
