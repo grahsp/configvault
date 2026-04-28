@@ -1,4 +1,3 @@
-using KeyVault.Application.Actors;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
@@ -8,7 +7,6 @@ namespace KeyVault.Application.ConfigItems.BatchExecution.Models;
 
 public sealed class PreparedBatch
 {
-	public IActorContext Actor { get; }
 	public Project Project { get; }
 	public Environment? Environment { get; }
 
@@ -20,13 +18,11 @@ public sealed class PreparedBatch
 	public IReadOnlyList<Operation> Operations { get; }
 
 	public PreparedBatch(
-		IActorContext actor,
 		Project project,
 		Environment? environment,
 		Dictionary<Guid, ConfigItem> items,
 		IReadOnlyList<Operation> operations)
 	{
-		Actor = actor;
 		Project = project;
 		Environment = environment;
 

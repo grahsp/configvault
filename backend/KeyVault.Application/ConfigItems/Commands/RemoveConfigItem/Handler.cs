@@ -1,5 +1,4 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
@@ -13,7 +12,6 @@ namespace KeyVault.Application.ConfigItems.Commands.RemoveConfigItem;
 
 public sealed class Handler(
 	IProjectRepository projects,
-	IActorContext actor,
 	IProjectAuthorizationService authorization,
 	IConfigItemBatchPlanner planner,
 	IConfigItemMutationExecutor executor)
@@ -31,7 +29,7 @@ public sealed class Handler(
 			project,
 			ct);
 
-		var prepared = await planner.PrepareAsync(actor, project, batch, ct);
+		var prepared = await planner.PrepareAsync(project, batch, ct);
 		await executor.ExecuteAsync(prepared, ct);
 		
 		return Unit.Value;

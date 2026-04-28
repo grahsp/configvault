@@ -1,4 +1,3 @@
-using KeyVault.Application.Actors;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Exceptions;
@@ -13,7 +12,6 @@ public sealed class ConfigItemBatchPlanner(
 	: IConfigItemBatchPlanner
 {
 	public async Task<PreparedBatch> PrepareAsync(
-		IActorContext actor,
 		Project project,
 		OperationBatch batch,
 		CancellationToken ct)
@@ -32,7 +30,6 @@ public sealed class ConfigItemBatchPlanner(
 		var ordered = BuildExecutionPlan(reduction);
 
 		return new PreparedBatch(
-			actor,
 			project,
 			environment,
 			items,

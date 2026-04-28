@@ -1,4 +1,5 @@
 using KeyVault.Application.Abstractions.Cryptography;
+using KeyVault.Application.Actors;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Exceptions;
@@ -11,6 +12,7 @@ namespace KeyVault.Application.ConfigItems.BatchExecution;
 public sealed class ConfigItemMutationExecutor(
 	IConfigItemRepository configurations,
 	IEnvelopeEncryptionService encryption,
+	IActorContext actor,
 	IUnitOfWork uow,
 	TimeProvider time)
 	: IConfigItemMutationExecutor
@@ -121,7 +123,7 @@ public sealed class ConfigItemMutationExecutor(
 			?? throw new InvalidOperationException("Environment is required.");
 
 		var encrypted = encryption.EncryptSecret(value, batch.Project.CurrentDataKey.Value);
-		item.SetValue(environment.Id, encrypted, batch.Actor.Id, time.GetUtcNow());
+		item.SetValue(environment.Id, encrypted, actor.Id, time.GetUtcNow());
 	}
 	
 	private static ConfigKey FindCreatedKey(IEnumerable<Operation> operations)
