@@ -1,6 +1,6 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Actors;
+using KeyVault.Application.Authorization;
 using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Projects;
@@ -10,11 +10,9 @@ using KeyVault.Domain.Projects;
 namespace KeyVault.Application.ConfigItems.Queries.GetConfigValue;
 
 public sealed class Handler(
-	IActorContext context,
-	// IActorAuthorizationService actorAuthorization,
-	IActorResolver resolver,
 	IProjectRepository projects,
 	IConfigItemRepository configurations,
+	IProjectAuthorizationService authorization,
 	IEnvelopeEncryptionService encryption)
 	: IQueryHandler<Query, ConfigValueView?>
 {
@@ -23,10 +21,7 @@ public sealed class Handler(
 		var project = await projects.GetByIdAsync(query.ProjectId, ct)
 			?? throw new ProjectNotFoundException(query.ProjectId);
 
-		// actorAuthorization.EnsureCanAccessProject(project, context);
-
-		var actor = await resolver.ResolveAsync(context, project, ct);
-		project.RequireCapability(actor, ProjectCapability.ReadConfig);
+		await authorization.EnsureCanAccessAsync(new ReadProject(), project, ct);
 		
 		if (!project.TryGetEnvironment(query.EnvironmentName, out var environment))
 			throw new EnvironmentNotFoundException(query.EnvironmentName);

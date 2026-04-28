@@ -81,7 +81,7 @@ public static class InfrastructureModule
 		services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 		services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 
-		services.AddSingleton<IScopeCapabilityMapper, ScopeCapabilityMapper>();
+		services.AddSingleton<IScopeCapabilities, ScopeCapabilities>();
 	}
 
 	private static void RegisterHandlers(this IServiceCollection services)

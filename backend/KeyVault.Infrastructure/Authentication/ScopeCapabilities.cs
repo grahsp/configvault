@@ -3,16 +3,16 @@ using KeyVault.Domain.Projects;
 
 namespace KeyVault.Infrastructure.Authentication;
 
-public class ScopeCapabilityMapper : IScopeCapabilityMapper
+public class ScopeCapabilities : IScopeCapabilities
 {
-	public IEnumerable<ProjectCapability> Map(IEnumerable<string> scopes)
+	public IEnumerable<ProjectCapability> For(IEnumerable<string> scopes)
 	{
 		foreach (var scope in scopes)
 		{
 			switch (scope)
 			{
 				case "config:read":
-					yield return ProjectCapability.ReadConfig;
+					yield return ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read);
 					break;
 			}
 		}

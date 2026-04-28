@@ -5,7 +5,7 @@ using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Actors;
 
-public sealed class ActorResolver(IScopeCapabilityMapper mapper) : IActorResolver
+public sealed class ActorResolver(RoleCapabilities roleCapabilities, IScopeCapabilities scopeCapabilities) : IActorResolver
 {
 	public async Task<Actor> ResolveAsync(IActorContext context, Project project, CancellationToken ct)
 	{
@@ -13,8 +13,8 @@ public sealed class ActorResolver(IScopeCapabilityMapper mapper) : IActorResolve
 		
 		if (context is MachineActorContext machine)
 		{
-			capabilities.UnionWith(mapper.Map(machine.Scopes));
-			return new Actor(machine.Id, capabilities);
+			capabilities.UnionWith(scopeCapabilities.For(machine.Scopes));
+			return new Actor(machine.Id, AccessScope.Global, capabilities);
 		}
 
 		if (context is UserActorContext user)
@@ -22,9 +22,9 @@ public sealed class ActorResolver(IScopeCapabilityMapper mapper) : IActorResolve
 			var member = project.Members.SingleOrDefault(x => x.UserId == user.Id);
 			
 			if (member is not null)
-				capabilities.UnionWith(ProjectRoleCapabilities.Get(member.Role));
+				capabilities.UnionWith(roleCapabilities.For(member.Role));
 			
-			return new Actor(context.Id, capabilities);
+			return new Actor(context.Id, AccessScope.Project, capabilities);
 		}
 
 		throw new UnauthorizedException();
