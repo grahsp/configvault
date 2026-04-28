@@ -1,5 +1,6 @@
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Domain.Projects;

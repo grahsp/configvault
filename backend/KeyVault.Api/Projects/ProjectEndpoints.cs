@@ -18,13 +18,14 @@ public static class ProjectEndpoints
 			.WithName(nameof(GetProject));
 
 		var members = builder.MapGroup("/projects/{projectId}/members")
-			.RequireAuthorization(Policies.ActiveUser)
+			.RequireAuthorization()
 			.WithTags("Members");
 
-		members.MapGet("", GetMembers.Endpoint.Handle);
-		members.MapPost("/{actorId}", AddMember.Endpoint.Handle);
-		members.MapPut("/{actorId}", SetRole.Endpoint.Handle);
-		members.MapDelete("/{actorId}", RemoveMember.Endpoint.Handle);
+		members.MapGet("", GetMembers.Endpoint.Handle)
+			.RequireAuthorization(Policies.ActiveUser);
+		members.MapPost("/{userId}", AddMember.Endpoint.Handle);
+		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
+		members.MapDelete("/{userId}", RemoveMember.Endpoint.Handle);
 
 		var environments = builder.MapGroup("/projects/{projectId}/environments")
 			.RequireAuthorization(Policies.ActiveUser)

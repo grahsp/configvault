@@ -9,10 +9,10 @@ public sealed class ConfigItemOperationAuthorizer : IConfigItemOperationAuthoriz
 {
 	public void Authorize(IActorContext actor, Project project, OperationBatch batch)
 	{
-		if (actor is not UserActorContext user)
+		if (actor.UserId is not {} userId)
 			throw new ForbiddenException();
 		
-		var member = project.RequireMember(user.Id);
+		var member = project.RequireMember(userId);
 		
 		foreach (var operation in batch.Operations)
 		{

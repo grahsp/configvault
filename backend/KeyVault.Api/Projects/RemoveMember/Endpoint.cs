@@ -6,9 +6,9 @@ namespace KeyVault.Api.Projects.RemoveMember;
 
 internal static class Endpoint
 {
-	internal static async Task<IResult> Handle(ICommandDispatcher dispatcher, Guid projectId, ActorId actorId, CancellationToken ct)
+	internal static async Task<IResult> Handle(ICommandDispatcher dispatcher, Guid projectId, UserId userId, CancellationToken ct)
 	{
-		var command = new Command(projectId, actorId);
+		var command = new Command(projectId, userId);
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();

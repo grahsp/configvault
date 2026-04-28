@@ -10,11 +10,7 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 {
 	public bool CanAccessProject(Project project, IActorContext actor)
 	{
-		return actor switch
-		{
-			UserActorContext user => project.IsMember(user.Id),
-			_ => false
-		};
+		return actor.UserId is {} userId && project.IsMember(userId);
 	}
 	
 	public void EnsureCanAccessProject(Project project, IActorContext actor)
@@ -25,12 +21,11 @@ public sealed class ActorAuthorizationService(IReadDbContext db) : IActorAuthori
 
 	public async Task<bool> CanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct)
 	{
-		return actor switch
-		{
-			UserActorContext => await db.ProjectMembers
-				.AnyAsync(x => x.ProjectId == projectId && x.UserId == actor.Id, ct),
-			_ => false
-		};
+		if (actor.UserId is not {} userId)
+			return false;
+
+		return await db.ProjectMembers
+			.AnyAsync(x => x.ProjectId == projectId && x.UserId == userId, ct);
 	}
 	
 	public async Task EnsureCanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct)

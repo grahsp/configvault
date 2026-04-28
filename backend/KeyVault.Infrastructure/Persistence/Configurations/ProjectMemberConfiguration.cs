@@ -15,7 +15,7 @@ public sealed class ProjectMemberConfiguration : IEntityTypeConfiguration<Projec
 		builder.HasIndex(x => x.UserId);
 
 		builder.Property(x => x.UserId)
-			.HasActorIdConversion()
+			.HasUserIdConversion()
 			.ValueGeneratedNever()
 			.IsRequired();
 

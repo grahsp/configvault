@@ -14,18 +14,19 @@ public class Handler(
 {
 	public async Task<IReadOnlyList<Response>> HandleAsync(Query query, CancellationToken ct)
 	{
+		var userId = actor.RequireUserId();
 		await authorization.EnsureCanAccessProjectAsync(query.ProjectId, actor, ct);
 		
 		return await db.ProjectMembers
 			.Where(x => x.ProjectId == query.ProjectId)
-			.Join(db.Users,
-				x => x.UserId,
-				u => u.Id,
-				(x, u) => new Response(
-					u.Id.Value,
-					u.DisplayName,
-					x.Role,
-					u.Id == actor.Id))
+				.Join(db.Users,
+					x => x.UserId,
+					u => u.Id,
+					(x, u) => new Response(
+						u.Id.ToString(),
+						u.DisplayName,
+						x.Role,
+						u.Id == userId))
 			.ToListAsync(ct);
 	}
 }

@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using KeyVault.Domain.Exceptions;
 using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects.Exceptions;
 
@@ -37,7 +36,7 @@ public sealed class Project
 		_dataKeys.Add(ProjectDataKey.Create(Id, encryptedDataKey, now));
 	}
 
-	public static Project Create(ActorId userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
+	public static Project Create(UserId userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
 		
@@ -48,7 +47,7 @@ public sealed class Project
 		return project;
 	}
 
-	private void SetInitialOwner(ActorId id)
+	private void SetInitialOwner(UserId id)
 		=> _members.Add(new ProjectMember(Id, id, ProjectRole.Owner));
 
 	private void SetInitialEnvironments()
@@ -58,15 +57,15 @@ public sealed class Project
 	}
 
 
-	public bool IsMember(ActorId id) => TryGetMember(id, out _);
+	public bool IsMember(UserId id) => TryGetMember(id, out _);
 	
-	public ProjectMember RequireMember(ActorId id)
+	public ProjectMember RequireMember(UserId id)
 	{
 		return Members.SingleOrDefault(m => m.UserId == id)
 		       ?? throw new ProjectMemberNotFoundException();
 	}
 
-	public bool TryGetMember(ActorId id, [NotNullWhen(true)] out ProjectMember? member)
+	public bool TryGetMember(UserId id, [NotNullWhen(true)] out ProjectMember? member)
 	{
 		member = Members.SingleOrDefault(m => m.UserId == id);
 		return member != null;
@@ -78,27 +77,8 @@ public sealed class Project
 			throw new InsufficientProjectRoleException();
 	}
 
-	public void RequireCapability(Actor actor, ProjectCapability capability)
+	public void AddMember(UserId userId, ProjectRole role)
 	{
-		if (!actor.Has(capability))
-			throw new MissingCapabilityException(capability);
-	}
-	
-	public ProjectMember RequireMemberWithRole(ActorId id, ProjectRole requiredRole)
-	{
-		var member = RequireMember(id);
-		RequireRole(member, requiredRole);
-
-		return member;
-	}
-
-	public void EnsureCanDelete(ActorId actorId)
-		=> RequireMemberWithRole(actorId, ProjectRole.Owner);
-
-	public void AddMember(ActorId actorId, ActorId userId, ProjectRole role)
-	{
-		RequireMemberWithRole(actorId, ProjectRole.Admin);
-
 		if (role == ProjectRole.Owner)
 			throw new InvalidRoleException();
 		
@@ -108,10 +88,8 @@ public sealed class Project
 		_members.Add(new ProjectMember(Id, userId, role));
 	}
 	
-	public void RemoveMember(ActorId actorId, ActorId userId)
+	public void RemoveMember(UserId userId)
 	{
-		RequireMemberWithRole(actorId, ProjectRole.Admin);
-		
 		if (!TryGetMember(userId, out var member))
 			return;
 		
@@ -121,22 +99,12 @@ public sealed class Project
 		_members.Remove(member);
 	}
 
-	public void SetRole(ActorId actorId, ActorId userId, ProjectRole role)
+	public void SetRole(UserId userId, ProjectRole role)
 	{
 		if (role == ProjectRole.Owner)
 			throw new InvalidRoleException();
-		
-		var actor = RequireMember(actorId);
 		var member = RequireMember(userId);
-		
-		// cannot change the role of members with a greater role
-		if (actor.Role >= member.Role)
-			throw new InsufficientProjectRoleException();
-		
-		// cannot set a role higher than the actors role
-		if (role < actor.Role)
-			throw new InsufficientProjectRoleException();
-		
+
 		member.SetRole(role);
 	}
 
@@ -161,12 +129,11 @@ public sealed class Project
 		return environment != null;
 	}
 
-	public Environment AddEnvironment(ActorId actorId, string name, DateTimeOffset now)
+	public Environment AddEnvironment(string name, DateTimeOffset now)
 	{
 		var normalizedName = NormalizeEnvironmentName(name);
 		
 		ArgumentException.ThrowIfNullOrWhiteSpace(name);
-		RequireMemberWithRole(actorId, ProjectRole.Admin);
 		
 		if (EnvironmentExists(normalizedName))
 			throw new EnvironmentAlreadyExists(normalizedName);
@@ -177,12 +144,10 @@ public sealed class Project
 		return environment;
 	}
 
-	public void RemoveEnvironment(ActorId actorId, Guid environmentId)
+	public void RemoveEnvironment(Guid environmentId)
 	{
-		RequireMemberWithRole(actorId, ProjectRole.Admin);
-
 		if (Environments.Count == 1)
-			throw new BusinessRuleViolationException("There must exist at least one environment in a project.");
+			throw new Domain.Exceptions.BusinessRuleViolationException("There must exist at least one environment in a project.");
 
 		if (TryGetEnvironment(environmentId, out var environment))
 			_environments.Remove(environment);

@@ -1,4 +1,5 @@
 using KeyVault.Application.Abstractions.Identity;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Domain.Projects;
 
 namespace KeyVault.Infrastructure.Authentication;
@@ -13,6 +14,15 @@ public class ScopeCapabilities : IScopeCapabilities
 			{
 				case "config:read":
 					yield return ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read);
+					break;
+				case "project:members:manage":
+					yield return ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Manage);
+					break;
+				case "project:environments:manage":
+					yield return ProjectCapability.Create(ProjectResource.Environment, ProjectPermission.Manage);
+					break;
+				case "project:delete":
+					yield return ProjectCapability.Create(ProjectResource.Project, ProjectPermission.Delete);
 					break;
 			}
 		}

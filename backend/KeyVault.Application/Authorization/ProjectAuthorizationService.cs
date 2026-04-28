@@ -1,6 +1,6 @@
 using KeyVault.Application.Actors;
+using KeyVault.Application.Authorization.Actions;
 using KeyVault.Application.Exceptions;
-using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Authorization;
@@ -17,7 +17,7 @@ public sealed class ProjectAuthorizationService(
 		return await CanAccessInternalAsync(
 			action,
 			actor,
-			_ => Task.FromResult(project.IsMember(actor.Id)),
+			_ => Task.FromResult(context.UserId is {} userId && project.IsMember(userId)),
 			ct);
 	}
 

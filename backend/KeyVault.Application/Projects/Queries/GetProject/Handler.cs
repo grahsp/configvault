@@ -14,6 +14,7 @@ public sealed class Handler(
 {
 	public async Task<Response?> HandleAsync(Query query, CancellationToken ct)
 	{
+		var userId = actor.RequireUserId();
 		await authorizaton.EnsureCanAccessProjectAsync(query.ProjectId, actor, ct);
 		
 		return await db.Projects
@@ -22,7 +23,7 @@ public sealed class Handler(
 				p.Id,
 				p.Name,
 				p.Members
-					.Where(m => m.UserId == actor.Id)
+					.Where(m => m.UserId == userId)
 					.Select(m => m.Role)
 					.Single(),
 				p.CreatedAt))

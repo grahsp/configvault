@@ -9,11 +9,11 @@ internal static class Endpoint
 	internal static async Task<IResult> Handle(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		ActorId actorId,
+		UserId userId,
 		Request request,
 		CancellationToken ct)
 	{
-		var command = new Command(projectId, actorId, request.Role);
+		var command = new Command(projectId, userId, request.Role);
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();

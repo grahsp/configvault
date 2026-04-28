@@ -17,7 +17,7 @@ public sealed class Handler(
 	public async Task<Guid> HandleAsync(Command command, CancellationToken ct)
 	{
 		var encryptedDataKey = encryption.GenerateDataKey();
-		var project = Project.Create(actor.Id, command.Name, encryptedDataKey, time.GetUtcNow());
+		var project = Project.Create(actor.RequireUserId(), command.Name, encryptedDataKey, time.GetUtcNow());
 		
 		repository.Add(project);
 		await uow.SaveChangesAsync(ct);

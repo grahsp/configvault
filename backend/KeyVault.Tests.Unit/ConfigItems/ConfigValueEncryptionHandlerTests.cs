@@ -1,5 +1,8 @@
 using KeyVault.Application.Abstractions.Cryptography;
+using KeyVault.Application.Abstractions.Identity;
+using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
@@ -58,11 +61,11 @@ public sealed class ConfigValueEncryptionHandlerTests
 	public async Task GetConfigValue_ShouldThrowForbidden_WhenUserIsNotProjectMember()
 	{
 		var fixture = new Fixture();
-		fixture.User.Id = ActorId.User(Guid.NewGuid());
+		fixture.User.UserId = UserId.New();
 		fixture.Configuration.SetValue(
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
-			fixture.Project.Members[0].UserId,
+			ActorId.User("https://issuer.example", "other-subject"),
 			fixture.Time.GetUtcNow());
 
 		var sut = fixture.CreateGetConfigValueHandler();
@@ -82,13 +85,14 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public FakeTimeProvider Time { get; } = new();
 		public FakeEnvelopeEncryptionService Encryption { get; } = new();
 		public IActorAuthorizationService ActorAuthorization { get; }
+		public IProjectAuthorizationService ProjectAuthorization { get; }
 		public Project Project { get; }
 		public ConfigItem Configuration { get; }
 		public KeyVault.Domain.Projects.Environment DevelopmentEnvironment { get; }
 
 		public Fixture()
 		{
-			Project = Project.Create(User.Id, "project", TestEncryptedValue(1), Time.GetUtcNow());
+			Project = Project.Create(User.UserId, "project", TestEncryptedValue(1), Time.GetUtcNow());
 			DevelopmentEnvironment = Project.Environments.Single(e => e.Name == "development");
 			Configuration = ConfigItem.Create(Project.Id, ConfigKey.Create("SECRET"), Time.GetUtcNow());
 
@@ -96,6 +100,9 @@ public sealed class ConfigValueEncryptionHandlerTests
 			Configurations.Configuration = Configuration;
 			Db = new FakeReadDbContext(Project);
 			ActorAuthorization = new ActorAuthorizationService(Db);
+			ProjectAuthorization = new ProjectAuthorizationService(
+				User,
+				new ActorResolver(new RoleCapabilities(), new FakeScopeCapabilities()));
 		}
 
 		public SetConfigValueHandler CreateSetConfigValueHandler()
@@ -108,7 +115,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 				new ConfigItemMutationExecutor(Configurations, Encryption, Uow, Time));
 
 		public GetConfigValueHandler CreateGetConfigValueHandler()
-			=> new(User, ActorAuthorization, Projects, Configurations, Encryption);
+			=> new(Projects, Configurations, ProjectAuthorization, Encryption);
 	}
 
 	private sealed class FakeProjectRepository : IProjectRepository
@@ -199,6 +206,11 @@ public sealed class ConfigValueEncryptionHandlerTests
 			DecryptionWrappedKey = wrappedKey;
 			return DecryptedSecret;
 		}
+	}
+
+	private sealed class FakeScopeCapabilities : IScopeCapabilities
+	{
+		public IEnumerable<ProjectCapability> For(IEnumerable<string> scopes) => [];
 	}
 
 	private static EncryptedValue TestEncryptedValue(byte seed)

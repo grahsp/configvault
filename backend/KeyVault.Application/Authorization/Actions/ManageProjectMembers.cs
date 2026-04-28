@@ -1,3 +1,5 @@
+using KeyVault.Application.Authorization.Capabilities;
+
 namespace KeyVault.Application.Authorization.Actions;
 
 public sealed record ManageProjectMembers : IProjectAction

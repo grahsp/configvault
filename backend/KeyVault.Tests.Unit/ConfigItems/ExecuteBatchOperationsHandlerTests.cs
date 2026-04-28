@@ -63,7 +63,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		public Fixture()
 		{
 			var time = new FakeTimeProvider();
-			Project = Project.Create(Actor.Id, "project", TestEncryptedValue(1), time.GetUtcNow());
+			Project = Project.Create(Actor.UserId, "project", TestEncryptedValue(1), time.GetUtcNow());
 			Projects = new FakeProjectRepository(Project);
 			PreparedBatch = new PreparedBatch(Actor, Project, null, [], [new DeleteItem(Guid.NewGuid())]);
 			Planner.PreparedBatch = PreparedBatch;

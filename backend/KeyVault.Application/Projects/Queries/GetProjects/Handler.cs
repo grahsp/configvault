@@ -10,8 +10,10 @@ public class Handler(IActorContext actor, IReadDbContext db)
 {
 	public async Task<IReadOnlyList<Response>> HandleAsync(Query query, CancellationToken ct)
 	{
+		var userId = actor.RequireUserId();
+
 		return await db.Projects
-			.Where(x => x.Members.Any(m => m.UserId == actor.Id))
+			.Where(x => x.Members.Any(m => m.UserId == userId))
 			.OrderBy(x => x.Name)
 			.Select(x => new Response(x.Id, x.Name, x.CreatedAt))
 			.ToListAsync(ct);

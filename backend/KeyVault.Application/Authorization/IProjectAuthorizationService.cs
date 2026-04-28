@@ -1,3 +1,4 @@
+using KeyVault.Application.Authorization.Actions;
 using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.Authorization;
