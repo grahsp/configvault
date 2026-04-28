@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using KeyVault.Application.Actors;
 using KeyVault.Application.Exceptions;
+using KeyVault.Domain.Identity;
 
 namespace KeyVault.Api.Authentication;
 
@@ -17,7 +18,10 @@ public sealed class ActorContextFactory(IHttpContextAccessor http) : IActorConte
 				GetScopes(context.User));
 		
 		if (context.GetCurrentUser() is {} user)
-			return new UserActorContext(user);
+		{
+			var identity = context.User.GetExternalIdentity();
+			return new UserActorContext(user, ActorId.User(identity.Issuer, identity.Subject));
+		}
 
 		throw new UnauthorizedException();
 	}

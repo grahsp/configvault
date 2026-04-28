@@ -6,19 +6,19 @@ public static class CurrentUserHttpContextExtensions
 {
 	private static readonly object CurrentUserKey = new object();
 
-	public static void SetCurrentUser(this HttpContext context, AuthenticatedUser user)
+	public static void SetCurrentUser(this HttpContext context, ResolvedUser user)
 	{
 		context.Items[CurrentUserKey] = user;
 	}
 
-	public static AuthenticatedUser? GetCurrentUser(this HttpContext context)
+	public static ResolvedUser? GetCurrentUser(this HttpContext context)
 	{
 		return context.Items.TryGetValue(CurrentUserKey, out var user)
-			? user as AuthenticatedUser
+			? user as ResolvedUser
 			: null;
 	}
 
-	public static AuthenticatedUser RequireCurrentUser(this HttpContext context)
+	public static ResolvedUser RequireCurrentUser(this HttpContext context)
 	{
 		return GetCurrentUser(context)
 		       ?? throw new InvalidOperationException("Current user not resolved");

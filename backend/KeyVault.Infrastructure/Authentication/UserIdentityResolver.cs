@@ -7,12 +7,12 @@ namespace KeyVault.Infrastructure.Authentication;
 public sealed class UserIdentityResolver(AppDbContext context)
 	: IUserIdentityResolver
 {
-	public Task<AuthenticatedUser?> GetUserAsync(string issuer, string subject, CancellationToken ct)
+	public Task<ResolvedUser?> GetUserAsync(ExternalIdentity identity, CancellationToken ct)
 	{
 		return context.Users
 			.Where(u => u.ExternalLogins
-				.Any(l => l.Issuer == issuer && l.Subject == subject))
-			.Select(u => new AuthenticatedUser(u.Id, u.Status, issuer, subject))
+				.Any(l => l.Issuer == identity.Issuer && l.Subject == identity.Subject))
+			.Select(u => new ResolvedUser(u.Id))
 			.SingleOrDefaultAsync(ct);
 	}
 }

@@ -1,15 +1,13 @@
 using KeyVault.Application.Authentication;
 using KeyVault.Domain.Identity;
-using KeyVault.Domain.Users;
 
 namespace KeyVault.Application.Actors;
 
-public class UserActorContext(AuthenticatedUser user) : IActorContext
+public class UserActorContext(ResolvedUser user, ActorId actorId) : IActorContext
 {
 	public ActorType Type => ActorType.User;
 	
-	public ActorId Id => ActorId.User(user.Issuer, user.Subject);
-	public UserId? UserId => user.Id;
-	public UserStatus Status => user.Status;
-	public bool IsActive => Status == UserStatus.Active;
+	public ActorId Id => actorId;
+	public UserId UserId => user.Id;
+	public bool IsActive => true;
 }
