@@ -14,11 +14,17 @@ public sealed class ActorContextFactory(IHttpContextAccessor http) : IActorConte
 			return new MachineActorContext(
 				context.User.FindFirstValue("iss") ?? throw new Exception("Missing issuer claim"),
 				context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Missing identifier claim"),
-				context.User.FindAll("scope").Select(c => c.Value));
+				GetScopes(context.User));
 		
 		if (context.GetCurrentUser() is {} user)
 			return new UserActorContext(user);
 
 		throw new UnauthorizedException();
+	}
+
+	private static IEnumerable<string> GetScopes(ClaimsPrincipal principal)
+	{
+		return principal.FindAll("scope")
+			.SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
 	}
 }
