@@ -1,3 +1,5 @@
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
+
 namespace KeyVault.Application.ConfigItems.BatchExecution.Models;
 
 public sealed class OperationBatch

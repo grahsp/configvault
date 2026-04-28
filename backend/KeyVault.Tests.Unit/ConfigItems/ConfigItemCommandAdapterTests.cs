@@ -1,7 +1,9 @@
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
@@ -30,7 +32,6 @@ public sealed class ConfigItemCommandAdapterTests
 			fixture.Projects,
 			fixture.Actor,
 			fixture.Authorization,
-			fixture.OperationAuthorizer,
 			fixture.Planner,
 			fixture.Executor);
 		var key = ConfigKey.Create("SECRET");
@@ -39,11 +40,9 @@ public sealed class ConfigItemCommandAdapterTests
 
 		Assert.Equal(fixture.Project.Id, fixture.Projects.LastRequestedId);
 		Assert.Same(fixture.Project, fixture.Authorization.Project);
-		Assert.Same(fixture.Actor, fixture.Authorization.Actor);
-		Assert.Same(fixture.Project, fixture.OperationAuthorizer.Project);
-		Assert.Same(fixture.Actor, fixture.OperationAuthorizer.Actor);
+		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), fixture.Authorization.Capability);
+		Assert.Same(fixture.Actor, fixture.Planner.Actor);
 
-		Assert.Same(fixture.OperationAuthorizer.Batch, fixture.Planner.Batch);
 		var batch = fixture.Planner.Batch!;
 		Assert.Null(batch.EnvironmentName);
 		var operation = Assert.IsType<CreateItem>(Assert.Single(batch.Operations));
@@ -61,7 +60,6 @@ public sealed class ConfigItemCommandAdapterTests
 			fixture.Projects,
 			fixture.Actor,
 			fixture.Authorization,
-			fixture.OperationAuthorizer,
 			fixture.Planner,
 			fixture.Executor);
 		var configItemId = Guid.NewGuid();
@@ -69,7 +67,7 @@ public sealed class ConfigItemCommandAdapterTests
 
 		await sut.HandleAsync(new RenameConfigItemCommand(fixture.Project.Id, configItemId, key), CancellationToken.None);
 
-		Assert.Same(fixture.OperationAuthorizer.Batch, fixture.Planner.Batch);
+		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage), fixture.Authorization.Capability);
 		var batch = fixture.Planner.Batch!;
 		Assert.Null(batch.EnvironmentName);
 		var operation = Assert.IsType<RenameItem>(Assert.Single(batch.Operations));
@@ -86,14 +84,13 @@ public sealed class ConfigItemCommandAdapterTests
 			fixture.Projects,
 			fixture.Actor,
 			fixture.Authorization,
-			fixture.OperationAuthorizer,
 			fixture.Planner,
 			fixture.Executor);
 		var configItemId = Guid.NewGuid();
 
 		await sut.HandleAsync(new RemoveConfigItemCommand(fixture.Project.Id, configItemId), CancellationToken.None);
 
-		Assert.Same(fixture.OperationAuthorizer.Batch, fixture.Planner.Batch);
+		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage), fixture.Authorization.Capability);
 		var batch = fixture.Planner.Batch!;
 		Assert.Null(batch.EnvironmentName);
 		var operation = Assert.IsType<DeleteItem>(Assert.Single(batch.Operations));
@@ -109,14 +106,13 @@ public sealed class ConfigItemCommandAdapterTests
 			fixture.Projects,
 			fixture.Actor,
 			fixture.Authorization,
-			fixture.OperationAuthorizer,
 			fixture.Planner,
 			fixture.Executor);
 		var configItemId = Guid.NewGuid();
 
 		await sut.HandleAsync(new SetConfigValueCommand(fixture.Project.Id, configItemId, "production", "secret"), CancellationToken.None);
 
-		Assert.Same(fixture.OperationAuthorizer.Batch, fixture.Planner.Batch);
+		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), fixture.Authorization.Capability);
 		var batch = fixture.Planner.Batch!;
 		Assert.Equal("production", batch.EnvironmentName);
 		var operation = Assert.IsType<SetValue>(Assert.Single(batch.Operations));
@@ -129,8 +125,7 @@ public sealed class ConfigItemCommandAdapterTests
 	{
 		public FakeUserContext Actor { get; } = new();
 		public FakeProjectRepository Projects { get; }
-		public CapturingAuthorizationService Authorization { get; } = new();
-		public CapturingOperationAuthorizer OperationAuthorizer { get; } = new();
+		public CapturingProjectAuthorizationService Authorization { get; } = new();
 		public CapturingPlanner Planner { get; } = new();
 		public CapturingExecutor Executor { get; } = new();
 		public Project Project { get; }
@@ -160,34 +155,23 @@ public sealed class ConfigItemCommandAdapterTests
 		public void Remove(Project project) => throw new NotImplementedException();
 	}
 
-	private sealed class CapturingAuthorizationService : IActorAuthorizationService
+	private sealed class CapturingProjectAuthorizationService : IProjectAuthorizationService
 	{
+		public ProjectCapability? Capability { get; private set; }
 		public Project? Project { get; private set; }
-		public IActorContext? Actor { get; private set; }
 
-		public bool CanAccessProject(Project project, IActorContext actor) => true;
-		public Task<bool> CanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.FromResult(true);
-
-		public void EnsureCanAccessProject(Project project, IActorContext actor)
+		public Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
 		{
+			Capability = capability;
 			Project = project;
-			Actor = actor;
+			return Task.FromResult(true);
 		}
 
-		public Task EnsureCanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.CompletedTask;
-	}
-
-	private sealed class CapturingOperationAuthorizer : IConfigItemOperationAuthorizer
-	{
-		public IActorContext? Actor { get; private set; }
-		public Project? Project { get; private set; }
-		public OperationBatch? Batch { get; private set; }
-
-		public void Authorize(IActorContext actor, Project project, OperationBatch batch)
+		public Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
 		{
-			Actor = actor;
+			Capability = capability;
 			Project = project;
-			Batch = batch;
+			return Task.CompletedTask;
 		}
 	}
 

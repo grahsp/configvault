@@ -80,11 +80,9 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public FakeUserContext User { get; } = new();
 		public FakeProjectRepository Projects { get; } = new();
 		public FakeConfigItemRepository Configurations { get; } = new();
-		public FakeReadDbContext Db { get; }
 		public FakeUnitOfWork Uow { get; } = new();
 		public FakeTimeProvider Time { get; } = new();
 		public FakeEnvelopeEncryptionService Encryption { get; } = new();
-		public IActorAuthorizationService ActorAuthorization { get; }
 		public IProjectAuthorizationService ProjectAuthorization { get; }
 		public Project Project { get; }
 		public ConfigItem Configuration { get; }
@@ -98,8 +96,6 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 			Projects.Project = Project;
 			Configurations.Configuration = Configuration;
-			Db = new FakeReadDbContext(Project);
-			ActorAuthorization = new ActorAuthorizationService(Db);
 			ProjectAuthorization = new ProjectAuthorizationService(
 				User,
 				new ActorResolver(new RoleCapabilities(), new FakeScopeCapabilities()));
@@ -109,8 +105,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 			=> new(
 				Projects,
 				User,
-				ActorAuthorization,
-				new ConfigItemOperationAuthorizer(),
+				ProjectAuthorization,
 				new ConfigItemBatchPlanner(Configurations),
 				new ConfigItemMutationExecutor(Configurations, Encryption, Uow, Time));
 

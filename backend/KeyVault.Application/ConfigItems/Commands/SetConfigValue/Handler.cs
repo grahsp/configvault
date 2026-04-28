@@ -1,8 +1,10 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Projects.Exceptions;
@@ -12,8 +14,7 @@ namespace KeyVault.Application.ConfigItems.Commands.SetConfigValue;
 public sealed class Handler(
 	IProjectRepository projects,
 	IActorContext actor,
-	IActorAuthorizationService authorization,
-	IConfigItemOperationAuthorizer operationAuthorizer,
+	IProjectAuthorizationService authorization,
 	IConfigItemBatchPlanner planner,
 	IConfigItemMutationExecutor executor)
 	: ICommandHandler<Command, Unit>
@@ -27,8 +28,10 @@ public sealed class Handler(
 			[new SetValue(command.ConfigItemId, command.Value)],
 			command.EnvironmentName);
 		
-		authorization.EnsureCanAccessProject(project, actor);
-		operationAuthorizer.Authorize(actor, project, batch);
+		await authorization.EnsureCanAccessAsync(
+			ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write),
+			project,
+			ct);
 
 		var prepared = await planner.PrepareAsync(actor, project, batch, ct);
 		await executor.ExecuteAsync(prepared, ct);

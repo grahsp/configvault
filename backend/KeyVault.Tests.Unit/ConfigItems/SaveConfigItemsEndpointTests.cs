@@ -2,6 +2,7 @@ using System.Reflection;
 using KeyVault.Api.ConfigItems.SaveConfigItems;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using BatchCommand = KeyVault.Application.ConfigItems.Commands.BatchOperations.Command;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;

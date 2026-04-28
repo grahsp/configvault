@@ -15,6 +15,12 @@ public class ScopeCapabilities : IScopeCapabilities
 				case "config:read":
 					yield return ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read);
 					break;
+				case "config:write":
+					yield return ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write);
+					break;
+				case "config:manage":
+					yield return ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage);
+					break;
 				case "project:members:manage":
 					yield return ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Manage);
 					break;

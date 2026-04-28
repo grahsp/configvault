@@ -1,5 +1,6 @@
 using KeyVault.Application.Actors;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;

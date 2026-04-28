@@ -20,8 +20,6 @@ public static class ApplicationModule
 		
 		services.AddSingleton<RoleCapabilities>();
 		
-		// TODO: remove once replaced by IProjectAuthorizationService
 		services.AddScoped<IActorAuthorizationService, ActorAuthorizationService>();
-		services.AddScoped<IConfigItemOperationAuthorizer, ConfigItemOperationAuthorizer>();
 	}
 }

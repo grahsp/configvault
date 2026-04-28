@@ -1,8 +1,11 @@
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
+using KeyVault.Application.Exceptions;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
@@ -17,7 +20,7 @@ namespace KeyVault.Tests.Unit.ConfigItems;
 public sealed class ExecuteBatchOperationsHandlerTests
 {
 	[Fact]
-	public async Task HandleAsync_ShouldLoadAuthorizePlanAndExecuteBatch()
+	public async Task HandleAsync_ShouldAuthorizeBothActions_ForMixedBatch()
 	{
 		var fixture = new Fixture();
 		var batch = new OperationBatch(
@@ -31,7 +34,6 @@ public sealed class ExecuteBatchOperationsHandlerTests
 			fixture.Projects,
 			fixture.Actor,
 			fixture.Authorization,
-			fixture.OperationAuthorizer,
 			fixture.Planner,
 			fixture.Executor);
 
@@ -39,22 +41,120 @@ public sealed class ExecuteBatchOperationsHandlerTests
 
 		Assert.Equal(fixture.Project.Id, fixture.Projects.LastRequestedId);
 		Assert.Same(fixture.Project, fixture.Authorization.Project);
-		Assert.Same(fixture.Actor, fixture.Authorization.Actor);
-		Assert.Same(fixture.Actor, fixture.OperationAuthorizer.Actor);
-		Assert.Same(fixture.Project, fixture.OperationAuthorizer.Project);
-		Assert.Same(batch, fixture.OperationAuthorizer.Batch);
+		Assert.Collection(
+			fixture.Authorization.Capabilities,
+			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage), capability),
+			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), capability));
 		Assert.Same(fixture.Actor, fixture.Planner.Actor);
 		Assert.Same(fixture.Project, fixture.Planner.Project);
 		Assert.Same(batch, fixture.Planner.Batch);
 		Assert.Same(fixture.PreparedBatch, fixture.Executor.Batch);
 	}
 
+	[Fact]
+	public async Task HandleAsync_ShouldRequireWriteAccess_WhenBatchContainsOnlyWriteOperations()
+	{
+		var fixture = new Fixture();
+		var batch = new OperationBatch(
+			[
+				new CreateItem(ConfigKey.Create("SECRET"), null),
+				new SetValue(Guid.NewGuid(), "secret")
+			],
+			"development");
+		var sut = new BatchHandler(
+			fixture.Projects,
+			fixture.Actor,
+			fixture.Authorization,
+			fixture.Planner,
+			fixture.Executor);
+
+		await sut.HandleAsync(new BatchCommand(fixture.Project.Id, batch), CancellationToken.None);
+
+		Assert.Collection(
+			fixture.Authorization.Capabilities,
+			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), capability));
+	}
+
+	[Fact]
+	public async Task HandleAsync_ShouldRequireManageAccess_WhenBatchContainsOnlyManageOperations()
+	{
+		var fixture = new Fixture();
+		var batch = new OperationBatch(
+			[
+				new RenameItem(Guid.NewGuid(), ConfigKey.Create("RENAMED_SECRET")),
+				new DeleteItem(Guid.NewGuid())
+			],
+			"development");
+		var sut = new BatchHandler(
+			fixture.Projects,
+			fixture.Actor,
+			fixture.Authorization,
+			fixture.Planner,
+			fixture.Executor);
+
+		await sut.HandleAsync(new BatchCommand(fixture.Project.Id, batch), CancellationToken.None);
+
+		Assert.Collection(
+			fixture.Authorization.Capabilities,
+			capability => Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage), capability));
+	}
+
+	[Fact]
+	public async Task HandleAsync_ShouldDeduplicateRepeatedActions()
+	{
+		var fixture = new Fixture();
+		var batch = new OperationBatch(
+			[
+				new CreateItem(ConfigKey.Create("FIRST"), null),
+				new SetValue(Guid.NewGuid(), "secret"),
+				new CreateItem(ConfigKey.Create("SECOND"), null)
+			],
+			"development");
+		var sut = new BatchHandler(
+			fixture.Projects,
+			fixture.Actor,
+			fixture.Authorization,
+			fixture.Planner,
+			fixture.Executor);
+
+		await sut.HandleAsync(new BatchCommand(fixture.Project.Id, batch), CancellationToken.None);
+
+		Assert.Single(fixture.Authorization.Capabilities);
+		Assert.Equal(
+			ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write),
+			fixture.Authorization.Capabilities[0]);
+	}
+
+	[Fact]
+	public async Task HandleAsync_ShouldFailBeforePlanning_WhenOneRequiredActionIsForbidden()
+	{
+		var fixture = new Fixture();
+		fixture.Authorization.ForbiddenCapability = ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write);
+		var batch = new OperationBatch(
+			[
+				new RenameItem(Guid.NewGuid(), ConfigKey.Create("RENAMED_SECRET")),
+				new SetValue(Guid.NewGuid(), "secret")
+			],
+			"development");
+		var sut = new BatchHandler(
+			fixture.Projects,
+			fixture.Actor,
+			fixture.Authorization,
+			fixture.Planner,
+			fixture.Executor);
+
+		await Assert.ThrowsAsync<ForbiddenException>(() =>
+			sut.HandleAsync(new BatchCommand(fixture.Project.Id, batch), CancellationToken.None));
+
+		Assert.Null(fixture.Planner.Batch);
+		Assert.Null(fixture.Executor.Batch);
+	}
+
 	private sealed class Fixture
 	{
 		public FakeUserContext Actor { get; } = new();
 		public FakeProjectRepository Projects { get; }
-		public CapturingAuthorizationService Authorization { get; } = new();
-		public CapturingOperationAuthorizer OperationAuthorizer { get; } = new();
+		public CapturingProjectAuthorizationService Authorization { get; } = new();
 		public CapturingPlanner Planner { get; } = new();
 		public CapturingExecutor Executor { get; } = new();
 		public Project Project { get; }
@@ -84,34 +184,24 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		public void Remove(Project project) => throw new NotImplementedException();
 	}
 
-	private sealed class CapturingAuthorizationService : IActorAuthorizationService
+	private sealed class CapturingProjectAuthorizationService : IProjectAuthorizationService
 	{
+		public List<ProjectCapability> Capabilities { get; } = [];
 		public Project? Project { get; private set; }
-		public IActorContext? Actor { get; private set; }
+		public ProjectCapability? ForbiddenCapability { get; set; }
 
-		public bool CanAccessProject(Project project, IActorContext actor) => true;
-		public Task<bool> CanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.FromResult(true);
+		public Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+			=> Task.FromResult(ForbiddenCapability != capability);
 
-		public void EnsureCanAccessProject(Project project, IActorContext actor)
+		public Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
 		{
+			Capabilities.Add(capability);
 			Project = project;
-			Actor = actor;
-		}
 
-		public Task EnsureCanAccessProjectAsync(Guid projectId, IActorContext actor, CancellationToken ct) => Task.CompletedTask;
-	}
+			if (ForbiddenCapability == capability)
+				throw new ForbiddenException();
 
-	private sealed class CapturingOperationAuthorizer : IConfigItemOperationAuthorizer
-	{
-		public IActorContext? Actor { get; private set; }
-		public Project? Project { get; private set; }
-		public OperationBatch? Batch { get; private set; }
-
-		public void Authorize(IActorContext actor, Project project, OperationBatch batch)
-		{
-			Actor = actor;
-			Project = project;
-			Batch = batch;
+			return Task.CompletedTask;
 		}
 	}
 

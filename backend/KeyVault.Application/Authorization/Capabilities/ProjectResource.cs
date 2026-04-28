@@ -5,5 +5,6 @@ public enum ProjectResource
 	Project,
 	ProjectMember,
 	Environment,
+	ConfigItem,
 	ConfigValue
 }

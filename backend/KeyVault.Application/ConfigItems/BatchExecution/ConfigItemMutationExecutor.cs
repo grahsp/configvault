@@ -1,5 +1,6 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.ConfigItems;

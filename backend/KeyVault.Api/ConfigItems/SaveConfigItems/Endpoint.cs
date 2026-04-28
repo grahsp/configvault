@@ -1,5 +1,6 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
+using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Commands.BatchOperations;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;

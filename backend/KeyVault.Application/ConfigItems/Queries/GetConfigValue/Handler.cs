@@ -1,12 +1,11 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authorization;
-using KeyVault.Application.Authorization.Actions;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Projects.Exceptions;
-using KeyVault.Domain.Projects;
 
 namespace KeyVault.Application.ConfigItems.Queries.GetConfigValue;
 
@@ -22,7 +21,10 @@ public sealed class Handler(
 		var project = await projects.GetByIdAsync(query.ProjectId, ct)
 			?? throw new ProjectNotFoundException(query.ProjectId);
 
-		await authorization.EnsureCanAccessAsync(new ReadProject(), project, ct);
+		await authorization.EnsureCanAccessAsync(
+			ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read),
+			project,
+			ct);
 		
 		if (!project.TryGetEnvironment(query.EnvironmentName, out var environment))
 			throw new EnvironmentNotFoundException(query.EnvironmentName);
