@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
-using KeyVault.Application.Authorization.Actions;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects.Exceptions;
 using KeyVault.Domain.Exceptions;
@@ -24,7 +24,10 @@ public class Handler(
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 		
-		await authorization.EnsureCanAccessAsync(new ManageProjectMembers(), project, ct);
+		await authorization.EnsureCanAccessAsync(
+			ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Manage),
+			project,
+			ct);
 		project.AddMember(command.UserId, ProjectRole.Member);
 		await uow.SaveChangesAsync(ct);
 

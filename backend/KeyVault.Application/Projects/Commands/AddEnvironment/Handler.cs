@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
-using KeyVault.Application.Authorization.Actions;
+using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects.Exceptions;
 using KeyVault.Application.Projects.Queries.GetEnvironments;
@@ -21,7 +21,10 @@ public sealed class Handler(
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 
-		await authorization.EnsureCanAccessAsync(new ManageEnvironments(), project, ct);
+		await authorization.EnsureCanAccessAsync(
+			ProjectCapability.Create(ProjectResource.Environment, ProjectPermission.Manage),
+			project,
+			ct);
 		var environment = project.AddEnvironment(command.EnvironmentName, time.GetUtcNow());
 		await uow.SaveChangesAsync(ct);
 
