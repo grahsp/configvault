@@ -1,4 +1,3 @@
-using KeyVault.Api.Authorization;
 using KeyVault.Api.ConfigItems.BatchOperations;
 
 namespace KeyVault.Api.ConfigItems;
@@ -8,7 +7,6 @@ public static class ConfigItemEndpoints
 	public static void AddConfigItemEndpoints(this IEndpointRouteBuilder builder)
 	{
 		var configItems = builder.MapGroup("/projects/{projectId}/config-items")
-			.RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Config Items");
 
 		configItems.MapGet("", GetConfigItems.Endpoint.Handle);
@@ -19,7 +17,6 @@ public static class ConfigItemEndpoints
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		
 		var configValues = builder.MapGroup("/projects/{projectId}/config-items/{configItemId}/value")
-			// .RequireAuthorization(Policies.ActiveUser)
 			.WithTags("Config Values");
 		
 		configValues.MapPut("", SetConfigValue.Endpoint.Handle);

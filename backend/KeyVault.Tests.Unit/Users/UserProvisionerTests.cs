@@ -32,13 +32,49 @@ public sealed class UserProvisionerTests
 
 		Assert.NotNull(sut.Users.AddedUser);
 		var addedUser = sut.Users.AddedUser!;
-		Assert.Equal(new AuthenticatedUser(addedUser.Id, addedUser.Status, sut.Issuer, sut.Subject), result);
+		Assert.Equal(new ResolvedUser(addedUser.Id), result);
 		Assert.Equal(now, addedUser.CreatedAt);
+		Assert.Equal("Ada", addedUser.DisplayName);
+		Assert.Equal("ada@example.com", addedUser.Email);
 		Assert.True(sut.Uow.SaveChangesCalled);
 		
 		var login = Assert.Single(addedUser.ExternalLogins);
 		Assert.Equal(sut.Issuer, login.Issuer);
 		Assert.Equal(sut.Subject, login.Subject);
+	}
+
+	[Theory]
+	[InlineData(null, "auth0|abc-123", "user-abc-12")]
+	[InlineData(null, "plain-subject", "user-plain-")]
+	[InlineData("Nick", "auth0|abc-123", "Nick")]
+	public async Task GetOrProvisionUserAsync_ShouldSeedDisplayName(
+		string? nickname,
+		string subject,
+		string expectedDisplayName)
+	{
+		var sut = new Sut();
+		var identity = sut.CreateIdentity(subject: subject, nickname: nickname);
+
+		await sut.GetOrProvisionUserAsync(identity);
+
+		Assert.NotNull(sut.Users.AddedUser);
+		Assert.Equal(expectedDisplayName, sut.Users.AddedUser!.DisplayName);
+	}
+
+	[Fact]
+	public async Task GetOrProvisionUserAsync_ShouldUpdateExistingUserEmailWithoutOverwritingDisplayName()
+	{
+		var sut = new Sut();
+		var existingUser = User.Create(sut.Issuer, sut.Subject, "Local Name", null, sut.Time.GetUtcNow());
+		sut.Users.SetExistingUser(existingUser);
+		sut.GivenExistingUser(new ResolvedUser(existingUser.Id));
+
+		await sut.GetOrProvisionUserAsync(sut.CreateIdentity(nickname: "Token Nick", email: "user@example.com"));
+
+		Assert.Equal("Local Name", existingUser.DisplayName);
+		Assert.Equal("user@example.com", existingUser.Email);
+		Assert.True(sut.Uow.SaveChangesCalled);
+		Assert.Null(sut.Users.AddedUser);
 	}
 
 	private sealed class Sut
@@ -50,7 +86,9 @@ public sealed class UserProvisionerTests
 		public UserProvisioner Service { get; }
 		
 		public string Issuer => "issuer";
-		public string Subject => "subject";
+		public string Subject => "auth0|abc-123";
+		public string? Nickname => "Ada";
+		public string? Email => "ada@example.com";
 		
 		private readonly ExternalIdentity _context;
 
@@ -63,15 +101,22 @@ public sealed class UserProvisionerTests
 			
 			Service = new UserProvisioner(Resolver, Users, Uow, Time);
 
-			_context = new ExternalIdentity(Issuer, Subject);
+			_context = CreateIdentity();
 		}
 		
-		public Task<AuthenticatedUser> GetOrProvisionUserAsync(ExternalIdentity? context = null, CancellationToken ct = default)
+		public Task<ResolvedUser> GetOrProvisionUserAsync(ExternalIdentity? context = null, CancellationToken ct = default)
 			=> Service.GetOrProvisionUserAsync(context ?? _context, ct);
 
-		public AuthenticatedUser GivenExistingUser(AuthenticatedUser? existingUser = null)
+		public ExternalIdentity CreateIdentity(
+			string issuer = "issuer",
+			string subject = "auth0|abc-123",
+			string? nickname = "Ada",
+			string? email = "ada@example.com")
+			=> new(issuer, subject, nickname, email);
+
+		public ResolvedUser GivenExistingUser(ResolvedUser? existingUser = null)
 		{
-			var user = existingUser ?? new AuthenticatedUser(UserId.New(), UserStatus.Active, Issuer, Subject);
+			var user = existingUser ?? new ResolvedUser(UserId.New());
 			Resolver.SetUserToReturn(user);
 			
 			return user;
@@ -80,21 +125,25 @@ public sealed class UserProvisionerTests
 
 	private sealed class FakeUserIdentityResolver : IUserIdentityResolver
 	{
-		private AuthenticatedUser? UserToReturn { get; set; }
+		private ResolvedUser? UserToReturn { get; set; }
 
-		public void SetUserToReturn(AuthenticatedUser user) => UserToReturn = user;
+		public void SetUserToReturn(ResolvedUser user) => UserToReturn = user;
 
-		public Task<AuthenticatedUser?> GetUserAsync(string issuer, string subject, CancellationToken ct)
+		public Task<ResolvedUser?> GetUserAsync(ExternalIdentity identity, CancellationToken ct)
 			=> Task.FromResult(UserToReturn);
 	}
 
 	private sealed class FakeUserRepository : IUserRepository
 	{
 		public User? AddedUser { get; private set; }
+		private User? ExistingUser { get; set; }
+
+		public void SetExistingUser(User user) => ExistingUser = user;
 
 		public void Add(User user) => AddedUser = user;
 		public void Remove(User user) => throw new NotImplementedException();
-		public Task<User?> GetByIdAsync(UserId id, CancellationToken ct) => throw new NotImplementedException();
+		public Task<User?> GetByIdAsync(UserId id, CancellationToken ct)
+			=> Task.FromResult(ExistingUser is not null && ExistingUser.Id == id ? ExistingUser : null);
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork

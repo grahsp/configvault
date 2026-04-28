@@ -15,7 +15,7 @@ public sealed class GetCurrentUserQueryHandler(IActorContext actor, IReadDbConte
 
 		var user = await db.Users
 			.Where(x => x.Id == userId)
-			.Select(x => new UserView(x.Id.ToString(), x.DisplayName, x.Status.ToString(), x.CreatedAt))
+			.Select(x => new UserView(x.Id.ToString(), x.Email, x.DisplayName, x.CreatedAt))
 			.SingleOrDefaultAsync(ct);
 
 		return user ?? throw new UserNotFoundException(userId);

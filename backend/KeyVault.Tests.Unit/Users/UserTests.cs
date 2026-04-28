@@ -12,12 +12,13 @@ public sealed class UserTests
 	public void Create_ShouldCreateUserWithInitialExternalLogin()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("github", "123", now);
+		var user = User.Create("github", "123", "Ada Lovelace", "ada@example.com", now);
 
 		Assert.NotEqual(Guid.Empty, user.Id.Value);
-		Assert.Null(user.DisplayName);
-		Assert.Equal(UserStatus.Pending, user.Status);
+		Assert.Equal("Ada Lovelace", user.DisplayName);
+		Assert.Equal("ada@example.com", user.Email);
 		Assert.Equal(now, user.CreatedAt);
+		Assert.Equal(now, user.ActivatedAt);
 
 		var login = Assert.Single(user.ExternalLogins);
 		Assert.Equal("github", login.Issuer);
@@ -29,7 +30,7 @@ public sealed class UserTests
 	public void AddExternalLogin_ShouldAddLogin()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("entra", "user-123", now);
+		var user = User.Create("entra", "user-123", "User", "user@example.com", now);
 
 		user.AddExternalLogin("github", "123");
 
@@ -44,7 +45,7 @@ public sealed class UserTests
 	public void AddExternalLogin_ShouldThrow_WhenLoginAlreadyExists()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("entra", "user-123", now);
+		var user = User.Create("entra", "user-123", "User", "user@example.com", now);
 		user.AddExternalLogin("github", "123");
 
 		var exception = Assert.Throws<DuplicateExternalLoginException>(() => user.AddExternalLogin("github", "123"));
@@ -53,14 +54,28 @@ public sealed class UserTests
 	}
 
 	[Fact]
-	public void Activate_ShouldThrow_WhenUserAlreadyActivated()
+	public void ApplyIdentityProfile_ShouldSetEmailAndMissingDisplayName()
 	{
 		var now = _time.GetUtcNow();
-		var user = User.Create("entra", "user-123", now);
-		user.Activate("User", now);
+		var user = User.Create("entra", "user-123", "", null, now);
 
-		var exception = Assert.Throws<UserAlreadyActivatedException>(() => user.Activate("User", now.AddMinutes(1)));
+		var changed = user.ApplyIdentityProfile("Nickname", "nickname@example.com");
 
-		Assert.Equal("User has already been activated", exception.Message);
+		Assert.True(changed);
+		Assert.Equal("Nickname", user.DisplayName);
+		Assert.Equal("nickname@example.com", user.Email);
+	}
+
+	[Fact]
+	public void ApplyIdentityProfile_ShouldNotOverwriteExistingDisplayName()
+	{
+		var now = _time.GetUtcNow();
+		var user = User.Create("entra", "user-123", "Local Name", null, now);
+
+		var changed = user.ApplyIdentityProfile("Token Nickname", "user@example.com");
+
+		Assert.True(changed);
+		Assert.Equal("Local Name", user.DisplayName);
+		Assert.Equal("user@example.com", user.Email);
 	}
 }

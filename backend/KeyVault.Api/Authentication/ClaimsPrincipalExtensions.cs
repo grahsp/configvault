@@ -17,6 +17,9 @@ public static class ClaimsPrincipalExtensions
 		var subject = principal.FindFirstValue(ClaimTypes.NameIdentifier)
 		              ?? throw new MissingAuthenticationClaimException(ClaimTypes.NameIdentifier);
 
-		return new ExternalIdentity(issuer, subject);
+		var nickname = principal.FindFirstValue("https://keyvault.com/nickname");
+		var email = principal.FindFirstValue("https://keyvault.com/email");
+
+		return new ExternalIdentity(issuer, subject, nickname, email);
 	}
 }

@@ -52,8 +52,8 @@ public static class AuthenticationModule
 
 		services.AddAuthorization(options =>
 		{
-			options.AddPolicy("ActiveUser", policy =>
-				policy.Requirements.Add(new ActiveUserRequirement()));
+			options.AddPolicy(AuthorizationPolicies.UserOnly, policy =>
+				policy.Requirements.Add(new UserOnlyRequirement()));
 			
 			options.FallbackPolicy = new AuthorizationPolicyBuilder()
 				.RequireAuthenticatedUser()
@@ -61,7 +61,7 @@ public static class AuthenticationModule
 		});
 		
 		
-		services.AddScoped<IAuthorizationHandler, ActiveUserHandler>();
+		services.AddScoped<IAuthorizationHandler, UserOnlyHandler>();
 		
 		services.AddScoped<IUserProvisioner, UserProvisioner>();
 		services.AddScoped<IUserIdentityResolver, UserIdentityResolver>();

@@ -19,7 +19,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
 		var client = host.CreateJsonClient("batch-owner");
-		var projectId = await ActivateAndCreateProjectAsync(client);
+		var projectId = await CreateProjectAsync(client);
 		var configItemId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
 
 		var response = await client.PostAsJsonAsync(
@@ -44,7 +44,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
 		var client = host.CreateJsonClient("batch-owner");
-		var projectId = await ActivateAndCreateProjectAsync(client);
+		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
 			$"/projects/{projectId}/config-items/operations",
@@ -72,7 +72,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
 		var client = host.CreateJsonClient("batch-owner");
-		var projectId = await ActivateAndCreateProjectAsync(client);
+		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
 			$"/projects/{projectId}/config-items/operations",
@@ -100,7 +100,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
 		var client = host.CreateJsonClient("batch-owner");
-		var projectId = await ActivateAndCreateProjectAsync(client);
+		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
 			$"/projects/{projectId}/config-items/operations",
@@ -128,7 +128,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
 		var client = host.CreateJsonClient("batch-owner");
-		var projectId = await ActivateAndCreateProjectAsync(client);
+		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsJsonAsync(
 			$"/projects/{projectId}/config-items/operations",
@@ -152,13 +152,8 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 	private static StringContent CreateJsonContent(string json)
 		=> new(json, Encoding.UTF8, "application/json");
 
-	private static async Task<Guid> ActivateAndCreateProjectAsync(HttpClient client)
+	private static async Task<Guid> CreateProjectAsync(HttpClient client)
 	{
-		var activate = await client.PostAsJsonAsync(
-			"/users/activate",
-			new { displayName = "Batch Owner" });
-		activate.EnsureSuccessStatusCode();
-
 		var create = await client.PostAsJsonAsync(
 			"/projects",
 			new { name = "Batch Endpoint Project" });

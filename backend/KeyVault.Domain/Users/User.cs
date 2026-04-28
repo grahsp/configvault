@@ -11,8 +11,7 @@ public sealed class User
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
 	
 	public string? DisplayName { get; private set; }
-	
-	public UserStatus Status { get; private set; } = UserStatus.Pending;
+	public string? Email { get; private set; }
 	public DateTimeOffset CreatedAt { get; private init; }
 	public DateTimeOffset? ActivatedAt { get; private set; }
 
@@ -24,9 +23,15 @@ public sealed class User
 		CreatedAt = now;
 	}
 
-	public static User Create(string issuer, string subject, DateTimeOffset now)
+	public static User Create(string issuer, string subject, string displayName, string? email, DateTimeOffset now)
 	{
-		var user = new User(UserId.New(), now);
+		var user = new User(UserId.New(), now)
+		{
+			DisplayName = displayName,
+			Email = Normalize(email),
+			ActivatedAt = now
+		};
+
 		user.AddExternalLogin(issuer, subject);
 
 		return user;
@@ -41,15 +46,32 @@ public sealed class User
 		_externalLogins.Add(login);
 	}
 
-	public void Activate(string displayName, DateTimeOffset now)
+	public bool ApplyIdentityProfile(string? nickname, string? email)
 	{
-		ArgumentException.ThrowIfNullOrEmpty(displayName);
-		
-		if (Status != UserStatus.Pending)
-			throw new UserAlreadyActivatedException();
-		
-		DisplayName = displayName;
-		Status = UserStatus.Active;
-		ActivatedAt = now;
+		var changed = false;
+		var normalizedNickname = Normalize(nickname);
+		var normalizedEmail = Normalize(email);
+
+		if (string.IsNullOrWhiteSpace(DisplayName) && normalizedNickname is not null)
+		{
+			DisplayName = normalizedNickname;
+			changed = true;
+		}
+
+		if (normalizedEmail is not null && !string.Equals(Email, normalizedEmail, StringComparison.Ordinal))
+		{
+			Email = normalizedEmail;
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	private static string? Normalize(string? value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return null;
+
+		return value.Trim();
 	}
 }

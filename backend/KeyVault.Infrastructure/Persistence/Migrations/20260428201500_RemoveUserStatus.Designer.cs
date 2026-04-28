@@ -3,6 +3,7 @@ using System;
 using KeyVault.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyVault.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428201500_RemoveUserStatus")]
+    partial class RemoveUserStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,13 +81,22 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ActorId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
@@ -94,7 +106,7 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.HasIndex("ProjectId", "Name")
                         .IsUnique();
 
-                    b.ToTable("project_environments", (string)null);
+                    b.ToTable("environments", (string)null);
                 });
 
             modelBuilder.Entity("KeyVault.Domain.Projects.Project", b =>
@@ -102,15 +114,31 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ActorId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("projects", (string)null);
                 });
@@ -120,19 +148,21 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<byte[]>("EncryptedPrivateKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
-                    b.Property<byte[]>("Value")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId")
+                        .IsUnique();
 
                     b.ToTable("project_data_keys", (string)null);
                 });
@@ -142,16 +172,24 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserId")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<string>("ActorId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ProjectId", "UserId");
+                    b.Property<string>("AddedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.HasIndex("UserId");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("ProjectId", "ActorId");
 
                     b.ToTable("project_members", (string)null);
                 });
@@ -159,12 +197,12 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("KeyVault.Domain.Users.ExternalLogin", b =>
                 {
                     b.Property<string>("Issuer")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Subject")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -236,7 +274,7 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("KeyVault.Domain.Projects.Environment", b =>
                 {
                     b.HasOne("KeyVault.Domain.Projects.Project", null)
-                        .WithMany("Environments")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -244,19 +282,17 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("KeyVault.Domain.Projects.ProjectDataKey", b =>
                 {
-                    b.HasOne("KeyVault.Domain.Projects.Project", "Project")
-                        .WithMany("DataKeys")
-                        .HasForeignKey("ProjectId")
+                    b.HasOne("KeyVault.Domain.Projects.Project", null)
+                        .WithOne()
+                        .HasForeignKey("KeyVault.Domain.Projects.ProjectDataKey", "ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("KeyVault.Domain.Projects.ProjectMember", b =>
                 {
                     b.HasOne("KeyVault.Domain.Projects.Project", null)
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -269,20 +305,6 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("KeyVault.Domain.ConfigItems.ConfigItem", b =>
-                {
-                    b.Navigation("Values");
-                });
-
-            modelBuilder.Entity("KeyVault.Domain.Projects.Project", b =>
-                {
-                    b.Navigation("DataKeys");
-
-                    b.Navigation("Environments");
-
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("KeyVault.Domain.Users.User", b =>

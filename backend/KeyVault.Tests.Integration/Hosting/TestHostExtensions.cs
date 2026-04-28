@@ -12,6 +12,13 @@ public static class TestHostExtensions
 		return client;
 	}
 
+	public static HttpClient CreateMachineClient(this TestHost host, string clientId = "machine-client")
+	{
+		var client = host.CreateAuthenticatedClient(clientId);
+		client.DefaultRequestHeaders.Add("X-Dev-GrantType", "client-credentials");
+		return client;
+	}
+
 	public static HttpClient CreateJsonClient(this TestHost host, string? subject = null)
 	{
 		var client = subject is null

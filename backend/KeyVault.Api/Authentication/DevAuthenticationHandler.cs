@@ -18,13 +18,24 @@ public class DevAuthenticationHandler(
 		if (!Request.Headers.TryGetValue("X-Dev-Sub", out var subject))
 			return Task.FromResult(AuthenticateResult.NoResult());
 
-		var claims = new[]
+		var nickname = Request.Headers["X-Dev-Nickname"].FirstOrDefault();
+		var email = Request.Headers["X-Dev-Email"].FirstOrDefault();
+		var grantType = Request.Headers["X-Dev-GrantType"].FirstOrDefault();
+
+		var claims = new List<Claim>
 		{
 			new Claim("iss", "https://localhost"),
-			new Claim(ClaimTypes.NameIdentifier, subject!),
-			new Claim(ClaimTypes.Name, "dev-username"),
-			new Claim(ClaimTypes.Email, "dev-email")
+			new Claim(ClaimTypes.NameIdentifier, subject!)
 		};
+
+		if (!string.IsNullOrWhiteSpace(grantType))
+			claims.Add(new Claim("gty", grantType));
+
+		if (!string.IsNullOrWhiteSpace(nickname))
+			claims.Add(new Claim("https://keyvault.com/nickname", nickname));
+
+		if (!string.IsNullOrWhiteSpace(email))
+			claims.Add(new Claim("https://keyvault.com/email", email));
 
 		var identity = new ClaimsIdentity(claims, "Dev");
 		var principal = new ClaimsPrincipal(identity);
