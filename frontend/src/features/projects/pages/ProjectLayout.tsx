@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, Outlet, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { EnvironmentDropdown } from '../../environments/components/EnvironmentDropdown'
-import type { Environment } from '../../environments/types'
+import { EnvironmentDropdown, type Environment } from '../../environments'
 import { cx } from '../../../shared/utils/cx'
 import { ProjectSubNav } from '../components/ProjectSubNav'
 import { useProject } from '../hooks/useProjects'

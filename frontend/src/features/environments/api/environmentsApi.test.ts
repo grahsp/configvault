@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { ApiClient } from '../../api/apiClient'
+import type { ApiClient } from '../../../api/apiClient'
 import {
   createEnvironment,
   deleteEnvironment,
   getEnvironments,
-} from './api'
+} from './environmentsApi'
 
 function createMockClient() {
   return {

@@ -1,9 +1,9 @@
-import type { ApiClient } from '../../api/apiClient'
+import type { ApiClient } from '../../../api/apiClient'
 import type {
   CreateEnvironmentRequest,
   Environment,
-  EnvironmentResponse,
-} from './types'
+  EnvironmentDto,
+} from '../model'
 
 function buildEnvironmentsPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/environments`
@@ -13,7 +13,7 @@ function buildEnvironmentPath(projectId: string, environmentId: string) {
   return `${buildEnvironmentsPath(projectId)}/${encodeURIComponent(environmentId)}`
 }
 
-function mapEnvironment(response: EnvironmentResponse): Environment {
+function mapEnvironment(response: EnvironmentDto): Environment {
   return {
     id: response.id,
     environmentName: response.environmentName,
@@ -21,7 +21,7 @@ function mapEnvironment(response: EnvironmentResponse): Environment {
 }
 
 export async function getEnvironments(client: ApiClient, projectId: string) {
-  const environments = await client.request<EnvironmentResponse[]>(
+  const environments = await client.request<EnvironmentDto[]>(
     buildEnvironmentsPath(projectId),
   )
 
@@ -29,15 +29,15 @@ export async function getEnvironments(client: ApiClient, projectId: string) {
 }
 
 export async function createEnvironment(
-  client: ApiClient,
-  projectId: string,
-  environmentName: string,
+    client: ApiClient,
+    projectId: string,
+    environmentName: string,
 ) {
   const request: CreateEnvironmentRequest = {
     environmentName: environmentName.trim(),
   }
 
-  const environment = await client.request<EnvironmentResponse>(
+  const environment = await client.request<EnvironmentDto>(
     buildEnvironmentsPath(projectId),
     {
       method: 'POST',

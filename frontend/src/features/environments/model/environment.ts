@@ -3,7 +3,7 @@ export interface Environment {
   environmentName: string
 }
 
-export interface EnvironmentResponse {
+export interface EnvironmentDto {
   id: string
   environmentName: string
 }
