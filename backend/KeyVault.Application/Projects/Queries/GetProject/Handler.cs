@@ -1,6 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
-using KeyVault.Application.Authorization;
 using KeyVault.Application.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,17 +7,17 @@ namespace KeyVault.Application.Projects.Queries.GetProject;
 
 public sealed class Handler(
 	IActorContext actor,
-	IActorAuthorizationService authorizaton,
 	IReadDbContext db)
 	: IQueryHandler<Query, Response?>
 {
 	public async Task<Response?> HandleAsync(Query query, CancellationToken ct)
 	{
 		var userId = actor.RequireUserId();
-		await authorizaton.EnsureCanAccessProjectAsync(query.ProjectId, actor, ct);
-		
+
 		return await db.Projects
 			.Where(p => p.Id == query.ProjectId)
+			.Where(p => p.Members
+				.Any(m => p.Id == query.ProjectId && m.UserId == userId))
 			.Select(p => new Response(
 				p.Id,
 				p.Name,

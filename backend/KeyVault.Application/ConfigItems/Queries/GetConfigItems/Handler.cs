@@ -1,34 +1,37 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
-using KeyVault.Application.Authorization;
+using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Persistence;
+using KeyVault.Domain.Identity;
+using KeyVault.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.ConfigItems.Queries.GetConfigItems;
 
-public class Handler(IActorContext actor, IActorAuthorizationService authorization, IReadDbContext db)
+public class Handler(IActorContext actor, IReadDbContext db)
 	: IQueryHandler<Query, IReadOnlyList<ConfigItemSummary>>
 {
 	public async Task<IReadOnlyList<ConfigItemSummary>> HandleAsync(Query query, CancellationToken ct)
 	{
-		if (!await authorization.CanAccessProjectAsync(query.ProjectId, actor, ct))
-			return [];
+		var userId = actor.RequireUserId();
 
 		var environmentId = await db.Environments
 			.Where(e => e.ProjectId == query.ProjectId && e.Name == query.EnvironmentName)
 			.Select(e => (Guid?)e.Id)
-			.FirstOrDefaultAsync(ct);
+			.SingleOrDefaultAsync(ct);
 
 		if (environmentId is null)
 			return [];
 
 		return await db.ConfigItems
-			.Where(x => x.ProjectId == query.ProjectId)
-			.Select(x => new ConfigItemSummary(
-				x.Id,
-				x.Key.Value,
-				x.Values.Any(v => v.EnvironmentId == environmentId)
+			.Where(p => p.ProjectId == query.ProjectId)
+			.Where(p => db.ProjectMembers.Any(m => m.ProjectId == p.ProjectId && m.UserId == userId))
+			.OrderBy(i => i.Key)
+			.Select(i => new ConfigItemSummary(
+				i.Id,
+				i.Key.Value,
+				i.Values.Any(value => value.EnvironmentId == environmentId)
 			))
 			.ToListAsync(ct);
 	}
