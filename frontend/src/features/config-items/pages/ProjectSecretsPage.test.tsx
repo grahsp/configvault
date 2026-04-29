@@ -57,6 +57,13 @@ function getValueEndpointCalls(fetchMock: ReturnType<typeof vi.fn>) {
   )
 }
 
+function getImportCalls(fetchMock: ReturnType<typeof vi.fn>) {
+  return fetchMock.mock.calls.filter(
+    ([input, init]) =>
+      input.toString().includes('/import?') && init?.method === 'POST',
+  )
+}
+
 const projectDetails = {
   id: 'project-1',
   name: 'Production secrets',
@@ -172,6 +179,145 @@ describe('ProjectSecretsPage', () => {
     expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('')
     expect(screen.getByRole('textbox', { name: 'Key' })).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
+  })
+
+  it('imports pasted .env data from the empty state', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/import',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Import .env' }))
+    await user.type(
+      screen.getByRole('textbox', { name: '.env content' }),
+      'API_KEY=secret-value{enter}DATABASE_URL=postgres://localhost',
+    )
+    await user.click(screen.getByRole('button', { name: 'Import' }))
+
+    expect(await screen.findByText('Secrets imported')).toBeInTheDocument()
+    expect(await screen.findByRole('row', { name: /Key API_KEY/ })).toBeInTheDocument()
+
+    const importCalls = getImportCalls(fetchMock)
+    expect(importCalls).toHaveLength(1)
+    expect(importCalls[0]?.[0].toString()).toContain(
+      '/projects/project-1/import?environment=production',
+    )
+    expect(importCalls[0]?.[1]).toMatchObject({
+      method: 'POST',
+      headers: expect.any(Headers),
+      body: 'API_KEY=secret-value\nDATABASE_URL=postgres://localhost',
+    })
+    expect(
+      (importCalls[0]?.[1]?.headers as Headers).get('Content-Type'),
+    ).toBe('text/plain')
+  })
+
+  it('clears unsaved edits after importing while editing', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/import',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/config-items',
+        body: [
+          apiKeyConfigItem,
+          {
+            id: 'config-2',
+            key: 'DATABASE_URL',
+            hasValue: true,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(screen.getByRole('button', { name: 'Add Secret' }))
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Import .env' }))
+    expect(
+      screen.getByText('Unsaved edits in the table will be cleared after import.'),
+    ).toBeInTheDocument()
+    await user.type(
+      screen.getByRole('textbox', { name: '.env content' }),
+      'DATABASE_URL=postgres://localhost',
+    )
+    await user.click(screen.getByRole('button', { name: 'Import' }))
+
+    expect(await screen.findByText('Secrets imported')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+    expect(
+      await screen.findByRole('row', { name: /Key DATABASE_URL/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows an import error toast when the import request fails', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/import',
+        body: {
+          title: 'Import failed',
+          detail: 'Invalid line: foo',
+          status: 400,
+        },
+        status: 400,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Import .env' }))
+    await user.type(screen.getByRole('textbox', { name: '.env content' }), 'foo')
+    await user.click(screen.getByRole('button', { name: 'Import' }))
+
+    expect(await screen.findByText('Invalid line: foo')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('shows loaded config item rows with a masked value column', async () => {
@@ -995,5 +1141,80 @@ describe('ProjectSecretsPage', () => {
       'Create rejected.',
     )
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
+  })
+
+  it('copies the exported secrets to the clipboard', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText,
+      },
+    })
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+      {
+        path: '/projects/project-1/export',
+        response: new Response('API_KEY=secret-value', {
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+        }),
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Copy Export' }))
+
+    expect(writeText).toHaveBeenCalledWith('API_KEY=secret-value')
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Secrets export copied',
+    )
+  })
+
+  it('shows an error toast when the export request fails', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText,
+      },
+    })
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/config-items',
+        body: [apiKeyConfigItem],
+      },
+      {
+        path: '/projects/project-1/export',
+        body: { message: 'Export rejected.' },
+        status: 500,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Copy Export' }))
+
+    expect(writeText).not.toHaveBeenCalled()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Export rejected.')
   })
 })

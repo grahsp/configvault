@@ -8,6 +8,7 @@ import { useSaveConfigItems } from '../hooks/useSaveConfigItems'
 import type { ConfigItem } from '../types/ConfigItem'
 import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
 import { ConfigItemRow } from './ConfigItemRow'
+import { ImportConfigItemsModal } from './ImportConfigItemsModal'
 import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemsTableProps {
@@ -43,6 +44,7 @@ export function ConfigItemsTable({
   )
   const saveConfigItemsMutation = useSaveConfigItems(projectId, environmentName)
   const [isEditing, setIsEditing] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [drafts, setDrafts] = useState<Record<string, ConfigItemDraft>>({})
   const [newConfigItems, setNewConfigItems] = useState<NewConfigItemDraft[]>([])
   const [highlightedValidationIds, setHighlightedValidationIds] = useState<
@@ -147,6 +149,12 @@ export function ConfigItemsTable({
     setPendingDeletionIds([])
     setIsEditing(false)
     onFocusConfigItem(null)
+  }
+
+  function handleImported() {
+    if (isEditing) {
+      handleCancelEdit()
+    }
   }
 
   function handleDeleteToggle(configItem: ConfigItem) {
@@ -384,11 +392,18 @@ export function ConfigItemsTable({
         !configItemsQuery.isError &&
         configItems.length > 0 ? (
           <div className={styles.sectionHeaderActions}>
-            <button
-              className={cx(styles.button, styles.buttonSecondary)}
-              onClick={handleStartEdit}
-              type="button"
-            >
+          <button
+            className={cx(styles.button, styles.buttonSecondary)}
+            onClick={() => setIsImportModalOpen(true)}
+            type="button"
+          >
+            Import .env
+          </button>
+          <button
+            className={cx(styles.button, styles.buttonSecondary)}
+            onClick={handleStartEdit}
+            type="button"
+          >
               Edit
             </button>
           </div>
@@ -438,6 +453,13 @@ export function ConfigItemsTable({
             type="button"
           >
             Add Secret
+          </button>
+          <button
+            className={cx(styles.button, styles.buttonSecondary)}
+            onClick={() => setIsImportModalOpen(true)}
+            type="button"
+          >
+            Import .env
           </button>
         </div>
       ) : null}
@@ -567,6 +589,14 @@ export function ConfigItemsTable({
                 >
                   Add Secret
                 </button>
+                <button
+                  className={cx(styles.button, styles.buttonSecondary)}
+                  disabled={isSaving}
+                  onClick={() => setIsImportModalOpen(true)}
+                  type="button"
+                >
+                  Import .env
+                </button>
               </div>
               <div className={styles.sectionFooterSecondaryActions}>
                 <button
@@ -589,6 +619,16 @@ export function ConfigItemsTable({
             </div>
           ) : null}
         </>
+      ) : null}
+
+      {isImportModalOpen ? (
+        <ImportConfigItemsModal
+          environmentName={environmentName}
+          isEditing={isEditing}
+          onCancel={() => setIsImportModalOpen(false)}
+          onImported={handleImported}
+          projectId={projectId}
+        />
       ) : null}
     </section>
   )

@@ -25,25 +25,31 @@ function buildApiUrl(path: string) {
 export function createApiClient({
   getAccessTokenSilently,
 }: ApiClientOptions) {
+  async function execute(path: string, init: RequestInit = {}) {
+    const token = await getAccessTokenSilently()
+    const headers = new Headers(init.headers)
+
+    headers.set('Authorization', `Bearer ${token}`)
+
+    if (init.body && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json')
+    }
+
+    const response = await fetch(buildApiUrl(path), {
+      ...init,
+      headers,
+    })
+
+    if (!response.ok) {
+      throw await buildApiError(response, path)
+    }
+
+    return response
+  }
+
   return {
     async request<T>(path: string, init: RequestInit = {}): Promise<T> {
-      const token = await getAccessTokenSilently()
-      const headers = new Headers(init.headers)
-
-      headers.set('Authorization', `Bearer ${token}`)
-
-      if (init.body && !headers.has('Content-Type')) {
-        headers.set('Content-Type', 'application/json')
-      }
-
-      const response = await fetch(buildApiUrl(path), {
-        ...init,
-        headers,
-      })
-
-      if (!response.ok) {
-        throw await buildApiError(response, path)
-      }
+      const response = await execute(path, init)
 
       if (response.status === 204) {
         return undefined as T
@@ -56,6 +62,15 @@ export function createApiClient({
       }
 
       return JSON.parse(responseText) as T
+    },
+    async requestText(path: string, init: RequestInit = {}): Promise<string> {
+      const response = await execute(path, init)
+
+      if (response.status === 204) {
+        return ''
+      }
+
+      return response.text()
     },
   }
 }

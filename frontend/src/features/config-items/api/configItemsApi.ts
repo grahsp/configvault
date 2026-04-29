@@ -46,6 +46,18 @@ function buildEnvironmentSearch(environmentName: string) {
   return `environment=${encodeURIComponent(environmentName)}`
 }
 
+function buildExportConfigItemsPath(projectId: string, environmentName: string) {
+  return `/projects/${encodeURIComponent(projectId)}/export?${buildEnvironmentSearch(
+    environmentName,
+  )}`
+}
+
+function buildImportConfigItemsPath(projectId: string, environmentName: string) {
+  return `/projects/${encodeURIComponent(projectId)}/import?${buildEnvironmentSearch(
+    environmentName,
+  )}`
+}
+
 function buildConfigItemValuePath(
   projectId: string,
   configItemId: string,
@@ -66,6 +78,34 @@ export function getConfigItems(
     `${buildConfigItemsPath(projectId)}?${buildEnvironmentSearch(
       environmentName,
     )}`,
+  )
+}
+
+export function exportConfigItems(
+  client: ApiClient,
+  projectId: string,
+  environmentName: string,
+) {
+  return client.requestText(
+    buildExportConfigItemsPath(projectId, environmentName),
+  )
+}
+
+export function importConfigItems(
+  client: ApiClient,
+  projectId: string,
+  environmentName: string,
+  content: string,
+) {
+  return client.request<void>(
+    buildImportConfigItemsPath(projectId, environmentName),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: content,
+    },
   )
 }
 

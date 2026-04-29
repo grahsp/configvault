@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ApiClient } from '../../../api/apiClient'
 import {
   deleteConfigItem,
+  exportConfigItems,
   getConfigItemValue,
   getConfigItems,
+  importConfigItems,
   renameConfigItem,
   saveConfigItems,
   upsertConfigItemValue,
@@ -12,6 +14,7 @@ import {
 function createMockClient() {
   return {
     request: vi.fn(),
+    requestText: vi.fn(),
   } as unknown as ApiClient
 }
 
@@ -123,6 +126,44 @@ describe('config items api', () => {
 
     expect(client.request).toHaveBeenCalledWith(
       '/projects/project%2Fwith%20space/config-items/config%2Fwith%20space/value?environment=prod%2Feu%20west',
+    )
+  })
+
+  it('exports config items with encoded project and environment values', async () => {
+    const client = createMockClient()
+    vi.mocked(client.requestText).mockResolvedValue('API_KEY=secret-value')
+
+    await expect(
+      exportConfigItems(client, 'project/with space', 'prod/eu west'),
+    ).resolves.toBe('API_KEY=secret-value')
+
+    expect(client.requestText).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/export?environment=prod%2Feu%20west',
+    )
+  })
+
+  it('imports config items with a plain text body and encoded project and environment values', async () => {
+    const client = createMockClient()
+    vi.mocked(client.request).mockResolvedValue(undefined)
+
+    await expect(
+      importConfigItems(
+        client,
+        'project/with space',
+        'prod/eu west',
+        'API_KEY=secret-value\nDATABASE_URL=postgres://localhost',
+      ),
+    ).resolves.toBeUndefined()
+
+    expect(client.request).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/import?environment=prod%2Feu%20west',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: 'API_KEY=secret-value\nDATABASE_URL=postgres://localhost',
+      },
     )
   })
 
