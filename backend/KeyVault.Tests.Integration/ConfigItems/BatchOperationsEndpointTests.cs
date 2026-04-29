@@ -149,6 +149,41 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		Assert.Equal("Invalid key format", problem.Detail);
 	}
 
+	[Fact]
+	public async Task PostImport_ShouldReturnOk_ForValidPlainTextEnvContent()
+	{
+		await using var host = fixture.CreateDefaultHost();
+		await TestFixture.ResetAsync(host);
+		var client = host.CreateJsonClient("batch-owner");
+		var projectId = await CreateProjectAsync(client);
+
+		var response = await client.PostAsync(
+			$"/projects/{projectId}/import?environment=production",
+			new StringContent(
+				"""
+				API_KEY=secret-value
+				DATABASE_URL=postgres://localhost/app
+				""",
+				Encoding.UTF8,
+				"text/plain"));
+
+		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+		await host.WithScopeAsync(async services =>
+		{
+			var db = services.GetRequiredService<AppDbContext>();
+			var configItems = await db.ConfigItems
+				.Where(configItem => configItem.ProjectId == projectId)
+				.OrderBy(configItem => configItem.Key.Value)
+				.ToListAsync();
+
+			Assert.Collection(
+				configItems,
+				configItem => Assert.Equal("API_KEY", configItem.Key.Value),
+				configItem => Assert.Equal("DATABASE_URL", configItem.Key.Value));
+		});
+	}
+
 	private static StringContent CreateJsonContent(string json)
 		=> new(json, Encoding.UTF8, "application/json");
 
@@ -183,4 +218,5 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 			return configItems.Single(configItem => configItem.Key.Value == key).Id;
 		});
 	}
+
 }

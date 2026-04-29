@@ -18,10 +18,13 @@ public static class ConfigItemEndpoints
 		configItems.MapPatch("/{configItemId}", RenameConfigItem.Endpoint.Handle);
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		
-		var configValues = builder.MapGroup("/projects/{projectId}/config-items/{configItemId}/value")
+		var configValues = builder.MapGroup("/projects/{projectId}")
 			.WithTags("Config Values");
 		
-		configValues.MapPut("", SetConfigValue.Endpoint.Handle);
-		configValues.MapGet("", GetConfigValue.Endpoint.Handle);
+		configValues.MapGet("/export", ExportConfig.Endpoint.Handle);
+		configValues.MapPost("/import", ImportConfig.Endpoint.Handle);
+		
+		configValues.MapPut("/config-items/{configItemId}/value", SetConfigValue.Endpoint.Handle);
+		configValues.MapGet("/config-items/{configItemId}/value", GetConfigValue.Endpoint.Handle);
 	}
 }

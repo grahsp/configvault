@@ -13,7 +13,7 @@ public sealed class CapabilitySet
 	public IReadOnlySet<ProjectCapability> Values => _values;
 	
 	public static readonly CapabilitySet Member = new CapabilitySet([
-		ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read),
+		ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Write),
 		ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read),
 		ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write)
 	]);

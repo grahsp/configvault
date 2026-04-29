@@ -159,6 +159,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	{
 		public IQueryable<KeyVault.Domain.Users.User> Users => Enumerable.Empty<KeyVault.Domain.Users.User>().AsQueryable();
 		public IQueryable<Project> Projects => new[] { project }.AsQueryable();
+		public IQueryable<ProjectDataKey> DataKeys => project.DataKeys.AsQueryable();
 		public IQueryable<KeyVault.Domain.Projects.Environment> Environments => project.Environments.AsQueryable();
 		public IQueryable<ConfigItem> ConfigItems => Enumerable.Empty<ConfigItem>().AsQueryable();
 		public IQueryable<ConfigValue> ConfigValues => Enumerable.Empty<ConfigValue>().AsQueryable();
