@@ -9,6 +9,7 @@ public interface IReadDbContext
 {
 	IQueryable<User> Users { get; }
 	IQueryable<Project> Projects { get; }
+	IQueryable<ProjectDataKey> DataKeys { get; }
 	IQueryable<Environment> Environments { get; }
 	IQueryable<ConfigItem> ConfigItems { get; }
 	IQueryable<ConfigValue> ConfigValues { get; }

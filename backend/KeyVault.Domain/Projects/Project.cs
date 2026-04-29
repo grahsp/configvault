@@ -12,8 +12,11 @@ public sealed class Project
 
 	private readonly List<ProjectDataKey> _dataKeys = [];
 	public IReadOnlyList<ProjectDataKey> DataKeys => _dataKeys;
-	public ProjectDataKey CurrentDataKey =>
-		_dataKeys.OrderByDescending(x => x.CreatedAt).First();
+	
+	public Guid CurrentDataKeyId { get; private set; }
+	public ProjectDataKey CurrentDataKey
+		=> _dataKeys.SingleOrDefault(x => x.Id == CurrentDataKeyId)
+		   ?? throw new InvalidOperationException("Current data key not found.");
 	
 	private readonly List<Environment> _environments = [];
 	public IReadOnlyList<Environment> Environments => _environments;
@@ -33,7 +36,10 @@ public sealed class Project
 		Name = name;
 
 		CreatedAt = now;
-		_dataKeys.Add(ProjectDataKey.Create(Id, encryptedDataKey, now));
+		
+		var key = ProjectDataKey.Create(Id, encryptedDataKey, now);
+		_dataKeys.Add(key);
+		CurrentDataKeyId = key.Id;
 	}
 
 	public static Project Create(UserId userId, string name, EncryptedValue encryptedDataKey, DateTimeOffset now)

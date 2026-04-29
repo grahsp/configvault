@@ -3,6 +3,8 @@ namespace KeyVault.Domain.Projects;
 public sealed class Environment
 {
 	public Guid Id { get; private init; }
+
+	public Project Project { get; private init; } = null!;
 	public Guid ProjectId { get; private init; }
 
 	public string Name { get; private set; } = null!;

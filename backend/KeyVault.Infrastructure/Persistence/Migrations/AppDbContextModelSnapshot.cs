@@ -105,6 +105,9 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CurrentDataKeyId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -235,11 +238,13 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("KeyVault.Domain.Projects.Environment", b =>
                 {
-                    b.HasOne("KeyVault.Domain.Projects.Project", null)
+                    b.HasOne("KeyVault.Domain.Projects.Project", "Project")
                         .WithMany("Environments")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("KeyVault.Domain.Projects.ProjectDataKey", b =>
