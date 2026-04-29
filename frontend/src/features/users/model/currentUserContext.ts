@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { CurrentUser } from '../utils/currentUserTypes'
+import type { CurrentUser } from './currentUser.ts'
 
 export interface CurrentUserContextValue {
   user?: CurrentUser

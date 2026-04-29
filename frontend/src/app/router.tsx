@@ -6,7 +6,7 @@ import { GeneralPage } from '../features/projects/pages/GeneralPage'
 import { MembersPage } from '../features/projects/pages/MembersPage'
 import { ProjectLayout } from '../features/projects/pages/ProjectLayout'
 import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
-import { ProfilePage } from '../features/users/pages/ProfilePage'
+import { ProfilePage } from '../features/users'
 import { HomePage } from './pages/HomePage'
 
 export const router = createBrowserRouter([

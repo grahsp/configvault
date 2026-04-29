@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CurrentUserContext } from '../../../shared/hooks/currentUserContext'
-import type { CurrentUser } from '../../../shared/utils/currentUserTypes'
+import { CurrentUserContext } from '../../users'
+import type { CurrentUser } from '../../users'
 import { ProtectedRoute } from './ProtectedRoute'
 
 const auth0Mock = vi.hoisted(() => ({

@@ -5,10 +5,10 @@ import {
   useRef,
   useState,
 } from 'react'
-import { createApiClient } from '../../../api/apiClient'
-import { CurrentUserContext } from '../../../shared/hooks/currentUserContext'
 import { useAuth } from '../../../shared/hooks/useAuth'
-import type { CurrentUser } from '../../../shared/utils/currentUserTypes'
+import { getCurrentUser } from '../api/getCurrentUser'
+import { CurrentUserContext } from './currentUserContext'
+import type { CurrentUser } from './currentUser.ts'
 
 export function CurrentUserProvider({ children }: PropsWithChildren) {
   const { getAccessTokenSilently, isAuthenticated } = useAuth()
@@ -32,8 +32,7 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
     setError(undefined)
 
     try {
-      const client = createApiClient({ getAccessTokenSilently })
-      const user = await client.request<CurrentUser>('/me')
+      const user = await getCurrentUser(getAccessTokenSilently)
 
       if (requestIdRef.current !== requestId) {
         return user

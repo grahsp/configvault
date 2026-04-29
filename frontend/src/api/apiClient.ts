@@ -6,7 +6,7 @@ export type {
   ValidationErrors,
 } from './errors/apiError'
 
-type AccessTokenGetter = () => Promise<string>
+export type AccessTokenGetter = () => Promise<string>
 
 interface ApiClientOptions {
   getAccessTokenSilently: AccessTokenGetter

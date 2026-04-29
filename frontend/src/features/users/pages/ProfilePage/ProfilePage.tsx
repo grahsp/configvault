@@ -1,4 +1,4 @@
-import { useCurrentUser } from '../../../shared/hooks/useCurrentUser'
+import { useCurrentUser } from '../../model'
 import styles from './ProfilePage.module.css'
 
 export function ProfilePage() {
