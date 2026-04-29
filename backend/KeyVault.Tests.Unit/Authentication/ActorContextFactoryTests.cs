@@ -56,7 +56,6 @@ public sealed class ActorContextFactoryTests
 
 		var actor = await sut.ResolveAsync(context, project, CancellationToken.None);
 
-		Assert.Equal(AccessScope.Global, actor.Scope);
 		Assert.True(actor.Has(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read)));
 		Assert.True(actor.Has(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write)));
 	}

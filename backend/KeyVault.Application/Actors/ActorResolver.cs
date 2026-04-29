@@ -14,7 +14,7 @@ public sealed class ActorResolver(RoleCapabilities roleCapabilities, IScopeCapab
 		if (context is MachineActorContext machine)
 		{
 			capabilities.UnionWith(scopeCapabilities.For(machine.Scopes));
-			return new Actor(machine.Id, AccessScope.Global, capabilities);
+			return new Actor(machine.Id, capabilities);
 		}
 
 		if (context.UserId is {} userId)
@@ -24,7 +24,7 @@ public sealed class ActorResolver(RoleCapabilities roleCapabilities, IScopeCapab
 			if (member is not null)
 				capabilities.UnionWith(roleCapabilities.For(member.Role));
 			
-			return new Actor(context.Id, AccessScope.Project, capabilities);
+			return new Actor(context.Id, capabilities);
 		}
 
 		throw new UnauthorizedException();

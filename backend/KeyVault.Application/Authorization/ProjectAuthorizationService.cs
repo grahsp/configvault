@@ -27,14 +27,11 @@ public sealed class ProjectAuthorizationService(
 			throw new ForbiddenException();
 	}
 
-	private async Task<bool> CanAccessInternalAsync(ProjectCapability capability, Actor actor, Func<CancellationToken, Task<bool>> isMember, CancellationToken ct)
+	private async Task<bool> CanAccessInternalAsync(ProjectCapability capability, Actor actor, Func<CancellationToken, Task<bool>> hasProjectAccess, CancellationToken ct)
 	{
 		if (!actor.Has(capability))
 			return false;
 
-		if (actor.Scope is AccessScope.Global)
-			return true;
-
-		return await isMember(ct);
+		return await hasProjectAccess(ct);
 	}
 }
