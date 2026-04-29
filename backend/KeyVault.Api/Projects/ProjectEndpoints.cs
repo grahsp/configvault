@@ -1,3 +1,5 @@
+using KeyVault.Api.Authorization;
+
 namespace KeyVault.Api.Projects;
 
 public static class ProjectEndpoints
@@ -5,6 +7,7 @@ public static class ProjectEndpoints
 	public static void AddProjectEndpoints(this IEndpointRouteBuilder builder)
 	{
 		var projects = builder.MapGroup("/projects")
+			.RequireAuthorization(AuthorizationPolicies.UserOnly)
 			.WithTags("Projects");
 
 		projects.MapPost("", CreateProject.Endpoint.Handle);
