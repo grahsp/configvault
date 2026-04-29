@@ -7,6 +7,7 @@ using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Users;
 using KeyVault.Infrastructure.Authentication;
+using KeyVault.Infrastructure.ConfigItems.Formats;
 using KeyVault.Infrastructure.Configuration;
 using KeyVault.Infrastructure.Cryptography;
 using KeyVault.Infrastructure.Dispatchers;
@@ -74,6 +75,11 @@ public static class InfrastructureModule
 		services.AddSingleton<IAeadEncryption, AesGcmEncryption>();
 		services.AddSingleton<IMasterKeyProvider, ConfigurationMasterKeyProvider>();
 		services.AddSingleton<IEnvelopeEncryptionService, EnvelopeEncryptionService>();
+		
+		services.AddSingleton<EnvConfigFormat>();
+		services.AddSingleton<IConfigFormatResolver, ConfigFormatResolver>();
+		services.AddSingleton<IConfigImporter>(sp => sp.GetRequiredService<EnvConfigFormat>());
+		services.AddSingleton<IConfigExporter>(sp => sp.GetRequiredService<EnvConfigFormat>());
 
 		services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 
