@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient'
 import { addMember } from '../api'
-import { projectQueryKeys } from '../../model'
+import { projectQueryKeys } from '../../application'
 
 export function useAddMember(projectId: string) {
   const client = useAuthenticatedApiClient()

@@ -1,13 +1,11 @@
-import { Link } from 'react-router-dom'
-import { cx } from '../../../shared/utils/cx'
-import type { ProjectListItem } from '../model'
-import { formatCreatedDate } from '../model'
+import type { ProjectListItem as ProjectListItemModel } from '../domain'
+import { ProjectListRow } from './ProjectListRow'
 import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectListProps {
   isDeletePending: boolean
   onSelectProjectForDelete: (projectId: string) => void
-  projects: ProjectListItem[]
+  projects: ProjectListItemModel[]
 }
 
 export function ProjectList({
@@ -18,48 +16,13 @@ export function ProjectList({
   return (
     <ul className={styles.projectList} aria-label="Projects">
       {projects.map((project) => (
-        <li className={styles.projectListItem} key={project.id}>
-          <Link
-            className={styles.projectListLink}
-            to={`/projects/${project.id}`}
-          >
-            <span className={styles.projectListName}>{project.name}</span>
-            <span className={styles.projectListMeta}>
-              Created {formatCreatedDate(project.createdAt)}
-            </span>
-          </Link>
-          <button
-            className={styles.projectListDelete}
-            disabled={isDeletePending}
-            onClick={() => onSelectProjectForDelete(project.id)}
-            type="button"
-          >
-            Delete
-          </button>
-        </li>
+        <ProjectListRow
+          isDeletePending={isDeletePending}
+          key={project.id}
+          onSelectProjectForDelete={onSelectProjectForDelete}
+          project={project}
+        />
       ))}
     </ul>
-  )
-}
-
-interface ProjectEmptyStateProps {
-  onCreateProject: () => void
-}
-
-export function ProjectEmptyState({ onCreateProject }: ProjectEmptyStateProps) {
-  return (
-    <div className={styles.state}>
-      <p className={styles.stateTitle}>No projects yet</p>
-      <p className={styles.stateCopy}>
-        Create a project to start organizing vault entries.
-      </p>
-      <button
-        className={cx(styles.button, styles.buttonSecondary)}
-        onClick={onCreateProject}
-        type="button"
-      >
-        Create your first project
-      </button>
-    </div>
   )
 }

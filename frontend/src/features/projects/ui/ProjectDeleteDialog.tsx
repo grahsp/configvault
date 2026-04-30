@@ -1,6 +1,6 @@
 import type { UseMutationResult } from '@tanstack/react-query'
 import { ConfirmationDialog } from '../../../shared/ui/ConfirmationDialog'
-import { getErrorMessage } from '../model'
+import { getErrorMessage } from '../domain'
 import styles from './ProjectDeleteDialog.module.css'
 
 interface ProjectDeleteDialogProps {

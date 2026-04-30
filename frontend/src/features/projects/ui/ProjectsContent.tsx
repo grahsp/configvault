@@ -1,8 +1,8 @@
 import { cx } from '../../../shared/utils/cx'
-import type { ProjectListItem } from '../model'
-import { getErrorMessage } from '../model'
+import { getErrorMessage, type ProjectListItem } from '../domain'
 import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
-import { ProjectEmptyState, ProjectList } from './ProjectList'
+import { ProjectEmptyState } from './ProjectEmptyState'
+import { ProjectList } from './ProjectList'
 
 interface ProjectsContentProps {
   error: unknown

@@ -1,7 +1,7 @@
 import { Link, Outlet } from 'react-router-dom'
 import { EnvironmentDropdown, type Environment } from '../../environments'
 import { cx } from '../../../../shared/utils/cx'
-import type { ProjectDetails } from '../../model'
+import type { ProjectDetails } from '../../domain'
 import { ProjectSubNav } from '../../ui'
 import type { ProjectLayoutContext } from './ProjectDetailPage'
 import styles from './ProjectDetailPage.module.css'

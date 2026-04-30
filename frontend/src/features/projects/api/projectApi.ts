@@ -1,11 +1,11 @@
 import type { ApiClient } from '../../../api/apiClient'
-import type { ProjectRole } from '../members'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
   ProjectDetails,
   ProjectListItem,
-} from '../model'
+} from '../domain'
+import type { ProjectRole } from '../members'
 
 export function listProjects(client: ApiClient) {
   return client.request<ProjectListItem[]>('/projects')

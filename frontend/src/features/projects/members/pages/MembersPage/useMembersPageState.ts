@@ -10,7 +10,7 @@ import {
   useMembers,
   useRemoveMember,
 } from '../../application'
-import { getErrorMessage } from '../../../model'
+import { getErrorMessage } from '../../../domain'
 import type { ProjectLayoutContext } from '../../../pages/ProjectDetailPage'
 
 export function useMembersPageState() {

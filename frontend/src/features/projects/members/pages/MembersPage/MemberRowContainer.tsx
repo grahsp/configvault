@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../../../model'
+import { getErrorMessage } from '../../../domain'
 import { useSetRole } from '../../application'
 import {
   getMemberDisplayName,

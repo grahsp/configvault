@@ -1,6 +1,6 @@
 import { cx } from '../../../../../shared/utils/cx'
 import { AddMemberForm, MembersTable, RemoveMemberDialog } from '../../ui'
-import { getErrorMessage } from '../../../model'
+import { getErrorMessage } from '../../../domain'
 import { useMembersPageState } from './useMembersPageState'
 import { MemberRowContainer } from './MemberRowContainer'
 import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'

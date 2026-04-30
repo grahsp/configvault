@@ -7,8 +7,8 @@ import {
   isAuthError,
   isNotFoundError,
   type ProjectDetails,
-  useProject,
-} from '../../model'
+} from '../../domain'
+import { useProject } from '../../application'
 import { ProjectLayout } from './ProjectLayout'
 import styles from './ProjectDetailPage.module.css'
 

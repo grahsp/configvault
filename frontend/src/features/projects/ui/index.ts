@@ -1,5 +1,7 @@
 export * from './ProjectCreateModal'
 export * from './ProjectDeleteDialog'
+export * from './ProjectEmptyState'
 export * from './ProjectList'
+export * from './ProjectListRow'
 export * from '../pages/ProjectDetailPage/ProjectSubNav.tsx'
 export * from './ProjectsContent'
