@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { cx } from '../../../../shared/utils/cx'
 import { formatCreatedDate, useDeleteProject } from '../../model'
 import { ProjectDeleteDialog } from '../../ui'
-import type { ProjectLayoutContext } from './ProjectLayout'
+import type { ProjectLayoutContext } from './ProjectDetailPage'
 import styles from './ProjectDetailPage.module.css'
 
 export function GeneralPage() {

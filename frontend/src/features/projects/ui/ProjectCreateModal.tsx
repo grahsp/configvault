@@ -5,12 +5,12 @@ import { cx } from '../../../shared/utils/cx'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
-} from '../model/types'
+} from '../model'
 import {
   getProjectNameValidationError,
   PROJECT_NAME_MAX_LENGTH,
-} from '../model/projectValidation'
-import { getErrorMessage, getValidationMessage } from '../model/projectUtils'
+} from '../model'
+import { getErrorMessage, getValidationMessage } from '../model'
 import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectCreateModalProps {

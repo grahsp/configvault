@@ -6,7 +6,7 @@ import { ToastProvider } from '../../../../shared/components/toast/ToastProvider
 import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
 import { MembersPage } from '../../members/pages'
 import { GeneralPage } from './GeneralPage'
-import { ProjectLayout } from './ProjectLayout'
+import { ProjectDetailPage } from './ProjectDetailPage'
 
 export type MockRoute = {
   body?: unknown
@@ -55,7 +55,7 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
     [
       {
         path: '/projects/:projectId',
-        element: <ProjectLayout />,
+        element: <ProjectDetailPage />,
         children: [
           {
             index: true,

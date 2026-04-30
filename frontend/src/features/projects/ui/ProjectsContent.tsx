@@ -1,6 +1,6 @@
 import { cx } from '../../../shared/utils/cx'
-import type { ProjectListItem } from '../model/types'
-import { getErrorMessage } from '../model/projectUtils'
+import type { ProjectListItem } from '../model'
+import { getErrorMessage } from '../model'
 import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 import { ProjectEmptyState, ProjectList } from './ProjectList'
 
