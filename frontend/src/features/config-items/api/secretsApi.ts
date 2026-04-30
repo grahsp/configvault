@@ -1,45 +1,45 @@
 import type { ApiClient } from '../../../api/apiClient'
-import type { ConfigItem, ConfigItemValue } from '../model/configItem.types'
+import type { Secret, SecretValue } from '../domain'
 
-export interface CreateConfigItemOperation {
+export interface CreateSecretOperation {
   type: 'create'
   key: string
   initialValue?: string
 }
 
-export interface RenameConfigItemOperation {
+export interface RenameSecretOperation {
   type: 'rename'
-  configItemId: string
+  secretId: string
   key: string
 }
 
-export interface SetConfigItemValueOperation {
+export interface SetSecretValueOperation {
   type: 'set-value'
-  configItemId: string
+  secretId: string
   value: string
 }
 
-export interface DeleteConfigItemOperation {
+export interface DeleteSecretOperation {
   type: 'delete'
-  configItemId: string
+  secretId: string
 }
 
-export type ConfigItemBatchOperation =
-  | CreateConfigItemOperation
-  | RenameConfigItemOperation
-  | SetConfigItemValueOperation
-  | DeleteConfigItemOperation
+export type SecretBatchOperation =
+  | CreateSecretOperation
+  | RenameSecretOperation
+  | SetSecretValueOperation
+  | DeleteSecretOperation
 
 function buildConfigItemsPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/config-items`
 }
 
-function buildConfigItemOperationsPath(projectId: string) {
+function buildSecretOperationsPath(projectId: string) {
   return `${buildConfigItemsPath(projectId)}/operations`
 }
 
-function buildConfigItemPath(projectId: string, configItemId: string) {
-  return `${buildConfigItemsPath(projectId)}/${encodeURIComponent(configItemId)}`
+function buildSecretPath(projectId: string, secretId: string) {
+  return `${buildConfigItemsPath(projectId)}/${encodeURIComponent(secretId)}`
 }
 
 function buildEnvironmentSearch(environmentName: string) {
@@ -58,30 +58,30 @@ function buildImportConfigItemsPath(projectId: string, environmentName: string) 
   )}`
 }
 
-function buildConfigItemValuePath(
+function buildSecretValuePath(
   projectId: string,
-  configItemId: string,
+  secretId: string,
   environmentName: string,
 ) {
-  return `${buildConfigItemPath(
+  return `${buildSecretPath(
     projectId,
-    configItemId,
+    secretId,
   )}/value?${buildEnvironmentSearch(environmentName)}`
 }
 
-export function getConfigItems(
+export function getSecrets(
   client: ApiClient,
   projectId: string,
   environmentName: string,
 ) {
-  return client.request<ConfigItem[]>(
+  return client.request<Secret[]>(
     `${buildConfigItemsPath(projectId)}?${buildEnvironmentSearch(
       environmentName,
     )}`,
   )
 }
 
-export function exportConfigItems(
+export function exportSecrets(
   client: ApiClient,
   projectId: string,
   environmentName: string,
@@ -91,7 +91,7 @@ export function exportConfigItems(
   )
 }
 
-export function importConfigItems(
+export function importSecrets(
   client: ApiClient,
   projectId: string,
   environmentName: string,
@@ -109,7 +109,7 @@ export function importConfigItems(
   )
 }
 
-export function createConfigItem(
+export function createSecret(
   client: ApiClient,
   projectId: string,
   key: string,
@@ -120,13 +120,13 @@ export function createConfigItem(
   })
 }
 
-export function saveConfigItems(
+export function saveSecrets(
   client: ApiClient,
   projectId: string,
   environmentName: string,
-  operations: ConfigItemBatchOperation[],
+  operations: SecretBatchOperation[],
 ) {
-  return client.request<void>(buildConfigItemOperationsPath(projectId), {
+  return client.request<void>(buildSecretOperationsPath(projectId), {
     method: 'POST',
     body: JSON.stringify({
       environment: environmentName,
@@ -135,48 +135,48 @@ export function saveConfigItems(
   })
 }
 
-export function renameConfigItem(
+export function renameSecret(
   client: ApiClient,
   projectId: string,
-  configItemId: string,
+  secretId: string,
   key: string,
 ) {
-  return client.request<void>(buildConfigItemPath(projectId, configItemId), {
+  return client.request<void>(buildSecretPath(projectId, secretId), {
     method: 'PATCH',
     body: JSON.stringify({ key }),
   })
 }
 
-export function deleteConfigItem(
+export function deleteSecret(
   client: ApiClient,
   projectId: string,
-  configItemId: string,
+  secretId: string,
 ) {
-  return client.request<void>(buildConfigItemPath(projectId, configItemId), {
+  return client.request<void>(buildSecretPath(projectId, secretId), {
     method: 'DELETE',
   })
 }
 
-export function getConfigItemValue(
+export function getSecretValue(
   client: ApiClient,
   projectId: string,
-  configItemId: string,
+  secretId: string,
   environmentName: string,
 ) {
-  return client.request<ConfigItemValue>(
-    buildConfigItemValuePath(projectId, configItemId, environmentName),
+  return client.request<SecretValue>(
+    buildSecretValuePath(projectId, secretId, environmentName),
   )
 }
 
-export function upsertConfigItemValue(
+export function upsertSecretValue(
   client: ApiClient,
   projectId: string,
-  configItemId: string,
+  secretId: string,
   environmentName: string,
   value: string,
 ) {
   return client.request<void>(
-    buildConfigItemValuePath(projectId, configItemId, environmentName),
+    buildSecretValuePath(projectId, secretId, environmentName),
     {
       method: 'PUT',
       body: JSON.stringify({ value }),

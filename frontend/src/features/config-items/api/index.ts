@@ -1,1 +1,1 @@
-export * from './configItemsApi'
+export * from './secretsApi'
