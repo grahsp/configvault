@@ -1,4 +1,5 @@
 import { cx } from '../../../../shared/utils/cx'
+import { Button } from '../../../../shared/ui'
 import { ProjectCreateModal, ProjectDeleteDialog, ProjectsContent } from '../../ui'
 import styles from './ProjectsPage.module.css'
 import { useProjectsPageState } from './useProjectsPageState'
@@ -14,13 +15,14 @@ export function ProjectsPage() {
             <p className={styles.eyebrow}>Workspace</p>
             <h1 id="projects-title">Projects</h1>
           </div>
-          <button
-            className={cx(styles.button, styles.buttonPrimary)}
+          <Button
+            className={styles.headerAction}
             onClick={createProject.open}
             type="button"
+            variant="primary"
           >
             Create project
-          </button>
+          </Button>
         </div>
 
         <ProjectsContent

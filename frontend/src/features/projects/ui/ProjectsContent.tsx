@@ -1,6 +1,5 @@
-import { cx } from '../../../shared/utils/cx'
+import { Button, StatePanel } from '../../../shared/ui'
 import { getErrorMessage, type ProjectListItem } from '../domain'
-import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 import { ProjectEmptyState } from './ProjectEmptyState'
 import { ProjectList } from './ProjectList'
 
@@ -27,33 +26,33 @@ export function ProjectsContent({
 }: ProjectsContentProps) {
   if (isPending) {
     return (
-      <div className={styles.state} role="status">
-        <p className={styles.stateTitle}>Loading projects</p>
-        <p className={styles.stateCopy}>
+      <StatePanel role="status" title="Loading projects">
+        <p>
           Your workspace list is being prepared.
         </p>
-      </div>
+      </StatePanel>
     )
   }
 
   if (isError) {
     return (
-      <div className={cx(styles.state, styles.stateError)} role="alert">
-        <p className={styles.stateTitle}>Projects could not load</p>
-        <p className={styles.stateCopy}>
+      <StatePanel
+        actions={
+          <Button onClick={onRetry} type="button" variant="secondary">
+            Retry
+          </Button>
+        }
+        role="alert"
+        title="Projects could not load"
+        tone="error"
+      >
+        <p>
           {getErrorMessage(
             error,
             'Something went wrong while loading projects.',
           )}
         </p>
-        <button
-          className={cx(styles.button, styles.buttonSecondary)}
-          onClick={onRetry}
-          type="button"
-        >
-          Retry
-        </button>
-      </div>
+      </StatePanel>
     )
   }
 

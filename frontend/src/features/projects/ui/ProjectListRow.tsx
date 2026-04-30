@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Button } from '../../../shared/ui'
 import { formatCreatedDate, type ProjectListItem } from '../domain'
 import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
@@ -21,14 +22,15 @@ export function ProjectListRow({
           Created {formatCreatedDate(project.createdAt)}
         </span>
       </Link>
-      <button
+      <Button
         className={styles.projectListDelete}
         disabled={isDeletePending}
         onClick={() => onSelectProjectForDelete(project.id)}
         type="button"
+        variant="danger"
       >
         Delete
-      </button>
+      </Button>
     </li>
   )
 }

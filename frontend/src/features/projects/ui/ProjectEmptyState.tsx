@@ -1,5 +1,4 @@
-import { cx } from '../../../shared/utils/cx'
-import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
+import { Button, StatePanel } from '../../../shared/ui'
 
 interface ProjectEmptyStateProps {
   onCreateProject: () => void
@@ -7,18 +6,17 @@ interface ProjectEmptyStateProps {
 
 export function ProjectEmptyState({ onCreateProject }: ProjectEmptyStateProps) {
   return (
-    <div className={styles.state}>
-      <p className={styles.stateTitle}>No projects yet</p>
-      <p className={styles.stateCopy}>
+    <StatePanel
+      actions={
+        <Button onClick={onCreateProject} type="button" variant="secondary">
+          Create your first project
+        </Button>
+      }
+      title="No projects yet"
+    >
+      <p>
         Create a project to start organizing vault entries.
       </p>
-      <button
-        className={cx(styles.button, styles.buttonSecondary)}
-        onClick={onCreateProject}
-        type="button"
-      >
-        Create your first project
-      </button>
-    </div>
+    </StatePanel>
   )
 }

@@ -1,4 +1,4 @@
-import { cx } from '../../../../../shared/utils/cx'
+import { Button, StatePanel } from '../../../../../shared/ui'
 import { AddMemberForm, MembersTable, RemoveMemberDialog } from '../../ui'
 import { getErrorMessage } from '../../../domain'
 import { useMembersPageState } from './useMembersPageState'
@@ -43,43 +43,48 @@ export function MembersPage() {
       />
 
       {membersQuery.isPending ? (
-        <div className={styles.sectionState} role="status">
-          <p className={styles.stateTitle}>Loading members...</p>
-          <p className={styles.stateCopy}>
+        <StatePanel
+          className={styles.sectionState}
+          role="status"
+          title="Loading members..."
+        >
+          <p>
             Project access details are being prepared.
           </p>
-        </div>
+        </StatePanel>
       ) : null}
 
       {membersQuery.isError ? (
-        <div
-          className={cx(styles.sectionState, styles.stateError)}
+        <StatePanel
+          actions={
+            <Button
+              onClick={() => membersQuery.refetch()}
+              type="button"
+              variant="secondary"
+            >
+              Retry
+            </Button>
+          }
+          className={styles.sectionState}
           role="alert"
+          title="Failed to load members."
+          tone="error"
         >
-          <p className={styles.stateTitle}>Failed to load members.</p>
-          <p className={styles.stateCopy}>
+          <p>
             {getErrorMessage(
               membersQuery.error,
               'Something went wrong while loading project members.',
             )}
           </p>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={() => membersQuery.refetch()}
-            type="button"
-          >
-            Retry
-          </button>
-        </div>
+        </StatePanel>
       ) : null}
 
       {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-        <div className={styles.sectionState}>
-          <p className={styles.stateTitle}>No members found.</p>
-          <p className={styles.stateCopy}>
+        <StatePanel className={styles.sectionState} title="No members found.">
+          <p>
             Members with project access will appear here.
           </p>
-        </div>
+        </StatePanel>
       ) : null}
 
       {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (

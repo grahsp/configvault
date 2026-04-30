@@ -1,4 +1,5 @@
 import { type FormEvent, useId } from 'react'
+import { Button } from '../../../../shared/ui'
 import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 interface AddMemberFormProps {
@@ -52,13 +53,14 @@ export function AddMemberForm({
         />
       </div>
 
-      <button
+      <Button
         className={styles.memberAction}
         disabled={isPending}
         type="submit"
+        variant="secondary"
       >
         {isPending ? 'Adding' : 'Add Member'}
-      </button>
+      </Button>
 
       {errorMessage ? (
         <p className={styles.formError} id={errorId} role="alert">

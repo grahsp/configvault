@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { type Environment } from '../../environments'
+import { Button, StatePanel } from '../../../../shared/ui'
 import { cx } from '../../../../shared/utils/cx'
 import {
   getErrorMessage,
@@ -47,24 +48,13 @@ export function ProjectDetailPage() {
   if (!projectId) {
     return (
       <main className={cx(styles.page, styles.pageTop)}>
-        <section
-          className={styles.card}
-          aria-labelledby="project-not-found-title"
-        >
-          <div className={styles.state}>
-            <p className={styles.stateTitle} id="project-not-found-title">
-              Project not found
-            </p>
-            <p className={styles.stateCopy}>
+        <section className={styles.card}>
+          <StatePanel title="Project not found">
+            <p>
               Check the project link or return to your workspace.
             </p>
-            <Link
-              className={cx(styles.button, styles.buttonSecondary)}
-              to="/projects"
-            >
-              Back to projects
-            </Link>
-          </div>
+            <BackToProjectsLink />
+          </StatePanel>
         </section>
       </main>
     )
@@ -79,43 +69,46 @@ export function ProjectDetailPage() {
     <main className={cx(styles.page, styles.pageTop)}>
       <section className={styles.card} aria-labelledby="project-detail-title">
         {projectQuery.isPending ? (
-          <div className={styles.state} role="status">
-            <p className={styles.stateTitle}>Loading project</p>
-            <p className={styles.stateCopy}>
+          <StatePanel role="status" title="Loading project">
+            <p>
               Project details are being prepared.
             </p>
-          </div>
+          </StatePanel>
         ) : null}
 
         {isProjectNotFound ? <ProjectNotFoundState /> : null}
 
         {isProjectAuthError ? (
-          <div className={cx(styles.state, styles.stateError)} role="alert">
-            <p className={styles.stateTitle}>Project access denied</p>
-            <p className={styles.stateCopy}>
+          <StatePanel role="alert" title="Project access denied" tone="error">
+            <p>
               Your account is not authorized to open this project.
             </p>
             <BackToProjectsLink />
-          </div>
+          </StatePanel>
         ) : null}
 
         {projectQuery.isError && !isProjectNotFound && !isProjectAuthError ? (
-          <div className={cx(styles.state, styles.stateError)} role="alert">
-            <p className={styles.stateTitle}>Project could not load</p>
-            <p className={styles.stateCopy}>
+          <StatePanel
+            actions={
+              <Button
+                onClick={() => projectQuery.refetch()}
+                type="button"
+                variant="secondary"
+              >
+                Retry
+              </Button>
+            }
+            role="alert"
+            title="Project could not load"
+            tone="error"
+          >
+            <p>
               {getErrorMessage(
                 projectQuery.error,
                 'Something went wrong while loading the project.',
               )}
             </p>
-            <button
-              className={cx(styles.button, styles.buttonSecondary)}
-              onClick={() => projectQuery.refetch()}
-              type="button"
-            >
-              Retry
-            </button>
-          </div>
+          </StatePanel>
         ) : null}
 
         {!projectQuery.isPending && !projectQuery.isError && !project ? (
@@ -144,19 +137,18 @@ export interface ProjectLayoutContext {
 
 function ProjectNotFoundState() {
   return (
-    <div className={styles.state}>
-      <p className={styles.stateTitle}>Project not found</p>
-      <p className={styles.stateCopy}>
+    <StatePanel title="Project not found">
+      <p>
         This project is missing or your account cannot access it.
       </p>
       <BackToProjectsLink />
-    </div>
+    </StatePanel>
   )
 }
 
 function BackToProjectsLink() {
   return (
-    <Link className={cx(styles.button, styles.buttonSecondary)} to="/projects">
+    <Link className={styles.backActionLink} to="/projects">
       Back to projects
     </Link>
   )

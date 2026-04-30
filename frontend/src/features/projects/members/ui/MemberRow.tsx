@@ -1,4 +1,5 @@
 import type { ProjectMember, ProjectRole } from '../domain'
+import { Button } from '../../../../shared/ui'
 import { roleLabels } from '../domain'
 import { RoleSelector } from './RoleSelector'
 import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
@@ -56,15 +57,16 @@ export function MemberRow({
             No actions available
           </span>
         ) : (
-          <button
+          <Button
             aria-label={`Remove ${displayName}`}
             className={styles.memberAction}
             disabled={!canRemoveMember || isRemovePending}
             onClick={() => onRemove(member)}
             type="button"
+            variant="secondary"
           >
             Remove
-          </button>
+          </Button>
         )}
       </td>
     </tr>

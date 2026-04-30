@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom'
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Button } from '../../../../shared/ui'
 import { useSecretsEditor } from '../application'
 import type { ProjectLayoutContext } from '../../pages/ProjectDetailPage'
 import { SecretsTable } from '../ui'
@@ -17,14 +17,14 @@ export function SecretsPage() {
     <section className={styles.page}>
       {editor.canCopyExport ? (
         <div className={styles.actions}>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
+          <Button
             disabled={editor.isCopyingExport}
             onClick={editor.onCopyExport}
             type="button"
+            variant="secondary"
           >
             {editor.isCopyingExport ? 'Copying export...' : 'Copy Export'}
-          </button>
+          </Button>
         </div>
       ) : null}
 

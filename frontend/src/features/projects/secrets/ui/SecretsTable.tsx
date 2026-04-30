@@ -1,4 +1,4 @@
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Button, StatePanel } from '../../../../shared/ui'
 import type { Secret } from '../domain'
 import type { SecretRowViewModel } from '../application'
 import { ImportSecretsModal } from './ImportSecretsModal.tsx'
@@ -71,71 +71,66 @@ export function SecretsTable({
         !isError &&
         hasRows ? (
           <div className={styles.sectionHeaderActions}>
-            <button
-              className={cx(styles.button, styles.buttonSecondary)}
-              onClick={onOpenImportModal}
-              type="button"
-            >
+            <Button onClick={onOpenImportModal} type="button" variant="secondary">
               Import .env
-            </button>
-            <button
-              className={cx(styles.button, styles.buttonSecondary)}
-              onClick={onStartEdit}
-              type="button"
-            >
+            </Button>
+            <Button onClick={onStartEdit} type="button" variant="secondary">
               Edit
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
 
       {isLoading ? (
-        <div className={styles.state} role="status">
-          <p className={styles.stateTitle}>Loading secrets...</p>
-          <p className={styles.stateCopy}>
+        <StatePanel
+          className={styles.sectionState}
+          role="status"
+          title="Loading secrets..."
+        >
+          <p>
             Config item keys are being prepared.
           </p>
-        </div>
+        </StatePanel>
       ) : null}
 
       {environmentName && isError ? (
-        <div className={cx(styles.state, styles.stateError)} role="alert">
-          <p className={styles.stateTitle}>Failed to load secrets.</p>
-          <p className={styles.stateCopy}>{loadErrorMessage}</p>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={onRetry}
-            type="button"
-          >
-            Retry
-          </button>
-        </div>
+        <StatePanel
+          actions={
+            <Button onClick={onRetry} type="button" variant="secondary">
+              Retry
+            </Button>
+          }
+          className={styles.sectionState}
+          role="alert"
+          title="Failed to load secrets."
+          tone="error"
+        >
+          <p>{loadErrorMessage}</p>
+        </StatePanel>
       ) : null}
 
       {environmentName &&
       !isLoading &&
       !isError &&
       !hasRows ? (
-        <div className={styles.state}>
-          <p className={styles.stateTitle}>No secrets yet</p>
-          <p className={styles.stateCopy}>
+        <StatePanel
+          actions={
+            <>
+              <Button onClick={onOpenAddSecret} type="button" variant="primary">
+                Add Secret
+              </Button>
+              <Button onClick={onOpenImportModal} type="button" variant="secondary">
+                Import .env
+              </Button>
+            </>
+          }
+          className={styles.sectionState}
+          title="No secrets yet"
+        >
+          <p>
             Add a secret key to start tracking values across environments.
           </p>
-          <button
-            className={cx(styles.button, styles.buttonPrimary)}
-            onClick={onOpenAddSecret}
-            type="button"
-          >
-            Add Secret
-          </button>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={onOpenImportModal}
-            type="button"
-          >
-            Import .env
-          </button>
-        </div>
+        </StatePanel>
       ) : null}
 
       {environmentName &&
@@ -192,40 +187,42 @@ export function SecretsTable({
           {isEditing ? (
             <div className={styles.sectionFooterActions}>
               <div className={styles.sectionFooterPrimaryActions}>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
+                <Button
+                  className={styles.footerPrimaryButton}
                   disabled={isSaving}
                   onClick={onOpenAddSecret}
                   type="button"
+                  variant="primary"
                 >
                   Add Secret
-                </button>
-                <button
-                  className={cx(styles.button, styles.buttonSecondary)}
+                </Button>
+                <Button
+                  className={styles.footerPrimaryButton}
                   disabled={isSaving}
                   onClick={onOpenImportModal}
                   type="button"
+                  variant="secondary"
                 >
                   Import .env
-                </button>
+                </Button>
               </div>
               <div className={styles.sectionFooterSecondaryActions}>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
+                <Button
                   disabled={isSaving}
                   onClick={() => void onSaveEdit()}
                   type="button"
+                  variant="primary"
                 >
                   {isSaving ? 'Saving' : 'Save Changes'}
-                </button>
-                <button
-                  className={cx(styles.button, styles.buttonSecondary)}
+                </Button>
+                <Button
                   disabled={isSaving}
                   onClick={onCancelEdit}
                   type="button"
+                  variant="secondary"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

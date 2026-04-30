@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { Button } from '../../../../shared/ui'
 import { cx } from '../../../../shared/utils/cx'
 import { useDeleteProject } from '../../application'
 import { formatCreatedDate } from '../../domain'
@@ -76,13 +77,14 @@ export function GeneralPage() {
             </p>
           </div>
           <div className={styles.dangerActions}>
-            <button
-              className={cx(styles.button, styles.buttonDanger)}
+            <Button
+              className={styles.dangerActionButton}
               onClick={openDeleteDialog}
               type="button"
+              variant="danger"
             >
               Delete project
-            </button>
+            </Button>
           </div>
         </div>
       </section>

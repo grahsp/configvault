@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Button, Modal } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface ImportSecretsModalProps {
@@ -18,6 +18,7 @@ export function ImportSecretsModal({
 }: ImportSecretsModalProps) {
   const [content, setContent] = useState('')
   const trimmedContent = content.trim()
+  const formId = 'import-secrets-form'
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -35,28 +36,42 @@ export function ImportSecretsModal({
   }
 
   return (
-    <div className={styles.modalBackdrop} role="presentation">
-      <div
-        aria-labelledby="import-config-items-title"
-        aria-modal="true"
-        className={styles.modal}
-        role="dialog"
-      >
-        <div className={styles.modalHeader}>
-          <h2 id="import-config-items-title">Import .env data</h2>
-        </div>
-
-        <p className={styles.modalCopy}>
-          Paste `.env`-formatted content to create or update secrets for this
-          environment.
-        </p>
-        {isEditing ? (
-          <p className={styles.modalCopy}>
-            Unsaved edits in the table will be cleared after import.
+    <Modal
+      actions={
+        <>
+          <Button
+            disabled={isPending}
+            onClick={onCancel}
+            type="button"
+            variant="secondary"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={isPending || trimmedContent.length === 0}
+            form={formId}
+            type="submit"
+            variant="primary"
+          >
+            {isPending ? 'Importing' : 'Import'}
+          </Button>
+        </>
+      }
+      description={
+        <>
+          <p>
+            Paste `.env`-formatted content to create or update secrets for this
+            environment.
           </p>
-        ) : null}
-
-        <form className={styles.configItemForm} onSubmit={handleSubmit}>
+          {isEditing ? (
+            <p>Unsaved edits in the table will be cleared after import.</p>
+          ) : null}
+        </>
+      }
+      size="sm"
+      title="Import .env data"
+    >
+      <form className={styles.configItemForm} id={formId} onSubmit={handleSubmit}>
           <label className={styles.configItemFormField}>
             .env content
             <textarea
@@ -71,26 +86,7 @@ export function ImportSecretsModal({
               value={content}
             />
           </label>
-
-          <div className={styles.formActions}>
-            <button
-              className={cx(styles.button, styles.buttonSecondary)}
-              disabled={isPending}
-              onClick={onCancel}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className={cx(styles.button, styles.buttonPrimary)}
-              disabled={isPending || trimmedContent.length === 0}
-              type="submit"
-            >
-              {isPending ? 'Importing' : 'Import'}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   )
 }
