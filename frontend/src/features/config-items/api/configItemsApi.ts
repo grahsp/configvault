@@ -1,5 +1,5 @@
 import type { ApiClient } from '../../../api/apiClient'
-import type { ConfigItem, ConfigItemValue } from '../types/ConfigItem'
+import type { ConfigItem, ConfigItemValue } from '../model/configItem.types'
 
 export interface CreateConfigItemOperation {
   type: 'create'

@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
-import { renameConfigItem } from '../api/configItemsApi'
-import type { ConfigItem } from '../types/ConfigItem'
-import { configItemQueryKeys } from './configItemQueryKeys'
+import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { renameConfigItem } from '../../api'
+import type { ConfigItem } from '../configItem.types.ts'
+import { configItemQueryKeys } from '../configItemQueryKeys.ts'
 
 interface RenameConfigItemVariables {
   configItemId: string

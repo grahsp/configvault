@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
-import { getConfigItemValue } from '../api/configItemsApi'
-import type { ConfigItemValue } from '../types/ConfigItem'
+import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { getConfigItemValue } from '../../api'
+import type { ConfigItemValue } from '../configItem.types.ts'
 
 interface RevealConfigItemValueVariables {
   configItemId: string

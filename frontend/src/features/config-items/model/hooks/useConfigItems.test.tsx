@@ -2,14 +2,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { ConfigItem } from '../types/ConfigItem'
-import { configItemQueryKeys } from './configItemQueryKeys'
-import { useConfigItems } from './useConfigItems'
-import { useCreateConfigItem } from './useCreateConfigItem'
-import { useDeleteConfigItem } from './useDeleteConfigItem'
-import { useRenameConfigItem } from './useRenameConfigItem'
-import { useRevealConfigItemValue } from './useRevealConfigItemValue'
-import { useUpsertConfigItemValue } from './useUpsertConfigItemValue'
+import type { ConfigItem } from '../configItem.types.ts'
+import { configItemQueryKeys } from '../configItemQueryKeys.ts'
+import { useConfigItems } from './useConfigItems.ts'
+import { useCreateConfigItem } from './useCreateConfigItem.ts'
+import { useDeleteConfigItem } from './useDeleteConfigItem.ts'
+import { useRenameConfigItem } from './useRenameConfigItem.ts'
+import { useRevealConfigItemValue } from './useRevealConfigItemValue.ts'
+import { useUpsertConfigItemValue } from './useUpsertConfigItemValue.ts'
 
 const apiMocks = vi.hoisted(() => ({
   createConfigItem: vi.fn(),
@@ -20,7 +20,7 @@ const apiMocks = vi.hoisted(() => ({
   upsertConfigItemValue: vi.fn(),
 }))
 
-vi.mock('../api/configItemsApi', () => apiMocks)
+vi.mock('../../api', () => apiMocks)
 
 vi.mock('../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({

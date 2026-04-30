@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
-import { exportConfigItems } from '../api/configItemsApi'
+import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { exportConfigItems } from '../../api'
 
 export function useExportConfigItems(projectId: string, environmentName: string) {
   const client = useAuthenticatedApiClient()

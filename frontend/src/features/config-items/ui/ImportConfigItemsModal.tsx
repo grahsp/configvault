@@ -1,30 +1,21 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
-import { useImportConfigItems } from '../hooks/useImportConfigItems'
 import styles from './ConfigItemsTable.module.css'
 
 interface ImportConfigItemsModalProps {
-  environmentName: string
   isEditing: boolean
+  isPending: boolean
   onCancel: () => void
-  onImported: () => void
-  projectId: string
+  onSubmit: (content: string) => Promise<void>
 }
 
 export function ImportConfigItemsModal({
-  environmentName,
   isEditing,
+  isPending,
   onCancel,
-  onImported,
-  projectId,
+  onSubmit,
 }: ImportConfigItemsModalProps) {
-  const { addToast } = useToast()
-  const importConfigItemsMutation = useImportConfigItems(
-    projectId,
-    environmentName,
-  )
   const [content, setContent] = useState('')
   const trimmedContent = content.trim()
 
@@ -36,18 +27,10 @@ export function ImportConfigItemsModal({
     }
 
     try {
-      await importConfigItemsMutation.mutateAsync(content)
-      addToast({
-        message: 'Secrets imported',
-        type: 'success',
-      })
-      onImported()
-      onCancel()
-    } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to import secrets'),
-        type: 'error',
-      })
+      await onSubmit(content)
+      setContent('')
+    } catch {
+      return
     }
   }
 
@@ -79,9 +62,8 @@ export function ImportConfigItemsModal({
             <textarea
               autoFocus
               className={styles.configItemTextarea}
-              disabled={importConfigItemsMutation.isPending}
+              disabled={isPending}
               onChange={(event) => {
-                importConfigItemsMutation.reset()
                 setContent(event.target.value)
               }}
               placeholder="API_KEY=secret-value"
@@ -93,7 +75,7 @@ export function ImportConfigItemsModal({
           <div className={styles.formActions}>
             <button
               className={cx(styles.button, styles.buttonSecondary)}
-              disabled={importConfigItemsMutation.isPending}
+              disabled={isPending}
               onClick={onCancel}
               type="button"
             >
@@ -101,20 +83,14 @@ export function ImportConfigItemsModal({
             </button>
             <button
               className={cx(styles.button, styles.buttonPrimary)}
-              disabled={
-                importConfigItemsMutation.isPending || trimmedContent.length === 0
-              }
+              disabled={isPending || trimmedContent.length === 0}
               type="submit"
             >
-              {importConfigItemsMutation.isPending ? 'Importing' : 'Import'}
+              {isPending ? 'Importing' : 'Import'}
             </button>
           </div>
         </form>
       </div>
     </div>
   )
-}
-
-function getErrorMessage(error: unknown, fallbackMessage: string) {
-  return error instanceof Error ? error.message : fallbackMessage
 }

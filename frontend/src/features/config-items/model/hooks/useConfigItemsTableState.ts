@@ -1,22 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useToast } from '../../../shared/components/toast/useToast'
-import { cx } from '../../../shared/utils/cx'
-import type { ConfigItemBatchOperation } from '../api/configItemsApi'
-import { useConfigItems } from '../hooks/useConfigItems'
-import { useRevealConfigItemValue } from '../hooks/useRevealConfigItemValue'
-import { useSaveConfigItems } from '../hooks/useSaveConfigItems'
-import type { ConfigItem } from '../types/ConfigItem'
-import { getConfigItemKeyValidationError } from '../validation/configItemValidation'
-import { ConfigItemRow } from './ConfigItemRow'
-import { ImportConfigItemsModal } from './ImportConfigItemsModal'
-import styles from './ConfigItemsTable.module.css'
-
-interface ConfigItemsTableProps {
-  environmentName: string
-  focusedConfigItemId?: string | null
-  onFocusConfigItem: (configItemId: string | null) => void
-  projectId: string
-}
+import { useToast } from '../../../../shared/components/toast/useToast.ts'
+import { type ConfigItemBatchOperation } from '../../api'
+import type { ConfigItem } from '../configItem.types.ts'
+import { getConfigItemKeyValidationError } from '../configItemValidation.ts'
+import { useConfigItems } from './useConfigItems.ts'
+import { useImportConfigItems } from './useImportConfigItems.ts'
+import { useRevealConfigItemValue } from './useRevealConfigItemValue.ts'
+import { useSaveConfigItems } from './useSaveConfigItems.ts'
 
 interface ConfigItemDraft {
   key: string
@@ -29,20 +19,43 @@ interface NewConfigItemDraft {
   value: string
 }
 
-export function ConfigItemsTable({
+export interface ConfigItemsTableRowState {
+  configItem: ConfigItem
+  draftKey: string
+  draftValue: string | null
+  isMarkedForDeletion: boolean
+  isRevealing: boolean
+  isValueRevealed: boolean
+  revealedValue?: string
+  shouldFocus: boolean
+  validationError?: string
+}
+
+interface UseConfigItemsTableStateOptions {
+  environmentName: string
+  focusedConfigItemId?: string | null
+  onFocusConfigItem: (configItemId: string | null) => void
+  projectId: string
+}
+
+export function useConfigItemsTableState({
   environmentName,
   focusedConfigItemId,
   onFocusConfigItem,
   projectId,
-}: ConfigItemsTableProps) {
+}: UseConfigItemsTableStateOptions) {
   const { addToast } = useToast()
   const configItemsQuery = useConfigItems(projectId, environmentName)
-  const configItems = configItemsQuery.data ?? []
+  const importConfigItemsMutation = useImportConfigItems(
+    projectId,
+    environmentName,
+  )
   const revealConfigItemValueMutation = useRevealConfigItemValue(
     projectId,
     environmentName,
   )
   const saveConfigItemsMutation = useSaveConfigItems(projectId, environmentName)
+  const configItems = configItemsQuery.data ?? []
   const [isEditing, setIsEditing] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [drafts, setDrafts] = useState<Record<string, ConfigItemDraft>>({})
@@ -58,6 +71,7 @@ export function ConfigItemsTable({
     Record<string, boolean>
   >({})
   const [revealingId, setRevealingId] = useState<string | null>(null)
+  const resetImportMutation = importConfigItemsMutation.reset
   const resetRevealMutation = revealConfigItemValueMutation.reset
   const resetSaveMutation = saveConfigItemsMutation.reset
   const isSaving = saveConfigItemsMutation.isPending
@@ -83,6 +97,7 @@ export function ConfigItemsTable({
 
   useEffect(() => {
     setIsEditing(false)
+    setIsImportModalOpen(false)
     setDrafts({})
     setNewConfigItems([])
     setHighlightedValidationIds([])
@@ -90,13 +105,43 @@ export function ConfigItemsTable({
     setRevealedValues({})
     setVisibleRevealedValues({})
     setRevealingId(null)
+    resetImportMutation()
     resetRevealMutation()
     resetSaveMutation()
-  }, [
-    environmentName,
-    resetRevealMutation,
-    resetSaveMutation,
-  ])
+  }, [environmentName, resetImportMutation, resetRevealMutation, resetSaveMutation])
+
+  const rows = useMemo<ConfigItemsTableRowState[]>(
+    () =>
+      tableConfigItems.map((configItem) => ({
+        configItem,
+        draftKey: getDraftKey(configItem, drafts, newConfigItems),
+        draftValue: getDraftValue(configItem, drafts, newConfigItems),
+        isMarkedForDeletion: pendingDeletionIds.includes(configItem.id),
+        isRevealing: revealingId === configItem.id,
+        isValueRevealed: Boolean(visibleRevealedValues[configItem.id]),
+        revealedValue: visibleRevealedValues[configItem.id]
+          ? revealedValues[configItem.id]
+          : undefined,
+        shouldFocus: configItem.id === focusedConfigItemId,
+        validationError:
+          isEditing && highlightedValidationIds.includes(configItem.id)
+            ? validationErrors[configItem.id]
+            : undefined,
+      })),
+    [
+      drafts,
+      focusedConfigItemId,
+      highlightedValidationIds,
+      isEditing,
+      newConfigItems,
+      pendingDeletionIds,
+      revealedValues,
+      revealingId,
+      tableConfigItems,
+      validationErrors,
+      visibleRevealedValues,
+    ],
+  )
 
   function createDrafts(items: ConfigItem[]) {
     return Object.fromEntries(
@@ -151,10 +196,14 @@ export function ConfigItemsTable({
     onFocusConfigItem(null)
   }
 
-  function handleImported() {
-    if (isEditing) {
-      handleCancelEdit()
-    }
+  function handleOpenImportModal() {
+    resetImportMutation()
+    setIsImportModalOpen(true)
+  }
+
+  function handleCloseImportModal() {
+    resetImportMutation()
+    setIsImportModalOpen(false)
   }
 
   function handleDeleteToggle(configItem: ConfigItem) {
@@ -259,10 +308,67 @@ export function ConfigItemsTable({
         type: 'error',
       })
     } finally {
-      setRevealingId((current) =>
-        current === configItem.id ? null : current,
-      )
+      setRevealingId((current) => (current === configItem.id ? null : current))
     }
+  }
+
+  function handleDraftKeyChange(configItem: ConfigItem, nextDraftKey: string) {
+    resetSaveMutation()
+
+    if (isLocalConfigItemId(configItem.id)) {
+      setNewConfigItems((current) =>
+        current.map((item) =>
+          item.id === configItem.id ? { ...item, key: nextDraftKey } : item,
+        ),
+      )
+      setHighlightedValidationIds((current) =>
+        getConfigItemKeyValidationError(nextDraftKey)
+          ? current.includes(configItem.id)
+            ? current
+            : [...current, configItem.id]
+          : current.filter((id) => id !== configItem.id),
+      )
+      return
+    }
+
+    setDrafts((current) => ({
+      ...current,
+      [configItem.id]: {
+        key: nextDraftKey,
+        value: current[configItem.id]?.value ?? null,
+      },
+    }))
+    setHighlightedValidationIds((current) =>
+      getConfigItemKeyValidationError(nextDraftKey)
+        ? current.includes(configItem.id)
+          ? current
+          : [...current, configItem.id]
+        : current.filter((id) => id !== configItem.id),
+    )
+  }
+
+  function handleDraftValueChange(
+    configItem: ConfigItem,
+    nextDraftValue: string,
+  ) {
+    resetSaveMutation()
+
+    if (isLocalConfigItemId(configItem.id)) {
+      setNewConfigItems((current) =>
+        current.map((item) =>
+          item.id === configItem.id ? { ...item, value: nextDraftValue } : item,
+        ),
+      )
+      return
+    }
+
+    setDrafts((current) => ({
+      ...current,
+      [configItem.id]: {
+        key: current[configItem.id]?.key ?? configItem.key,
+        value: nextDraftValue,
+      },
+    }))
   }
 
   async function handleSaveEdit() {
@@ -355,12 +461,16 @@ export function ConfigItemsTable({
 
       setRevealedValues((current) =>
         Object.fromEntries(
-          Object.entries(current).filter(([configItemId]) => !affectedValueIds.has(configItemId)),
+          Object.entries(current).filter(
+            ([configItemId]) => !affectedValueIds.has(configItemId),
+          ),
         ),
       )
       setVisibleRevealedValues((current) =>
         Object.fromEntries(
-          Object.entries(current).filter(([configItemId]) => !affectedValueIds.has(configItemId)),
+          Object.entries(current).filter(
+            ([configItemId]) => !affectedValueIds.has(configItemId),
+          ),
         ),
       )
 
@@ -377,262 +487,58 @@ export function ConfigItemsTable({
     }
   }
 
-  return (
-    <section className={styles.sectionCard}>
-      <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>Environment Variables</h3>
-        <p className={styles.sectionDescription}>
-          Set environment-specific config and secrets, then manage key and value
-          updates from one edit state.
-        </p>
+  async function handleImport(content: string) {
+    try {
+      await importConfigItemsMutation.mutateAsync(content)
+      addToast({
+        message: 'Secrets imported',
+        type: 'success',
+      })
+      if (isEditing) {
+        handleCancelEdit()
+      }
+      handleCloseImportModal()
+    } catch (error) {
+      addToast({
+        message: getErrorMessage(error, 'Failed to import secrets'),
+        type: 'error',
+      })
+      throw error
+    }
+  }
 
-        {!isEditing &&
-        environmentName &&
-        !configItemsQuery.isLoading &&
-        !configItemsQuery.isError &&
-        configItems.length > 0 ? (
-          <div className={styles.sectionHeaderActions}>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={() => setIsImportModalOpen(true)}
-            type="button"
-          >
-            Import .env
-          </button>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={handleStartEdit}
-            type="button"
-          >
-              Edit
-            </button>
-          </div>
-        ) : null}
-      </div>
-
-      {!environmentName || configItemsQuery.isLoading ? (
-        <div className={styles.state} role="status">
-          <p className={styles.stateTitle}>Loading secrets...</p>
-          <p className={styles.stateCopy}>
-            Config item keys are being prepared.
-          </p>
-        </div>
-      ) : null}
-
-      {environmentName && configItemsQuery.isError ? (
-        <div className={cx(styles.state, styles.stateError)} role="alert">
-          <p className={styles.stateTitle}>Failed to load secrets.</p>
-          <p className={styles.stateCopy}>
-            {getErrorMessage(
-              configItemsQuery.error,
-              'Something went wrong while loading config items.',
-            )}
-          </p>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={() => configItemsQuery.refetch()}
-            type="button"
-          >
-            Retry
-          </button>
-        </div>
-      ) : null}
-
-      {environmentName &&
-      !configItemsQuery.isLoading &&
-      !configItemsQuery.isError &&
-      tableConfigItems.length === 0 ? (
-        <div className={styles.state}>
-          <p className={styles.stateTitle}>No secrets yet</p>
-          <p className={styles.stateCopy}>
-            Add a secret key to start tracking values across environments.
-          </p>
-          <button
-            className={cx(styles.button, styles.buttonPrimary)}
-            onClick={handleOpenAddConfigItem}
-            type="button"
-          >
-            Add Secret
-          </button>
-          <button
-            className={cx(styles.button, styles.buttonSecondary)}
-            onClick={() => setIsImportModalOpen(true)}
-            type="button"
-          >
-            Import .env
-          </button>
-        </div>
-      ) : null}
-
-      {environmentName &&
-      !configItemsQuery.isLoading &&
-      !configItemsQuery.isError &&
-      tableConfigItems.length > 0 ? (
-        <>
-          <div className={styles.tableWrapper}>
-            <table className={styles.configItemsTable}>
-              <caption className={styles.visuallyHidden}>
-                Project secrets and config items
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Key</th>
-                  <th scope="col">Value</th>
-                  <th className={styles.actionsColumn} scope="col">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableConfigItems.map((configItem) => (
-                  <ConfigItemRow
-                    configItem={configItem}
-                    draftKey={getDraftKey(configItem, drafts, newConfigItems)}
-                    draftValue={getDraftValue(configItem, drafts, newConfigItems)}
-                    isEditing={isEditing}
-                    isMarkedForDeletion={pendingDeletionIds.includes(configItem.id)}
-                    isRevealing={revealingId === configItem.id}
-                    isSaving={isSaving}
-                    isValueRevealed={Boolean(
-                      visibleRevealedValues[configItem.id],
-                    )}
-                    key={configItem.id}
-                    onCancelEdit={handleCancelEdit}
-                    onDeleteToggle={handleDeleteToggle}
-                    onDraftKeyChange={(nextDraftKey) => {
-                      resetSaveMutation()
-
-                      if (isLocalConfigItemId(configItem.id)) {
-                        setNewConfigItems((current) =>
-                          current.map((item) =>
-                            item.id === configItem.id
-                              ? { ...item, key: nextDraftKey }
-                              : item,
-                          ),
-                        )
-                        setHighlightedValidationIds((current) =>
-                          getConfigItemKeyValidationError(nextDraftKey)
-                            ? current.includes(configItem.id)
-                              ? current
-                              : [...current, configItem.id]
-                            : current.filter((id) => id !== configItem.id),
-                        )
-                        return
-                      }
-
-                      setDrafts((current) => ({
-                        ...current,
-                        [configItem.id]: {
-                          key: nextDraftKey,
-                          value: current[configItem.id]?.value ?? null,
-                        },
-                      }))
-                      setHighlightedValidationIds((current) =>
-                        getConfigItemKeyValidationError(nextDraftKey)
-                          ? current.includes(configItem.id)
-                            ? current
-                            : [...current, configItem.id]
-                          : current.filter((id) => id !== configItem.id),
-                      )
-                    }}
-                    onDraftValueChange={(nextDraftValue) => {
-                      resetSaveMutation()
-
-                      if (isLocalConfigItemId(configItem.id)) {
-                        setNewConfigItems((current) =>
-                          current.map((item) =>
-                            item.id === configItem.id
-                              ? { ...item, value: nextDraftValue }
-                              : item,
-                          ),
-                        )
-                        return
-                      }
-
-                      setDrafts((current) => ({
-                        ...current,
-                        [configItem.id]: {
-                          key: current[configItem.id]?.key ?? configItem.key,
-                          value: nextDraftValue,
-                        },
-                      }))
-                    }}
-                    onReveal={handleReveal}
-                    onSaveEdit={handleSaveEdit}
-                    onStartValueEdit={handleStartValueEdit}
-                    revealedValue={
-                      visibleRevealedValues[configItem.id]
-                        ? revealedValues[configItem.id]
-                        : undefined
-                    }
-                    shouldFocus={configItem.id === focusedConfigItemId}
-                    validationError={
-                      isEditing &&
-                      highlightedValidationIds.includes(configItem.id)
-                        ? validationErrors[configItem.id]
-                        : undefined
-                    }
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {isEditing ? (
-            <div className={styles.sectionFooterActions}>
-              <div className={styles.sectionFooterPrimaryActions}>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
-                  disabled={isSaving}
-                  onClick={handleOpenAddConfigItem}
-                  type="button"
-                >
-                  Add Secret
-                </button>
-                <button
-                  className={cx(styles.button, styles.buttonSecondary)}
-                  disabled={isSaving}
-                  onClick={() => setIsImportModalOpen(true)}
-                  type="button"
-                >
-                  Import .env
-                </button>
-              </div>
-              <div className={styles.sectionFooterSecondaryActions}>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
-                  disabled={isSaving}
-                  onClick={handleSaveEdit}
-                  type="button"
-                >
-                  {isSaving ? 'Saving' : 'Save Changes'}
-                </button>
-                <button
-                  className={cx(styles.button, styles.buttonSecondary)}
-                  disabled={isSaving}
-                  onClick={handleCancelEdit}
-                  type="button"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : null}
-        </>
-      ) : null}
-
-      {isImportModalOpen ? (
-        <ImportConfigItemsModal
-          environmentName={environmentName}
-          isEditing={isEditing}
-          onCancel={() => setIsImportModalOpen(false)}
-          onImported={handleImported}
-          projectId={projectId}
-        />
-      ) : null}
-    </section>
-  )
+  return {
+    environmentName,
+    isEditing,
+    isError: configItemsQuery.isError,
+    isImportModalOpen,
+    isImporting: importConfigItemsMutation.isPending,
+    isLoading: !environmentName || configItemsQuery.isLoading,
+    isSaving,
+    loadErrorMessage: configItemsQuery.isError
+      ? getErrorMessage(
+          configItemsQuery.error,
+          'Something went wrong while loading config items.',
+        )
+      : undefined,
+    rows,
+    onCancelEdit: handleCancelEdit,
+    onCloseImportModal: handleCloseImportModal,
+    onDraftKeyChange: handleDraftKeyChange,
+    onDraftValueChange: handleDraftValueChange,
+    onImport: handleImport,
+    onOpenAddConfigItem: handleOpenAddConfigItem,
+    onOpenImportModal: handleOpenImportModal,
+    onReveal: handleReveal,
+    onRetry: () => configItemsQuery.refetch(),
+    onSaveEdit: handleSaveEdit,
+    onStartEdit: handleStartEdit,
+    onStartValueEdit: handleStartValueEdit,
+    onToggleDelete: handleDeleteToggle,
+  }
 }
+
+export type ConfigItemsTableState = ReturnType<typeof useConfigItemsTableState>
 
 function getSuccessMessage(operations: ConfigItemBatchOperation[]) {
   const createCount = operations.filter(
@@ -702,7 +608,10 @@ function getDraftKey(
   newConfigItems: NewConfigItemDraft[],
 ) {
   if (isLocalConfigItemId(configItem.id)) {
-    return newConfigItems.find((item) => item.id === configItem.id)?.key ?? configItem.key
+    return (
+      newConfigItems.find((item) => item.id === configItem.id)?.key ??
+      configItem.key
+    )
   }
 
   return drafts[configItem.id]?.key ?? configItem.key
@@ -714,7 +623,9 @@ function getDraftValue(
   newConfigItems: NewConfigItemDraft[],
 ) {
   if (isLocalConfigItemId(configItem.id)) {
-    return newConfigItems.find((item) => item.id === configItem.id)?.value ?? ''
+    return (
+      newConfigItems.find((item) => item.id === configItem.id)?.value ?? ''
+    )
   }
 
   return drafts[configItem.id]?.value ?? null

@@ -1,34 +1,26 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { useToast } from '../../../shared/components/toast/useToast'
 import { cx } from '../../../shared/utils/cx'
-import { useRenameConfigItem } from '../hooks/useRenameConfigItem'
-import type { ConfigItem } from '../types/ConfigItem'
 import {
   getConfigItemKeyValidationError,
   getUppercaseConfigItemKeySuggestion,
-} from '../validation/configItemValidation'
+} from '../model'
 import styles from './ConfigItemsTable.module.css'
 
 interface RenameConfigItemModalProps {
-  configItem: ConfigItem
-  environmentName: string
+  configItemKey: string
+  isPending: boolean
   onCancel: () => void
-  projectId: string
+  onSubmit: (key: string) => Promise<void>
 }
 
 export function RenameConfigItemModal({
-  configItem,
-  environmentName,
+  configItemKey,
+  isPending,
   onCancel,
-  projectId,
+  onSubmit,
 }: RenameConfigItemModalProps) {
-  const { addToast } = useToast()
-  const [key, setKey] = useState(configItem.key)
-  const renameConfigItemMutation = useRenameConfigItem(
-    projectId,
-    environmentName,
-  )
+  const [key, setKey] = useState(configItemKey)
   const validationError = getConfigItemKeyValidationError(key)
   const uppercaseSuggestion = getUppercaseConfigItemKeySuggestion(key)
   const visibleError = validationError
@@ -41,17 +33,9 @@ export function RenameConfigItemModal({
     }
 
     try {
-      await renameConfigItemMutation.mutateAsync({
-        configItemId: configItem.id,
-        key: key.trim(),
-      })
-      addToast({ message: 'Secret renamed', type: 'success' })
-      onCancel()
-    } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to rename secret'),
-        type: 'error',
-      })
+      await onSubmit(key.trim())
+    } catch {
+      return
     }
   }
 
@@ -80,9 +64,8 @@ export function RenameConfigItemModal({
                     : undefined
               }
               aria-invalid={Boolean(visibleError)}
-              disabled={renameConfigItemMutation.isPending}
+              disabled={isPending}
               onChange={(event) => {
-                renameConfigItemMutation.reset()
                 setKey(event.target.value)
               }}
               required
@@ -113,7 +96,7 @@ export function RenameConfigItemModal({
           <div className={styles.formActions}>
             <button
               className={cx(styles.button, styles.buttonSecondary)}
-              disabled={renameConfigItemMutation.isPending}
+              disabled={isPending}
               onClick={onCancel}
               type="button"
             >
@@ -121,20 +104,14 @@ export function RenameConfigItemModal({
             </button>
             <button
               className={cx(styles.button, styles.buttonPrimary)}
-              disabled={
-                renameConfigItemMutation.isPending || Boolean(validationError)
-              }
+              disabled={isPending || Boolean(validationError)}
               type="submit"
             >
-              {renameConfigItemMutation.isPending ? 'Saving' : 'Save'}
+              {isPending ? 'Saving' : 'Save'}
             </button>
           </div>
         </form>
       </div>
     </div>
   )
-}
-
-function getErrorMessage(error: unknown, fallbackMessage: string) {
-  return error instanceof Error ? error.message : fallbackMessage
 }

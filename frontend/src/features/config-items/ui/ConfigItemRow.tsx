@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
 import { cx } from '../../../shared/utils/cx'
-import type { ConfigItem } from '../types/ConfigItem'
+import type { ConfigItem } from '../model'
 import styles from './ConfigItemsTable.module.css'
 
 interface ConfigItemRowProps {

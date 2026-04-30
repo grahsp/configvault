@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
+import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
 import {
   saveConfigItems,
   type ConfigItemBatchOperation,
-} from '../api/configItemsApi'
-import { configItemQueryKeys } from './configItemQueryKeys'
+} from '../../api'
+import { configItemQueryKeys } from '../configItemQueryKeys.ts'
 
 interface SaveConfigItemsVariables {
   operations: ConfigItemBatchOperation[]

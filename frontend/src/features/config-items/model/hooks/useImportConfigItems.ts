@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
-import { importConfigItems } from '../api/configItemsApi'
-import { configItemQueryKeys } from './configItemQueryKeys'
+import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { importConfigItems } from '../../api'
+import { configItemQueryKeys } from '../configItemQueryKeys.ts'
 
 export function useImportConfigItems(projectId: string, environmentName: string) {
   const client = useAuthenticatedApiClient()
