@@ -1,15 +1,13 @@
 import { useCallback, useMemo } from 'react'
-import {
-  buildSecretRows,
-  getErrorMessage,
-  toLocalSecret,
-} from './secretsEditor.utils.ts'
+import { buildSecretRows } from './secretRowViewModels.ts'
 import type {
   SecretRowViewModel,
   SecretsEditSessionController,
   SecretsRevealController,
   SecretsSaveController,
 } from './secretsEditor.types.ts'
+import { toLocalSecret } from './secretsEditorDrafts.ts'
+import { getErrorMessage } from './secretsOperationMessages.ts'
 import { useSecretsEditSession } from './useSecretsEditSession.ts'
 import { useSecretsEditorState } from './useSecretsEditorState.ts'
 import { useSecretsMutations } from './useSecretsMutations.ts'
@@ -29,7 +27,7 @@ export function useSecretsEditor({
 }: UseSecretsEditorOptions) {
   const secretsQuery = useSecretsQuery(projectId, environmentName)
   const mutations = useSecretsMutations(projectId, environmentName)
-  const secrets = useMemo(() => secretsQuery.data ?? [], [secretsQuery.data])
+  const secrets = secretsQuery.data ?? []
   const resetImportMutation = mutations.importSecrets.reset
   const resetRevealMutation = mutations.revealSecretValue.reset
   const resetSaveMutation = mutations.saveSecrets.reset

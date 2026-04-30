@@ -1,6 +1,6 @@
 import { useToast } from '../../../../shared/components/toast/useToast.ts'
 import type { Secret } from '../domain'
-import { getErrorMessage } from './secretsEditor.utils.ts'
+import { getErrorMessage } from './secretsOperationMessages.ts'
 import type { SecretsRevealController } from './secretsEditor.types.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 

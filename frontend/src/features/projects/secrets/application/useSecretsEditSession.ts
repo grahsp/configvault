@@ -4,7 +4,7 @@ import {
   createLocalSecretId,
   getUpdatedValidationIds,
   isLocalSecretId,
-} from './secretsEditor.utils.ts'
+} from './secretsEditorDrafts.ts'
 import type { SecretsEditSessionController } from './secretsEditor.types.ts'
 
 interface UseSecretsEditSessionOptions {

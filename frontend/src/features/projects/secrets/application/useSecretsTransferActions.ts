@@ -1,7 +1,5 @@
 import { useToast } from '../../../../shared/components/toast/useToast.ts'
-import {
-  getErrorMessage,
-} from './secretsEditor.utils.ts'
+import { getErrorMessage } from './secretsOperationMessages.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
 interface UseSecretsTransferActionsOptions {
