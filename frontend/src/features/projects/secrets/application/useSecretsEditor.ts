@@ -29,7 +29,7 @@ export function useSecretsEditor({
 }: UseSecretsEditorOptions) {
   const secretsQuery = useSecretsQuery(projectId, environmentName)
   const mutations = useSecretsMutations(projectId, environmentName)
-  const secrets = secretsQuery.data ?? []
+  const secrets = useMemo(() => secretsQuery.data ?? [], [secretsQuery.data])
   const resetImportMutation = mutations.importSecrets.reset
   const resetRevealMutation = mutations.revealSecretValue.reset
   const resetSaveMutation = mutations.saveSecrets.reset
