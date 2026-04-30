@@ -3,7 +3,7 @@ import type {
   CreateEnvironmentRequest,
   Environment,
   EnvironmentDto,
-} from '../model'
+} from '../domain'
 
 function buildEnvironmentsPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/environments`
