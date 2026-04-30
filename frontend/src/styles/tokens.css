@@ -3,87 +3,87 @@
        COLORS - BASE (Neutral)
        ========================= */
 
-    --color-bg: #0f172a;              /* app background */
-    --color-surface: #111827;         /* panels */
-    --color-surface-elevated: #1f2933;
+    --color-bg: #f3f4f6;              /* app background */
+    --color-surface: #ffffff;         /* panels */
+    --color-surface-elevated: #e5e7eb;
     --color-surface-contrast: #ffffff;
-    --color-surface-muted: #f8fafc;
-    --color-surface-muted-hover: #f1f5f9;
-    --color-surface-muted-strong: #eef2f7;
-    --color-surface-danger: #fef2f2;
-    --color-surface-danger-muted: #fff7f7;
-    --color-surface-success: #f0fdf4;
-    --color-surface-success-muted: #ecfdf5;
-    --color-surface-info: #e0f2fe;
-    --color-surface-pink-soft: #fdf2f8;
-    --color-surface-contrast-muted: #fdfefe;
-    --color-surface-contrast-subtle: #fefefe;
+    --color-surface-muted: #f8f8f7;
+    --color-surface-muted-hover: #f1f1ef;
+    --color-surface-muted-strong: #ecece8;
+    --color-surface-danger: #fcf2f2;
+    --color-surface-danger-muted: #fdf6f5;
+    --color-surface-success: #f3f8f4;
+    --color-surface-success-muted: #eef5ef;
+    --color-surface-info: #eef4ff;
+    --color-surface-pink-soft: #f8f1f4;
+    --color-surface-contrast-muted: #fcfcfb;
+    --color-surface-contrast-subtle: #fafaf9;
 
-    --color-border: #1f2a37;
-    --color-border-muted: #111827;
-    --color-border-strong: #d8dee8;
-    --color-border-soft: #cbd5e1;
-    --color-border-subtle: #e5e7eb;
-    --color-border-glass: rgba(148, 163, 184, 0.24);
-    --color-border-danger: #fecaca;
-    --color-border-success: #86efac;
+    --color-border: #d6d8dc;
+    --color-border-muted: #c8ccd2;
+    --color-border-strong: #d7dbe2;
+    --color-border-soft: #e4e7ec;
+    --color-border-subtle: #eceef2;
+    --color-border-glass: rgba(17, 24, 39, 0.08);
+    --color-border-danger: #e8c6c6;
+    --color-border-success: #c9dccc;
 
-    --color-text: #e5e7eb;
-    --color-text-muted: #9ca3af;
+    --color-text: #1f2937;
+    --color-text-muted: #9aa1ab;
     --color-text-subtle: #6b7280;
     --color-text-strong: #111827;
-    --color-text-body: #475569;
-    --color-text-body-strong: #334155;
-    --color-text-secondary: #374151;
-    --color-text-tertiary: #4b5563;
-    --color-text-placeholder: #94a3b8;
-    --color-text-disabled: #64748b;
-    --color-text-danger: #b91c1c;
-    --color-text-danger-strong: #991b1b;
-    --color-text-danger-emphasis: #7f1d1d;
-    --color-text-success: #14532d;
-    --color-text-success-strong: #047857;
-    --color-text-pink: #c08497;
-    --color-text-pink-muted: #d49aa9;
+    --color-text-body: #4b5563;
+    --color-text-body-strong: #374151;
+    --color-text-secondary: #4b5563;
+    --color-text-tertiary: #6b7280;
+    --color-text-placeholder: #9ca3af;
+    --color-text-disabled: #7b8492;
+    --color-text-danger: #b25c5c;
+    --color-text-danger-strong: #9f4c4c;
+    --color-text-danger-emphasis: #8d4545;
+    --color-text-success: #4d6b54;
+    --color-text-success-strong: #45614b;
+    --color-text-pink: #ad7c8b;
+    --color-text-pink-muted: #c19aa7;
 
-    --color-inverse: #020617;
+    --color-inverse: #111827;
 
     /* =========================
        COLORS - ACCENT
        ========================= */
 
-    --color-primary: #3b82f6;
-    --color-primary-hover: #2563eb;
-    --color-primary-active: #1d4ed8;
-    --color-primary-soft: rgba(59, 130, 246, 0.12);
-    --color-primary-glow: rgba(59, 130, 246, 0.14);
-    --color-primary-soft-strong: rgba(37, 99, 235, 0.12);
-    --color-primary-focus-soft: rgba(37, 99, 235, 0.22);
+    --color-primary: #4f6fa7;
+    --color-primary-hover: #3f5f96;
+    --color-primary-active: #365283;
+    --color-primary-soft: rgba(79, 111, 167, 0.1);
+    --color-primary-glow: rgba(79, 111, 167, 0.08);
+    --color-primary-soft-strong: rgba(79, 111, 167, 0.14);
+    --color-primary-focus-soft: rgba(79, 111, 167, 0.2);
 
     /* =========================
        COLORS - SEMANTIC
        ========================= */
 
-    --color-success: #22c55e;
-    --color-success-soft: rgba(34, 197, 94, 0.12);
+    --color-success: #6d8a73;
+    --color-success-soft: rgba(109, 138, 115, 0.12);
 
-    --color-warning: #f59e0b;
-    --color-warning-soft: rgba(245, 158, 11, 0.12);
+    --color-warning: #b28a52;
+    --color-warning-soft: rgba(178, 138, 82, 0.12);
 
-    --color-danger: #ef4444;
-    --color-danger-hover: #dc2626;
-    --color-danger-soft: rgba(239, 68, 68, 0.12);
+    --color-danger: #c55555;
+    --color-danger-hover: #b34747;
+    --color-danger-soft: rgba(199, 123, 123, 0.12);
 
     /* =========================
        COLORS - STATES
        ========================= */
 
-    --color-hover: rgba(255, 255, 255, 0.04);
-    --color-active: rgba(255, 255, 255, 0.08);
-    --color-focus: rgba(59, 130, 246, 0.5);
-    --color-overlay: rgba(15, 23, 42, 0.4);
-    --color-surface-glass: rgba(255, 255, 255, 0.72);
-    --color-surface-glass-subtle: rgba(255, 255, 255, 0.5);
+    --color-hover: rgba(17, 24, 39, 0.04);
+    --color-active: rgba(17, 24, 39, 0.08);
+    --color-focus: rgba(79, 111, 167, 0.32);
+    --color-overlay: rgba(17, 24, 39, 0.18);
+    --color-surface-glass: rgba(255, 255, 255, 0.84);
+    --color-surface-glass-subtle: rgba(255, 255, 255, 0.68);
 
     /* =========================
        SPACING (4px system)
@@ -170,17 +170,17 @@
        SHADOWS (subtle)
        ========================= */
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.45);
-    --shadow-xl: 0 28px 70px rgba(15, 23, 42, 0.18);
-    --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.08);
-    --shadow-card-soft: 0 20px 48px rgba(15, 23, 42, 0.06);
-    --shadow-panel: 0 18px 40px rgba(15, 23, 42, 0.16);
-    --shadow-panel-soft: 0 18px 40px rgba(15, 23, 42, 0.14);
-    --shadow-glass: 0 20px 50px rgba(15, 23, 42, 0.06);
-    --shadow-glass-strong: 0 18px 40px rgba(15, 23, 42, 0.18);
-    --shadow-primary-soft: 0 12px 28px rgba(37, 99, 235, 0.12);
+    --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06);
+    --shadow-md: 0 4px 12px rgba(17, 24, 39, 0.08);
+    --shadow-lg: 0 10px 24px rgba(17, 24, 39, 0.1);
+    --shadow-xl: 0 24px 48px rgba(17, 24, 39, 0.12);
+    --shadow-card: 0 18px 40px rgba(17, 24, 39, 0.06);
+    --shadow-card-soft: 0 12px 28px rgba(17, 24, 39, 0.05);
+    --shadow-panel: 0 14px 30px rgba(17, 24, 39, 0.08);
+    --shadow-panel-soft: 0 10px 24px rgba(17, 24, 39, 0.07);
+    --shadow-glass: 0 12px 30px rgba(17, 24, 39, 0.06);
+    --shadow-glass-strong: 0 14px 34px rgba(17, 24, 39, 0.08);
+    --shadow-primary-soft: 0 10px 24px rgba(79, 111, 167, 0.14);
 
     /* =========================
        TRANSITIONS
