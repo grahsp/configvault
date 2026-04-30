@@ -1,15 +1,9 @@
 import { cx } from '../../../../../shared/utils/cx'
-import { AddMemberForm, RemoveMemberDialog, RoleSelector } from '../../ui'
+import { AddMemberForm, MembersTable, RemoveMemberDialog } from '../../ui'
 import { getErrorMessage } from '../../../model'
-import {
-  getMemberDisplayName,
-  roleLabels,
-  type ProjectMember,
-  type ProjectRole,
-} from '../../domain'
-import { useSetRole } from '../../application'
-import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 import { useMembersPageState } from './useMembersPageState'
+import { MemberRowContainer } from './MemberRowContainer'
+import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 export function MembersPage() {
   const {
@@ -89,35 +83,21 @@ export function MembersPage() {
       ) : null}
 
       {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (
-        <div className={styles.tableWrapper}>
-          <table className={styles.membersTable}>
-            <caption className={styles.visuallyHidden}>
-              Project members
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Role</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <MemberRowContainer
-                  canManageMembers={canManageMembers}
-                  isRemovePending={
-                    removeMemberMutation.isPending &&
-                    memberPendingRemoval?.userId === member.userId
-                  }
-                  key={member.userId}
-                  member={member}
-                  onRemove={openRemoveDialog}
-                  projectId={projectId}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <MembersTable>
+          {members.map((member) => (
+            <MemberRowContainer
+              canManageMembers={canManageMembers}
+              isRemovePending={
+                removeMemberMutation.isPending &&
+                memberPendingRemoval?.userId === member.userId
+              }
+              key={member.userId}
+              member={member}
+              onRemove={openRemoveDialog}
+              projectId={projectId}
+            />
+          ))}
+        </MembersTable>
       ) : null}
 
       {memberPendingRemoval ? (
@@ -130,84 +110,5 @@ export function MembersPage() {
         />
       ) : null}
     </section>
-  )
-}
-
-interface MemberRowContainerProps {
-  canManageMembers: boolean
-  isRemovePending: boolean
-  member: ProjectMember
-  onRemove: (member: ProjectMember) => void
-  projectId: string
-}
-
-function MemberRowContainer({
-  canManageMembers,
-  isRemovePending,
-  member,
-  onRemove,
-  projectId,
-}: MemberRowContainerProps) {
-  const setRoleMutation = useSetRole(projectId)
-  const displayName = getMemberDisplayName(member)
-  const isOwner = member.role === 'owner'
-  const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
-  const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
-
-  function handleRoleChange(nextRole: ProjectRole) {
-    if (nextRole === member.role) {
-      return
-    }
-
-    setRoleMutation.mutate({ role: nextRole, userId: member.userId })
-  }
-
-  return (
-    <tr>
-      <th scope="row">
-        <span className={styles.memberName}>{displayName}</span>
-        {member.isCurrentUser ? (
-          <span className={styles.memberMeta}>You</span>
-        ) : null}
-      </th>
-      <td>
-        {member.isCurrentUser ? (
-          roleLabels[member.role]
-        ) : (
-          <RoleSelector
-            canEdit={canEditRole}
-            displayName={displayName}
-            errorMessage={
-              setRoleMutation.isError
-                ? getErrorMessage(
-                    setRoleMutation.error,
-                    'Role could not be updated.',
-                  )
-                : ''
-            }
-            isPending={setRoleMutation.isPending}
-            onRoleChange={handleRoleChange}
-            role={member.role}
-          />
-        )}
-      </td>
-      <td>
-        {member.isCurrentUser ? (
-          <span className={styles.memberActionUnavailable}>
-            No actions available
-          </span>
-        ) : (
-          <button
-            aria-label={`Remove ${displayName}`}
-            className={styles.memberAction}
-            disabled={!canRemoveMember || isRemovePending}
-            onClick={() => onRemove(member)}
-            type="button"
-          >
-            Remove
-          </button>
-        )}
-      </td>
-    </tr>
   )
 }

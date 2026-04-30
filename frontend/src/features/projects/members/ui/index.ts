@@ -1,3 +1,5 @@
 export * from './AddMemberForm'
+export * from './MemberRow'
+export * from './MembersTable'
 export * from './RemoveMemberDialog'
 export * from './RoleSelector'
