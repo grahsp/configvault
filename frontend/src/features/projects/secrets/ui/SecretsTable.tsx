@@ -72,7 +72,7 @@ export function SecretsTable({
   return (
     <section className={styles.sectionCard}>
       <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>Environment Variables</h3>
+        <h3 className={styles.sectionTitle}>Secrets</h3>
         <p className={styles.sectionDescription}>
           Set environment-specific config and secrets, then manage key and value
           updates from one edit state.
@@ -103,7 +103,7 @@ export function SecretsTable({
           <div className={styles.tableWrapper}>
             <table className={styles.configItemsTable}>
               <caption className={styles.visuallyHidden}>
-                Project secrets and config items
+                Project secrets
               </caption>
               <thead>
                 <tr>

@@ -54,7 +54,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])
@@ -68,7 +68,7 @@ describe('ProjectDetailPage', () => {
       screen.getByText('Credentials for production services'),
     ).toBeInTheDocument()
     expect(
-      await screen.findByRole('heading', { name: 'Environment Variables' }),
+      await screen.findByRole('heading', { name: 'Secrets' }),
     ).toBeInTheDocument()
   })
 
@@ -121,7 +121,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])
@@ -175,7 +175,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])

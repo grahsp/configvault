@@ -156,9 +156,9 @@ export function useSecretsEditor({
     isLoading: !environmentName || secretsQuery.isLoading,
     isSaving: mutations.saveSecrets.isPending,
     loadErrorMessage: secretsQuery.isError
-      ? getErrorMessage(
+        ? getErrorMessage(
           secretsQuery.error,
-          'Something went wrong while loading config items.',
+          'Something went wrong while loading secrets.',
         )
       : undefined,
     onCancelEdit: editSession.onCancelEdit,

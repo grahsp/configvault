@@ -30,16 +30,16 @@ export type SecretBatchOperation =
   | SetSecretValueOperation
   | DeleteSecretOperation
 
-function buildConfigItemsPath(projectId: string) {
-  return `/projects/${encodeURIComponent(projectId)}/config-items`
+function buildSecretsPath(projectId: string) {
+  return `/projects/${encodeURIComponent(projectId)}/secrets`
 }
 
 function buildSecretOperationsPath(projectId: string) {
-  return `${buildConfigItemsPath(projectId)}/operations`
+  return `${buildSecretsPath(projectId)}/operations`
 }
 
 function buildSecretPath(projectId: string, secretId: string) {
-  return `${buildConfigItemsPath(projectId)}/${encodeURIComponent(secretId)}`
+  return `${buildSecretsPath(projectId)}/${encodeURIComponent(secretId)}`
 }
 
 function buildEnvironmentSearch(environmentName: string) {
@@ -75,7 +75,7 @@ export function getSecrets(
   environmentName: string,
 ) {
   return client.request<Secret[]>(
-    `${buildConfigItemsPath(projectId)}?${buildEnvironmentSearch(
+    `${buildSecretsPath(projectId)}?${buildEnvironmentSearch(
       environmentName,
     )}`,
   )
@@ -114,7 +114,7 @@ export function createSecret(
   projectId: string,
   key: string,
 ) {
-  return client.request<void>(buildConfigItemsPath(projectId), {
+  return client.request<void>(buildSecretsPath(projectId), {
     method: 'POST',
     body: JSON.stringify({ key }),
   })

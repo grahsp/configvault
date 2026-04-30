@@ -16,7 +16,7 @@ export function SecretsLoadingState({ isVisible }: SecretsLoadingStateProps) {
       role="status"
       title="Loading secrets..."
     >
-      <p>Config item keys are being prepared.</p>
+      <p>Secrets are being prepared.</p>
     </StatePanel>
   )
 }

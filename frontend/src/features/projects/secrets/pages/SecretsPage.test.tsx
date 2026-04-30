@@ -41,7 +41,7 @@ function jsonResponse(body: unknown, status = 200) {
 function getBulkSaveCalls(fetchMock: ReturnType<typeof vi.fn>) {
   return fetchMock.mock.calls.filter(
     ([input, init]) =>
-      input.toString().includes('/config-items/operations') &&
+      input.toString().includes('/secrets/operations') &&
       !input.toString().includes('/value') &&
       init?.method === 'POST',
   )
@@ -98,7 +98,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])
@@ -106,20 +106,20 @@ describe('SecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     expect(
-      await screen.findByRole('heading', { name: 'Environment Variables' }),
+      await screen.findByRole('heading', { name: 'Secrets' }),
     ).toBeInTheDocument()
     expect(
       screen.getByText('Environment', { selector: 'span' }),
     ).toBeInTheDocument()
     expect(
       screen
-        .getByRole('heading', { name: 'Environment Variables' })
+        .getByRole('heading', { name: 'Secrets' })
         .closest('section'),
     ).not.toContainElement(screen.getByText('Environment', { selector: 'span' }))
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/projects/project-1/config-items?environment=production',
+        '/projects/project-1/secrets?environment=production',
       ),
       expect.any(Object),
     )
@@ -135,7 +135,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         response: secretsResponse.response,
       },
     ])
@@ -144,7 +144,7 @@ describe('SecretsPage', () => {
 
     expect(await screen.findByText('Loading secrets...')).toBeInTheDocument()
     expect(
-      screen.getByText('Config item keys are being prepared.'),
+      screen.getByText('Secrets are being prepared.'),
     ).toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
 
@@ -161,7 +161,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])
@@ -186,7 +186,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
       {
@@ -195,7 +195,7 @@ describe('SecretsPage', () => {
         status: 204,
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [apiKeySecret],
       },
     ])
@@ -237,7 +237,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [apiKeySecret],
       },
       {
@@ -246,7 +246,7 @@ describe('SecretsPage', () => {
         status: 204,
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [
           apiKeySecret,
           {
@@ -291,7 +291,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
       {
@@ -316,7 +316,7 @@ describe('SecretsPage', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('shows loaded config item rows with a masked value column', async () => {
+  it('shows loaded secret rows with a masked value column', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -324,7 +324,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [
           {
             id: 'config-1',
@@ -343,7 +343,7 @@ describe('SecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     const table = await screen.findByRole('table', {
-      name: 'Project secrets and config items',
+      name: 'Project secrets',
     })
 
     expect(
@@ -374,7 +374,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
     ])
@@ -390,7 +390,7 @@ describe('SecretsPage', () => {
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
   })
 
-  it('creates a config item successfully', async () => {
+  it('creates a secret successfully', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -399,16 +399,16 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [],
       },
       {
-        path: '/projects/project-1/config-items/operations',
+        path: '/projects/project-1/secrets/operations',
         method: 'POST',
         status: 204,
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [
           {
             id: 'config-1',
@@ -429,7 +429,7 @@ describe('SecretsPage', () => {
     expect(await screen.findByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
     expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items/operations'),
+      expect.stringContaining('/projects/project-1/secrets/operations'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
@@ -440,7 +440,7 @@ describe('SecretsPage', () => {
     )
   })
 
-  it('renames a config item successfully', async () => {
+  it('renames a secret successfully', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -449,16 +449,16 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [apiKeySecret],
       },
       {
-        path: '/projects/project-1/config-items/operations',
+        path: '/projects/project-1/secrets/operations',
         method: 'POST',
         status: 204,
       },
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [publicKeySecret],
       },
     ])
@@ -476,7 +476,7 @@ describe('SecretsPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/config-items/operations'),
+      expect.stringContaining('/projects/project-1/secrets/operations'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
@@ -489,7 +489,7 @@ describe('SecretsPage', () => {
     )
   })
 
-  it('toggles a revealed config item value without fetching twice', async () => {
+  it('toggles a revealed secret value without fetching twice', async () => {
     const user = userEvent.setup()
     const fetchMock = mockFetchSequence([
       {
@@ -498,7 +498,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/config-items',
+        path: '/projects/project-1/secrets',
         body: [
           apiKeySecret,
           {
@@ -509,7 +509,7 @@ describe('SecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/config-items/config-1/value',
+        path: '/projects/project-1/secrets/config-1/value',
         body: { value: 'secret-value' },
       },
     ])
