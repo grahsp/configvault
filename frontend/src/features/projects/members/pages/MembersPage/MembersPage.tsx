@@ -1,93 +1,35 @@
-import { useState } from 'react'
-import { useOutletContext, useParams } from 'react-router-dom'
-import { cx } from '../../../../shared/utils/cx'
-import { getErrorMessage } from '../../model'
+import { cx } from '../../../../../shared/utils/cx'
+import { AddMemberForm, RemoveMemberDialog, RoleSelector } from '../../ui'
+import { getErrorMessage } from '../../../model'
 import {
-  useAddMember,
-  useMembers,
-  useRemoveMember,
-  useSetRole,
+  getMemberDisplayName,
+  roleLabels,
   type ProjectMember,
   type ProjectRole,
-} from '../model'
-import { AddMemberForm, RemoveMemberDialog, RoleSelector } from '../ui'
-import type { ProjectLayoutContext } from '../../pages'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
-
-const roleLabels: Record<ProjectRole, string> = {
-  owner: 'Owner',
-  admin: 'Admin',
-  member: 'Member',
-}
+} from '../../domain'
+import { useSetRole } from '../../application'
+import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
+import { useMembersPageState } from './useMembersPageState'
 
 export function MembersPage() {
-  const { projectId } = useParams()
-  const { project } = useOutletContext<ProjectLayoutContext>()
-  const resolvedProjectId = projectId ?? ''
-  const membersQuery = useMembers(projectId ?? '')
-  const [memberPendingRemoval, setMemberPendingRemoval] =
-    useState<ProjectMember | null>(null)
-  const [userId, setUserId] = useState('')
-  const [validationError, setValidationError] = useState('')
-  const members = membersQuery.data ?? []
-  const addMemberMutation = useAddMember(resolvedProjectId)
-  const removeMemberMutation = useRemoveMember(resolvedProjectId)
-  const canManageMembers = canRoleManageMembers(
-    project.role ?? project.currentUserRole,
-  )
-  const addMemberErrorMessage =
-    validationError ||
-    (addMemberMutation.isError
-      ? getErrorMessage(addMemberMutation.error, 'Member could not be added.')
-      : '')
-
-  function handleUserIdChange(nextUserId: string) {
-    setUserId(nextUserId)
-
-    if (validationError) {
-      setValidationError('')
-    }
-  }
-
-  function handleAddMemberSubmit() {
-    const trimmedUserId = userId.trim()
-
-    addMemberMutation.reset()
-
-    if (!trimmedUserId) {
-      setValidationError('Enter a user ID.')
-      return
-    }
-
-    setValidationError('')
-    addMemberMutation.mutate(trimmedUserId, {
-      onSuccess: () => setUserId(''),
-    })
-  }
-
-  function openRemoveDialog(member: ProjectMember) {
-    removeMemberMutation.reset()
-    setMemberPendingRemoval(member)
-  }
-
-  function closeRemoveDialog() {
-    if (removeMemberMutation.isPending) {
-      return
-    }
-
-    removeMemberMutation.reset()
-    setMemberPendingRemoval(null)
-  }
-
-  function confirmRemoveMember() {
-    if (!memberPendingRemoval || removeMemberMutation.isPending) {
-      return
-    }
-
-    removeMemberMutation.mutate(memberPendingRemoval.userId, {
-      onSuccess: () => setMemberPendingRemoval(null),
-    })
-  }
+  const {
+    addMemberErrorMessage,
+    addMemberMutation,
+    canManageMembers,
+    closeRemoveDialog,
+    confirmRemoveMember,
+    memberPendingRemoval,
+    members,
+    membersQuery,
+    openRemoveDialog,
+    projectId,
+    removeMemberDialogDisplayName,
+    removeMemberErrorMessage,
+    removeMemberMutation,
+    setUserId,
+    submitAddMember,
+    userId,
+  } = useMembersPageState()
 
   return (
     <section className={styles.membersSection} aria-labelledby="members-title">
@@ -101,8 +43,8 @@ export function MembersPage() {
         canManageMembers={canManageMembers}
         errorMessage={addMemberErrorMessage}
         isPending={addMemberMutation.isPending}
-        onSubmit={handleAddMemberSubmit}
-        onUserIdChange={handleUserIdChange}
+        onSubmit={submitAddMember}
+        onUserIdChange={setUserId}
         userId={userId}
       />
 
@@ -161,7 +103,7 @@ export function MembersPage() {
             </thead>
             <tbody>
               {members.map((member) => (
-                <MemberRow
+                <MemberRowContainer
                   canManageMembers={canManageMembers}
                   isRemovePending={
                     removeMemberMutation.isPending &&
@@ -170,7 +112,7 @@ export function MembersPage() {
                   key={member.userId}
                   member={member}
                   onRemove={openRemoveDialog}
-                  projectId={resolvedProjectId}
+                  projectId={projectId}
                 />
               ))}
             </tbody>
@@ -180,15 +122,8 @@ export function MembersPage() {
 
       {memberPendingRemoval ? (
         <RemoveMemberDialog
-          displayName={getMemberDisplayName(memberPendingRemoval)}
-          errorMessage={
-            removeMemberMutation.isError
-              ? getErrorMessage(
-                  removeMemberMutation.error,
-                  'Something went wrong while removing this member.',
-                )
-              : ''
-          }
+          displayName={removeMemberDialogDisplayName}
+          errorMessage={removeMemberErrorMessage}
           isPending={removeMemberMutation.isPending}
           onCancel={closeRemoveDialog}
           onConfirm={confirmRemoveMember}
@@ -198,28 +133,26 @@ export function MembersPage() {
   )
 }
 
-function canRoleManageMembers(role: ProjectRole | undefined) {
-  return role === 'owner' || role === 'admin'
-}
-
-function MemberRow({
-  canManageMembers,
-  isRemovePending,
-  member,
-  onRemove,
-  projectId,
-}: {
+interface MemberRowContainerProps {
   canManageMembers: boolean
   isRemovePending: boolean
   member: ProjectMember
   onRemove: (member: ProjectMember) => void
   projectId: string
-}) {
+}
+
+function MemberRowContainer({
+  canManageMembers,
+  isRemovePending,
+  member,
+  onRemove,
+  projectId,
+}: MemberRowContainerProps) {
+  const setRoleMutation = useSetRole(projectId)
   const displayName = getMemberDisplayName(member)
   const isOwner = member.role === 'owner'
   const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
   const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
-  const setRoleMutation = useSetRole(projectId)
 
   function handleRoleChange(nextRole: ProjectRole) {
     if (nextRole === member.role) {
@@ -277,14 +210,4 @@ function MemberRow({
       </td>
     </tr>
   )
-}
-
-function getMemberDisplayName(member: ProjectMember) {
-  const displayName = member.displayName?.trim()
-
-  if (displayName) {
-    return displayName
-  }
-
-  return member.userId
 }

@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react'
 import { useId } from 'react'
-import type { ProjectRole } from '../model'
+import type { ProjectRole } from '../domain'
 import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 const roleLabels: Record<ProjectRole, string> = {

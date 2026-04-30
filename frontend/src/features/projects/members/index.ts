@@ -1,4 +1,5 @@
 export * from './api'
-export * from './model'
+export * from './application'
+export * from './domain'
 export * from './pages'
 export * from './ui'

@@ -1,1 +1,1 @@
-export * from './membersApi.ts'
+export * from './membersApi'

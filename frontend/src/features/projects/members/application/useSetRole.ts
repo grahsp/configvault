@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient'
 import { setRole } from '../api'
 import { projectQueryKeys } from '../../model'
-import type { ProjectRole } from './types'
+import type { ProjectRole } from '../domain'
 
 export function useSetRole(projectId: string) {
   const client = useAuthenticatedApiClient()

@@ -1,5 +1,5 @@
 import type { ApiClient } from '../../../../api/apiClient'
-import type { ProjectMember, ProjectRole } from '../model'
+import type { ProjectMember, ProjectRole } from '../domain'
 
 function buildProjectMembersPath(projectId: string) {
   return `/projects/${encodeURIComponent(projectId)}/members`
