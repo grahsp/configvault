@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { type Environment } from '../../../environments'
+import { type Environment } from '../../environments'
 import { cx } from '../../../../shared/utils/cx'
 import {
   getErrorMessage,

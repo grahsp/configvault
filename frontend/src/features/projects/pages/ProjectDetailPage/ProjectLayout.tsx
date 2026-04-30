@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import { EnvironmentDropdown, type Environment } from '../../../environments'
+import { EnvironmentDropdown, type Environment } from '../../environments'
 import { cx } from '../../../../shared/utils/cx'
 import type { ProjectDetails } from '../../model'
 import { ProjectSubNav } from '../../ui'

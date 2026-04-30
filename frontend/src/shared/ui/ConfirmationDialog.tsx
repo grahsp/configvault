@@ -1,5 +1,5 @@
 import {cx} from '../utils/cx.ts'
-import styles from '../../features/environments/ui/EnvironmentDropdown/EnvironmentDropdown.module.css'
+import styles from '../../features/projects/environments/ui/EnvironmentDropdown/EnvironmentDropdown.module.css'
 import type {ReactNode} from "react";
 
 export interface ConfirmationDialogProps {
