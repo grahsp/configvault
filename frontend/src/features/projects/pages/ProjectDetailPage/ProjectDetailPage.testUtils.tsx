@@ -1,14 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { Navigate, createMemoryRouter, RouterProvider } from 'react-router-dom'
+import { Navigate, createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
 import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
-import { LocationProbe } from './LocationProbe.testComponent'
-import { GeneralPage } from '../GeneralPage'
-import { MembersPage } from '../MembersPage'
-import { ProjectLayout } from '../ProjectLayout'
+import { MembersPage } from '../../members/pages'
+import { GeneralPage } from './GeneralPage'
+import { ProjectLayout } from './ProjectLayout'
 
 export type MockRoute = {
   body?: unknown
@@ -16,6 +14,12 @@ export type MockRoute = {
   path: string
   response?: Promise<Response> | Response
   status?: number
+}
+
+function LocationProbe() {
+  const location = useLocation()
+
+  return <p data-testid="location">{location.pathname}</p>
 }
 
 function createTestQueryClient() {
@@ -29,42 +33,6 @@ function createTestQueryClient() {
       },
     },
   })
-}
-
-export function renderWithRouter({
-  children,
-  initialPath = '/projects',
-}: {
-  children: ReactNode
-  initialPath?: string
-}) {
-  const queryClient = createTestQueryClient()
-  const router = createMemoryRouter(
-    [
-      {
-        path: '/projects',
-        element: children,
-      },
-      {
-        path: '/projects/:projectId',
-        element: <LocationProbe />,
-      },
-    ],
-    {
-      initialEntries: [initialPath],
-    },
-  )
-
-  return {
-    ...render(
-      <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <RouterProvider router={router} />
-        </ToastProvider>
-      </QueryClientProvider>,
-    ),
-    router,
-  }
 }
 
 function renderProjectDetailResult(router: ReturnType<typeof createMemoryRouter>) {

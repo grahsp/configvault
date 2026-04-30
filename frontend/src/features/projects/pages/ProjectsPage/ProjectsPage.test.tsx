@@ -4,7 +4,7 @@ import { ProjectsPage } from './ProjectsPage'
 import {
   mockFetchSequence,
   renderWithRouter,
-} from '../testUtils/projectPageTestUtils'
+} from './ProjectsPage.testUtils'
 
 vi.mock('../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({

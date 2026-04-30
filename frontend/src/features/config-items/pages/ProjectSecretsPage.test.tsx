@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   mockFetchSequence,
   renderProjectDetail,
-} from '../../projects/pages/testUtils/projectPageTestUtils'
+} from '../../projects/pages/ProjectDetailPage/ProjectDetailPage.testUtils'
 
 const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),

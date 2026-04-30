@@ -1,16 +1,16 @@
 import { useCallback, useState } from 'react'
 import { Link, Outlet, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { EnvironmentDropdown, type Environment } from '../../environments'
-import { cx } from '../../../shared/utils/cx'
-import { ProjectSubNav } from '../components/ProjectSubNav'
-import { useProject } from '../hooks/useProjects'
-import type { ProjectDetails } from '../types'
+import { EnvironmentDropdown, type Environment } from '../../../environments'
+import { cx } from '../../../../shared/utils/cx'
 import {
   getErrorMessage,
   isAuthError,
   isNotFoundError,
-} from './projectPageUtils'
-import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
+  type ProjectDetails,
+  useProject,
+} from '../../model'
+import { ProjectSubNav } from '../../ui'
+import styles from './ProjectDetailPage.module.css'
 
 export function ProjectLayout() {
   const location = useLocation()

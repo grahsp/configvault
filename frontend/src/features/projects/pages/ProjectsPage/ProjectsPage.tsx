@@ -1,19 +1,15 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cx } from '../../../../shared/utils/cx'
-import { ProjectDeleteDialog } from '../../components/ProjectDeleteDialog'
+import { ProjectCreateModal, ProjectDeleteDialog, ProjectsContent } from '../../ui'
 import {
   useCreateProject,
   useDeleteProject,
   useProjects,
-} from '../../hooks/useProjects'
-import {
   getProjectNameValidationError,
   normalizeProjectName,
-} from '../../validation/projectValidation'
-import { sortProjectsByCreatedDate } from '../projectPageUtils'
-import { ProjectCreateModal } from './ProjectCreateModal'
-import { ProjectsContent } from './ProjectsContent'
+  sortProjectsByCreatedDate,
+} from '../../model'
 import styles from './ProjectsPage.module.css'
 
 export function ProjectsPage() {

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { cx } from '../../../shared/utils/cx'
+import { cx } from '../../../../shared/utils/cx.ts'
 import styles from './ProjectSubNav.module.css'
 
 interface ProjectSubNavProps {

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   mockFetchSequence,
   renderProjectDetail,
-} from '../testUtils/projectPageTestUtils'
+} from './ProjectDetailPage.testUtils'
 
 const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
@@ -70,6 +70,39 @@ describe('ProjectDetailPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Environment Variables' }),
     ).toBeInTheDocument()
+  })
+
+  it('normalizes mixed-case project role values from the API', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: {
+          ...projectDetails,
+          currentUserRole: 'ADMIN',
+          role: 'Owner',
+        },
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Production secrets' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByRole('form', { name: 'Add member' })).toBeInTheDocument()
   })
 
   it('shows project section navigation on the secrets route', async () => {

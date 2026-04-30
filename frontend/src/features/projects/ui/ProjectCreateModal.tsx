@@ -1,17 +1,17 @@
 import type { FormEvent } from 'react'
 import type { UseMutationResult } from '@tanstack/react-query'
-import type { ApiError } from '../../../../api/errors/apiError'
-import { cx } from '../../../../shared/utils/cx'
+import type { ApiError } from '../../../api/errors/apiError'
+import { cx } from '../../../shared/utils/cx'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
-} from '../../types'
+} from '../model/types'
 import {
   getProjectNameValidationError,
   PROJECT_NAME_MAX_LENGTH,
-} from '../../validation/projectValidation'
-import { getErrorMessage, getValidationMessage } from '../projectPageUtils'
-import styles from './ProjectsPage.module.css'
+} from '../model/projectValidation'
+import { getErrorMessage, getValidationMessage } from '../model/projectUtils'
+import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectCreateModalProps {
   mutation: UseMutationResult<

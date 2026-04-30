@@ -1,5 +1,5 @@
 import { ApiError } from '../../../api/errors/apiError'
-import type { ProjectListItem } from '../types'
+import type { ProjectListItem } from './types'
 
 export function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {

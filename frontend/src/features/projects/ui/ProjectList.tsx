@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { cx } from '../../../../shared/utils/cx'
-import type { ProjectListItem } from '../../types'
-import { formatCreatedDate } from '../projectPageUtils'
-import styles from './ProjectsPage.module.css'
+import { cx } from '../../../shared/utils/cx'
+import type { ProjectListItem } from '../model/types'
+import { formatCreatedDate } from '../model/projectUtils'
+import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectListProps {
   isDeletePending: boolean

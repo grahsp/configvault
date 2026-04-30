@@ -1,7 +1,7 @@
-import { cx } from '../../../../shared/utils/cx'
-import type { ProjectListItem } from '../../types'
-import { getErrorMessage } from '../projectPageUtils'
-import styles from './ProjectsPage.module.css'
+import { cx } from '../../../shared/utils/cx'
+import type { ProjectListItem } from '../model/types'
+import { getErrorMessage } from '../model/projectUtils'
+import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 import { ProjectEmptyState, ProjectList } from './ProjectList'
 
 interface ProjectsContentProps {

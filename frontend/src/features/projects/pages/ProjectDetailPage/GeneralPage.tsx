@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import { cx } from '../../../shared/utils/cx'
-import { ProjectDeleteDialog } from '../components/ProjectDeleteDialog'
-import { useDeleteProject } from '../hooks/useProjects'
+import { cx } from '../../../../shared/utils/cx'
+import { formatCreatedDate, useDeleteProject } from '../../model'
+import { ProjectDeleteDialog } from '../../ui'
 import type { ProjectLayoutContext } from './ProjectLayout'
-import { formatCreatedDate } from './projectPageUtils'
-import styles from './ProjectDetailPage/ProjectDetailPage.module.css'
+import styles from './ProjectDetailPage.module.css'
 
 export function GeneralPage() {
   const navigate = useNavigate()
@@ -89,8 +88,6 @@ export function GeneralPage() {
 
       {isDeleteModalOpen ? (
         <ProjectDeleteDialog
-          errorClassName={styles.formError}
-          formActionsClassName={styles.formActions}
           mutation={deleteProjectMutation}
           onCancel={closeDeleteDialog}
           onConfirm={confirmDeleteProject}
