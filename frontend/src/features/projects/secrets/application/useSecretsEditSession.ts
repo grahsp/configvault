@@ -5,13 +5,13 @@ import {
   getUpdatedValidationIds,
   isLocalSecretId,
 } from './secretsEditor.utils.ts'
-import type { UseSecretsEditorStateResult } from './useSecretsEditorState.ts'
+import type { SecretsEditSessionController } from './secretsEditor.types.ts'
 
 interface UseSecretsEditSessionOptions {
   resetImportMutation: () => void
   resetSaveMutation: () => void
   secrets: Secret[]
-  state: UseSecretsEditorStateResult
+  state: SecretsEditSessionController
 }
 
 export function useSecretsEditSession({

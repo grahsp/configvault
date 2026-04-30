@@ -1,14 +1,12 @@
 import { useToast } from '../../../../shared/components/toast/useToast.ts'
 import type { Secret } from '../domain'
-import {
-  getErrorMessage,
-} from './secretsEditor.utils.ts'
-import type { UseSecretsEditorStateResult } from './useSecretsEditorState.ts'
+import { getErrorMessage } from './secretsEditor.utils.ts'
+import type { SecretsRevealController } from './secretsEditor.types.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
 interface UseSecretsRevealActionsOptions {
   mutations: UseSecretsMutationsResult
-  state: UseSecretsEditorStateResult
+  state: SecretsRevealController
 }
 
 export function useSecretsRevealActions({

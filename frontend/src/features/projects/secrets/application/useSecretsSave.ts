@@ -7,14 +7,14 @@ import {
   getSuccessMessage,
   omitRevealedValues,
 } from './secretsEditor.utils.ts'
-import type { UseSecretsEditorStateResult } from './useSecretsEditorState.ts'
+import type { SecretsSaveController } from './secretsEditor.types.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
 interface UseSecretsSaveOptions {
   handleCancelEdit: () => void
   mutations: UseSecretsMutationsResult
   secrets: Secret[]
-  state: UseSecretsEditorStateResult
+  state: SecretsSaveController
 }
 
 export function useSecretsSave({

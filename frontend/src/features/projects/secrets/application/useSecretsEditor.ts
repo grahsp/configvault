@@ -4,7 +4,12 @@ import {
   getErrorMessage,
   toLocalSecret,
 } from './secretsEditor.utils.ts'
-import type { SecretRowViewModel } from './secretsEditor.types.ts'
+import type {
+  SecretRowViewModel,
+  SecretsEditSessionController,
+  SecretsRevealController,
+  SecretsSaveController,
+} from './secretsEditor.types.ts'
 import { useSecretsEditSession } from './useSecretsEditSession.ts'
 import { useSecretsEditorState } from './useSecretsEditorState.ts'
 import { useSecretsMutations } from './useSecretsMutations.ts'
@@ -89,16 +94,8 @@ export function useSecretsEditor({
     ],
   )
 
-  const state = {
-    drafts,
-    focusedSecretId,
-    highlightedValidationIds,
+  const editSessionState: SecretsEditSessionController = {
     isEditing,
-    isImportModalOpen,
-    newSecrets,
-    pendingDeletionIds,
-    revealedValues,
-    revealingId,
     setDrafts,
     setFocusedSecretId,
     setHighlightedValidationIds,
@@ -106,27 +103,42 @@ export function useSecretsEditor({
     setIsImportModalOpen,
     setNewSecrets,
     setPendingDeletionIds,
+  }
+
+  const revealState: SecretsRevealController = {
+    drafts,
+    revealedValues,
+    setDrafts,
     setRevealedValues,
     setRevealingId,
     setVisibleRevealedValues,
     visibleRevealedValues,
   }
 
+  const saveState: SecretsSaveController = {
+    drafts,
+    newSecrets,
+    pendingDeletionIds,
+    setHighlightedValidationIds,
+    setRevealedValues,
+    setVisibleRevealedValues,
+  }
+
   const editSession = useSecretsEditSession({
     resetImportMutation,
     resetSaveMutation,
     secrets,
-    state,
+    state: editSessionState,
   })
   const revealActions = useSecretsRevealActions({
     mutations,
-    state,
+    state: revealState,
   })
   const saveActions = useSecretsSave({
     handleCancelEdit: editSession.onCancelEdit,
     mutations,
     secrets,
-    state,
+    state: saveState,
   })
   const transferActions = useSecretsTransferActions({
     handleCancelEdit: editSession.onCancelEdit,

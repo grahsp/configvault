@@ -1,86 +1,111 @@
 import { useEffect, useReducer } from 'react'
-import type { NewSecretDraft, SecretDraft } from './secretsEditor.types.ts'
+import type {
+  NewSecretDraft,
+  RevealedSecretValues,
+  SecretDraftMap,
+  SecretsEditorStateResult,
+  SecretDraftMapUpdater,
+  NewSecretsUpdater,
+  PendingDeletionIdsUpdater,
+  Updater,
+  ValidationIdsUpdater,
+  VisibleRevealedSecretValues,
+  VisibleRevealedSecretValuesUpdater,
+  RevealedSecretValuesUpdater,
+  RevealingIdUpdater,
+} from './secretsEditor.types.ts'
 
-interface SecretsEditorState {
-  drafts: Record<string, SecretDraft>
+interface EditSessionState {
   environmentName: string
   focusedSecretId: string | null
-  highlightedValidationIds: string[]
   isEditing: boolean
-  isImportModalOpen: boolean
-  newSecrets: NewSecretDraft[]
-  pendingDeletionIds: string[]
-  revealedValues: Record<string, string>
-  revealingId: string | null
-  visibleRevealedValues: Record<string, boolean>
 }
 
-type SecretsEditorAction =
-  | {
+interface DraftState {
+  drafts: SecretDraftMap
+  highlightedValidationIds: string[]
+  newSecrets: NewSecretDraft[]
+  pendingDeletionIds: string[]
+}
+
+interface ModalState {
+  isImportModalOpen: boolean
+}
+
+interface RevealState {
+  revealedValues: RevealedSecretValues
+  revealingId: string | null
+  visibleRevealedValues: VisibleRevealedSecretValues
+}
+
+interface SecretsEditorState
+  extends EditSessionState,
+    DraftState,
+    ModalState,
+    RevealState {}
+
+type EnvironmentAction = {
+  environmentName: string
+}
+
+type EditSessionAction =
+  | ({
       type: 'set-focused-secret-id'
-      environmentName: string
       value: string | null
-    }
-  | {
+    } & EnvironmentAction)
+  | ({
       type: 'set-is-editing'
-      environmentName: string
       value: boolean
-    }
-  | {
-      type: 'set-is-import-modal-open'
-      environmentName: string
-      value: boolean
-    }
-  | {
+    } & EnvironmentAction)
+
+type DraftAction =
+  | ({
       type: 'set-drafts'
-      environmentName: string
-      updater:
-        | Record<string, SecretDraft>
-        | ((current: Record<string, SecretDraft>) => Record<string, SecretDraft>)
-    }
-  | {
+      updater: Updater<SecretDraftMap>
+    } & EnvironmentAction)
+  | ({
       type: 'set-new-secrets'
-      environmentName: string
-      updater:
-        | NewSecretDraft[]
-        | ((current: NewSecretDraft[]) => NewSecretDraft[])
-    }
-  | {
+      updater: Updater<NewSecretDraft[]>
+    } & EnvironmentAction)
+  | ({
       type: 'set-highlighted-validation-ids'
-      environmentName: string
-      updater: string[] | ((current: string[]) => string[])
-    }
-  | {
+      updater: Updater<string[]>
+    } & EnvironmentAction)
+  | ({
       type: 'set-pending-deletion-ids'
-      environmentName: string
-      updater: string[] | ((current: string[]) => string[])
-    }
-  | {
+      updater: Updater<string[]>
+    } & EnvironmentAction)
+
+type ModalAction = {
+  type: 'set-is-import-modal-open'
+  environmentName: string
+  value: boolean
+}
+
+type RevealAction =
+  | ({
       type: 'set-revealed-values'
-      environmentName: string
-      updater:
-        | Record<string, string>
-        | ((current: Record<string, string>) => Record<string, string>)
-    }
-  | {
+      updater: Updater<RevealedSecretValues>
+    } & EnvironmentAction)
+  | ({
       type: 'set-visible-revealed-values'
-      environmentName: string
-      updater:
-        | Record<string, boolean>
-        | ((
-            current: Record<string, boolean>,
-          ) => Record<string, boolean>)
-    }
-  | {
+      updater: Updater<VisibleRevealedSecretValues>
+    } & EnvironmentAction)
+  | ({
       type: 'set-revealing-id'
-      environmentName: string
-      updater: string | null | ((current: string | null) => string | null)
-    }
+      updater: Updater<string | null>
+    } & EnvironmentAction)
+
+type SecretsEditorAction =
+  | EditSessionAction
+  | DraftAction
+  | ModalAction
+  | RevealAction
 
 export function useSecretsEditorState(
   environmentName: string,
   resetMutations: () => void,
-) {
+): SecretsEditorStateResult {
   const [state, dispatch] = useReducer(
     reducer,
     environmentName,
@@ -106,19 +131,13 @@ export function useSecretsEditorState(
     pendingDeletionIds: currentState.pendingDeletionIds,
     revealedValues: currentState.revealedValues,
     revealingId: currentState.revealingId,
-    setDrafts: (
-      updater:
-        | Record<string, SecretDraft>
-        | ((current: Record<string, SecretDraft>) => Record<string, SecretDraft>),
-    ) => {
+    setDrafts: (updater: SecretDraftMapUpdater) => {
       dispatch({ type: 'set-drafts', environmentName, updater })
     },
     setFocusedSecretId: (value: string | null) => {
       dispatch({ type: 'set-focused-secret-id', environmentName, value })
     },
-    setHighlightedValidationIds: (
-      updater: string[] | ((current: string[]) => string[]),
-    ) => {
+    setHighlightedValidationIds: (updater: ValidationIdsUpdater) => {
       dispatch({
         type: 'set-highlighted-validation-ids',
         environmentName,
@@ -131,36 +150,20 @@ export function useSecretsEditorState(
     setIsImportModalOpen: (value: boolean) => {
       dispatch({ type: 'set-is-import-modal-open', environmentName, value })
     },
-    setNewSecrets: (
-      updater:
-        | NewSecretDraft[]
-        | ((current: NewSecretDraft[]) => NewSecretDraft[]),
-    ) => {
+    setNewSecrets: (updater: NewSecretsUpdater) => {
       dispatch({ type: 'set-new-secrets', environmentName, updater })
     },
-    setPendingDeletionIds: (
-      updater: string[] | ((current: string[]) => string[]),
-    ) => {
+    setPendingDeletionIds: (updater: PendingDeletionIdsUpdater) => {
       dispatch({ type: 'set-pending-deletion-ids', environmentName, updater })
     },
-    setRevealedValues: (
-      updater:
-        | Record<string, string>
-        | ((current: Record<string, string>) => Record<string, string>),
-    ) => {
+    setRevealedValues: (updater: RevealedSecretValuesUpdater) => {
       dispatch({ type: 'set-revealed-values', environmentName, updater })
     },
-    setRevealingId: (
-      updater: string | null | ((current: string | null) => string | null),
-    ) => {
+    setRevealingId: (updater: RevealingIdUpdater) => {
       dispatch({ type: 'set-revealing-id', environmentName, updater })
     },
     setVisibleRevealedValues: (
-      updater:
-        | Record<string, boolean>
-        | ((
-            current: Record<string, boolean>,
-          ) => Record<string, boolean>),
+      updater: VisibleRevealedSecretValuesUpdater,
     ) => {
       dispatch({
         type: 'set-visible-revealed-values',
@@ -172,77 +175,25 @@ export function useSecretsEditorState(
   }
 }
 
-export type UseSecretsEditorStateResult = ReturnType<
-  typeof useSecretsEditorState
->
-
 function reducer(
   state: SecretsEditorState,
   action: SecretsEditorAction,
 ) {
   const currentState = ensureCurrentEnvironment(state, action.environmentName)
 
-  switch (action.type) {
-    case 'set-focused-secret-id':
-      return {
-        ...currentState,
-        focusedSecretId: action.value,
-      }
-    case 'set-is-editing':
-      return {
-        ...currentState,
-        isEditing: action.value,
-      }
-    case 'set-is-import-modal-open':
-      return {
-        ...currentState,
-        isImportModalOpen: action.value,
-      }
-    case 'set-drafts':
-      return {
-        ...currentState,
-        drafts: resolveUpdater(currentState.drafts, action.updater),
-      }
-    case 'set-new-secrets':
-      return {
-        ...currentState,
-        newSecrets: resolveUpdater(currentState.newSecrets, action.updater),
-      }
-    case 'set-highlighted-validation-ids':
-      return {
-        ...currentState,
-        highlightedValidationIds: resolveUpdater(
-          currentState.highlightedValidationIds,
-          action.updater,
-        ),
-      }
-    case 'set-pending-deletion-ids':
-      return {
-        ...currentState,
-        pendingDeletionIds: resolveUpdater(
-          currentState.pendingDeletionIds,
-          action.updater,
-        ),
-      }
-    case 'set-revealed-values':
-      return {
-        ...currentState,
-        revealedValues: resolveUpdater(currentState.revealedValues, action.updater),
-      }
-    case 'set-visible-revealed-values':
-      return {
-        ...currentState,
-        visibleRevealedValues: resolveUpdater(
-          currentState.visibleRevealedValues,
-          action.updater,
-        ),
-      }
-    case 'set-revealing-id':
-      return {
-        ...currentState,
-        revealingId: resolveUpdater(currentState.revealingId, action.updater),
-      }
+  if (isEditSessionAction(action)) {
+    return reduceEditSessionState(currentState, action)
   }
+
+  if (isDraftAction(action)) {
+    return reduceDraftState(currentState, action)
+  }
+
+  if (isRevealAction(action)) {
+    return reduceRevealState(currentState, action)
+  }
+
+  return reduceModalState(currentState, action)
 }
 
 function createInitialState(environmentName: string): SecretsEditorState {
@@ -272,7 +223,100 @@ function ensureCurrentEnvironment(
   return createInitialState(environmentName)
 }
 
-function resolveUpdater<T>(current: T, updater: T | ((current: T) => T)) {
+function isEditSessionAction(
+  action: SecretsEditorAction,
+): action is EditSessionAction {
+  return (
+    action.type === 'set-focused-secret-id' || action.type === 'set-is-editing'
+  )
+}
+
+function isDraftAction(action: SecretsEditorAction): action is DraftAction {
+  return (
+    action.type === 'set-drafts' ||
+    action.type === 'set-new-secrets' ||
+    action.type === 'set-highlighted-validation-ids' ||
+    action.type === 'set-pending-deletion-ids'
+  )
+}
+
+function isRevealAction(action: SecretsEditorAction): action is RevealAction {
+  return (
+    action.type === 'set-revealed-values' ||
+    action.type === 'set-visible-revealed-values' ||
+    action.type === 'set-revealing-id'
+  )
+}
+
+function reduceEditSessionState(
+  state: SecretsEditorState,
+  action: EditSessionAction,
+) {
+  switch (action.type) {
+    case 'set-focused-secret-id':
+      return setStateValue(state, 'focusedSecretId', action.value)
+    case 'set-is-editing':
+      return setStateValue(state, 'isEditing', action.value)
+  }
+}
+
+function reduceDraftState(
+  state: SecretsEditorState,
+  action: DraftAction,
+) {
+  switch (action.type) {
+    case 'set-drafts':
+      return updateStateValue(state, 'drafts', action.updater)
+    case 'set-new-secrets':
+      return updateStateValue(state, 'newSecrets', action.updater)
+    case 'set-highlighted-validation-ids':
+      return updateStateValue(state, 'highlightedValidationIds', action.updater)
+    case 'set-pending-deletion-ids':
+      return updateStateValue(state, 'pendingDeletionIds', action.updater)
+  }
+}
+
+function reduceRevealState(
+  state: SecretsEditorState,
+  action: RevealAction,
+) {
+  switch (action.type) {
+    case 'set-revealed-values':
+      return updateStateValue(state, 'revealedValues', action.updater)
+    case 'set-visible-revealed-values':
+      return updateStateValue(state, 'visibleRevealedValues', action.updater)
+    case 'set-revealing-id':
+      return updateStateValue(state, 'revealingId', action.updater)
+  }
+}
+
+function reduceModalState(
+  state: SecretsEditorState,
+  action: ModalAction,
+) {
+  return setStateValue(state, 'isImportModalOpen', action.value)
+}
+
+function setStateValue<K extends keyof SecretsEditorState>(
+  state: SecretsEditorState,
+  key: K,
+  value: SecretsEditorState[K],
+) {
+  return {
+    ...state,
+    [key]: value,
+  }
+}
+
+function updateStateValue<K extends keyof SecretsEditorState>(
+  state: SecretsEditorState,
+  key: K,
+  updater: Updater<SecretsEditorState[K]>,
+) {
+  return setStateValue(state, key, resolveUpdater(state[key], updater))
+}
+
+function resolveUpdater<T>(current: T, updater: Updater<T>) {
   return typeof updater === 'function'
     ? (updater as (current: T) => T)(current)
     : updater
