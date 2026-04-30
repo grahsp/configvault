@@ -3,10 +3,9 @@ import type { Secret } from '../domain'
 import {
   buildSaveOperations,
   getAffectedValueIds,
-  getErrorMessage,
-  getSuccessMessage,
   omitRevealedValues,
-} from './secretsEditor.utils.ts'
+} from './secretsSavePlan.ts'
+import { getErrorMessage, getSuccessMessage } from './secretsOperationMessages.ts'
 import type { SecretsSaveController } from './secretsEditor.types.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
