@@ -1,6 +1,5 @@
-import { cx } from '../../../../../shared/utils/cx.ts'
-import type { Environment } from '../../model'
-import styles from './EnvironmentDropdown.module.css'
+import type { Environment } from '../../domain'
+import { EnvironmentOptionRow } from './EnvironmentOptionRow.tsx'
 
 export interface EnvironmentOptionsListProps {
   activeIndex: number
@@ -22,36 +21,16 @@ export function EnvironmentOptionsList({
   selectedEnvironmentId,
 }: EnvironmentOptionsListProps) {
   return environments.map((environment, index) => (
-    <div className={styles.optionRow} key={environment.id}>
-      <button
-        aria-selected={environment.id === selectedEnvironmentId}
-        className={cx(
-          styles.option,
-          index === activeIndex && styles.optionActive,
-          environment.id === selectedEnvironmentId && styles.optionSelected,
-        )}
-        id={`${listboxId}-option-${environment.id}`}
-        onClick={() => onSelectEnvironment(environment)}
-        role="option"
-        type="button"
-      >
-        {environment.environmentName}
-      </button>
-      <button
-        aria-label={
-          environments.length <= 1
-            ? `Cannot delete ${environment.environmentName} because it is the only environment`
-            : `Delete ${environment.environmentName}`
-        }
-        className={styles.deleteAction}
-        disabled={
-          environments.length <= 1 || deletingEnvironmentId === environment.id
-        }
-        onClick={() => onOpenDeleteDialog(environment)}
-        type="button"
-      >
-        {deletingEnvironmentId === environment.id ? 'Deleting' : 'Delete'}
-      </button>
-    </div>
+    <EnvironmentOptionRow
+      environment={environment}
+      id={`${listboxId}-option-${environment.id}`}
+      isActive={index === activeIndex}
+      isDeleting={deletingEnvironmentId === environment.id}
+      isOnlyEnvironment={environments.length <= 1}
+      isSelected={environment.id === selectedEnvironmentId}
+      key={environment.id}
+      onOpenDeleteDialog={onOpenDeleteDialog}
+      onSelectEnvironment={onSelectEnvironment}
+    />
   ))
 }

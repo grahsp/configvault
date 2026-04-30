@@ -15,3 +15,4 @@ export type {
 export type {
   EnvironmentOptionsListProps,
 } from './EnvironmentOptionsList.tsx'
+export type { EnvironmentOptionRowProps } from './EnvironmentOptionRow.tsx'

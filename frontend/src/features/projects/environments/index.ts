@@ -1,2 +1,2 @@
-export { EnvironmentDropdown } from './ui/EnvironmentDropdownContainer.tsx'
-export type { Environment } from './model'
+export { EnvironmentDropdown } from './pages'
+export type { Environment } from './domain'

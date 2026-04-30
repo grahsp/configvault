@@ -1,5 +1,5 @@
 import { ConfirmationDialog } from '../../../../../shared/ui/ConfirmationDialog.tsx'
-import type { Environment } from '../../model'
+import type { Environment } from '../../domain'
 import styles from './EnvironmentDropdown.module.css'
 
 export interface EnvironmentDeleteDialogProps {

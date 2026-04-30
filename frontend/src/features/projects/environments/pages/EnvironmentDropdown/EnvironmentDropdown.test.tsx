@@ -9,11 +9,11 @@ import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { EnvironmentDropdown } from './EnvironmentDropdownContainer.tsx'
+import { EnvironmentDropdown } from './EnvironmentDropdown.tsx'
 
 const getAccessTokenSilently = vi.fn().mockResolvedValue('test-token')
 
-vi.mock('../../../shared/hooks/useAuth', () => ({
+vi.mock('../../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({
     getAccessTokenSilently,
   }),

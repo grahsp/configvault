@@ -1,8 +1,8 @@
-import type { Environment } from '../model'
-import { useEnvironmentDropdown } from '../model'
-import { EnvironmentDropdown as EnvironmentDropdownView } from './EnvironmentDropdown/EnvironmentDropdown.tsx'
+import type { Environment } from '../../domain'
+import { useEnvironmentDropdown } from '../../application'
+import { EnvironmentDropdown as EnvironmentDropdownView } from '../../ui/EnvironmentDropdown'
 
-interface EnvironmentDropdownContainerProps {
+interface EnvironmentDropdownPageProps {
   onEnvironmentChange: (environmentId: string) => void
   onSelectedEnvironmentChange?: (environment: Environment | null) => void
   projectId: string
@@ -14,7 +14,7 @@ export function EnvironmentDropdown({
   onSelectedEnvironmentChange,
   projectId,
   selectedEnvironmentId,
-}: EnvironmentDropdownContainerProps) {
+}: EnvironmentDropdownPageProps) {
   const dropdown = useEnvironmentDropdown({
     onEnvironmentChange,
     onSelectedEnvironmentChange,
