@@ -54,7 +54,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])
@@ -121,7 +121,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])
@@ -175,7 +175,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])

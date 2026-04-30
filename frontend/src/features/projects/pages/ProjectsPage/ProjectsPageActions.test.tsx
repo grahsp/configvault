@@ -17,6 +17,24 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+function createDeferredResponse() {
+  let resolve: (response: Response) => void = () => undefined
+  const response = new Promise<Response>((next) => {
+    resolve = next
+  })
+
+  return { response, resolve }
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    status,
+  })
+}
+
 describe('ProjectsPage actions', () => {
   it('validates the create modal, submits, and navigates to the new project', async () => {
     const fetchMock = mockFetchSequence([
@@ -95,6 +113,64 @@ describe('ProjectsPage actions', () => {
     expect(screen.getByLabelText('Project name')).toHaveAttribute(
       'aria-invalid',
       'true',
+    )
+  })
+
+  it('closes the create modal from cancel actions', async () => {
+    mockFetchSequence([{ path: '/projects', body: [] }])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await user.click(await screen.findByText('Create your first project'))
+    const dialog = screen.getByRole('dialog', { name: 'Create project' })
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(
+      screen.queryByRole('dialog', { name: 'Create project' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByText('Create your first project'))
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Create project' })).getByRole(
+        'button',
+        { name: 'Close create project' },
+      ),
+    )
+    expect(
+      screen.queryByRole('dialog', { name: 'Create project' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps create modal controls disabled while the mutation is pending', async () => {
+    const createResponse = createDeferredResponse()
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      { path: '/projects', body: [] },
+      { method: 'POST', path: '/projects', response: createResponse.response },
+    ])
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await user.click(await screen.findByText('Create your first project'))
+    const dialog = screen.getByRole('dialog', { name: 'Create project' })
+
+    await user.type(within(dialog).getByLabelText('Project name'), 'New vault')
+    await user.click(within(dialog).getByRole('button', { name: 'Create' }))
+
+    expect(within(dialog).getByRole('button', { name: 'Creating' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled()
+    expect(
+      within(dialog).getByRole('button', { name: 'Close create project' }),
+    ).toBeDisabled()
+
+    createResponse.resolve(jsonResponse({ id: 'created-project' }))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/projects/created-project',
+      ),
     )
   })
 

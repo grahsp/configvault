@@ -10,7 +10,7 @@ const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
 }))
 
-vi.mock('../../../shared/hooks/useAuth', () => ({
+vi.mock('../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({
     getAccessTokenSilently: authMocks.getAccessTokenSilently,
   }),
@@ -41,7 +41,7 @@ function jsonResponse(body: unknown, status = 200) {
 function getBulkSaveCalls(fetchMock: ReturnType<typeof vi.fn>) {
   return fetchMock.mock.calls.filter(
     ([input, init]) =>
-      input.toString().includes('/secrets/operations') &&
+      input.toString().includes('/config-items/operations') &&
       !input.toString().includes('/value') &&
       init?.method === 'POST',
   )
@@ -98,7 +98,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])
@@ -119,7 +119,7 @@ describe('SecretsPage', () => {
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/projects/project-1/secrets?environment=production',
+        '/projects/project-1/config-items?environment=production',
       ),
       expect.any(Object),
     )
@@ -135,7 +135,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         response: secretsResponse.response,
       },
     ])
@@ -161,7 +161,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])
@@ -186,7 +186,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
       {
@@ -195,7 +195,7 @@ describe('SecretsPage', () => {
         status: 204,
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [apiKeySecret],
       },
     ])
@@ -237,7 +237,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [apiKeySecret],
       },
       {
@@ -246,7 +246,7 @@ describe('SecretsPage', () => {
         status: 204,
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [
           apiKeySecret,
           {
@@ -291,7 +291,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
       {
@@ -324,7 +324,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [
           {
             id: 'config-1',
@@ -374,7 +374,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
     ])
@@ -399,16 +399,16 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [],
       },
       {
-        path: '/projects/project-1/secrets/operations',
+        path: '/projects/project-1/config-items/operations',
         method: 'POST',
         status: 204,
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [
           {
             id: 'config-1',
@@ -429,7 +429,7 @@ describe('SecretsPage', () => {
     expect(await screen.findByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
     expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/secrets/operations'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
@@ -449,16 +449,16 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [apiKeySecret],
       },
       {
-        path: '/projects/project-1/secrets/operations',
+        path: '/projects/project-1/config-items/operations',
         method: 'POST',
         status: 204,
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [publicKeySecret],
       },
     ])
@@ -476,7 +476,7 @@ describe('SecretsPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/projects/project-1/secrets/operations'),
+      expect.stringContaining('/projects/project-1/config-items/operations'),
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
@@ -498,7 +498,7 @@ describe('SecretsPage', () => {
       },
       environmentsRoute,
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/config-items',
         body: [
           apiKeySecret,
           {
@@ -509,7 +509,7 @@ describe('SecretsPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/secrets/config-1/value',
+        path: '/projects/project-1/config-items/config-1/value',
         body: { value: 'secret-value' },
       },
     ])
