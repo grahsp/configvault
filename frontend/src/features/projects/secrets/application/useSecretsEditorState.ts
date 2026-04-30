@@ -172,6 +172,10 @@ export function useSecretsEditorState(
   }
 }
 
+export type UseSecretsEditorStateResult = ReturnType<
+  typeof useSecretsEditorState
+>
+
 function reducer(
   state: SecretsEditorState,
   action: SecretsEditorAction,

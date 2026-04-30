@@ -194,6 +194,39 @@ export function getSuccessMessage(operations: SecretBatchOperation[]) {
   return 'Secret value saved'
 }
 
+export function getUpdatedValidationIds(
+  currentIds: string[],
+  secretId: string,
+  nextDraftKey: string,
+) {
+  return getSecretKeyValidationError(nextDraftKey)
+    ? currentIds.includes(secretId)
+      ? currentIds
+      : [...currentIds, secretId]
+    : currentIds.filter((id) => id !== secretId)
+}
+
+export function getAffectedValueIds(operations: SecretBatchOperation[]) {
+  const secretIdsWithUpdatedValues = operations
+    .filter(
+      (
+        operation,
+      ): operation is Extract<SecretBatchOperation, { type: 'set-value' }> =>
+        operation.type === 'set-value',
+    )
+    .map((operation) => operation.secretId)
+  const deletedSecretIds = operations
+    .filter(
+      (
+        operation,
+      ): operation is Extract<SecretBatchOperation, { type: 'delete' }> =>
+        operation.type === 'delete',
+    )
+    .map((operation) => operation.secretId)
+
+  return [...secretIdsWithUpdatedValues, ...deletedSecretIds]
+}
+
 export function isLocalSecretId(secretId: string) {
   return secretId.startsWith('local-config-item-')
 }

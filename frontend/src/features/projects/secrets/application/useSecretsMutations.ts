@@ -87,3 +87,5 @@ export function useSecretsMutations(
     upsertSecretValue: upsertValueMutation,
   }
 }
+
+export type UseSecretsMutationsResult = ReturnType<typeof useSecretsMutations>
