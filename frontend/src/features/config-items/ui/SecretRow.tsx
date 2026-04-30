@@ -1,11 +1,11 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
 import { cx } from '../../../shared/utils/cx'
-import type { ConfigItem } from '../model'
-import styles from './ConfigItemsTable.module.css'
+import type { Secret } from '../domain'
+import styles from './SecretsTable.module.css'
 
-interface ConfigItemRowProps {
-  configItem: ConfigItem
+interface SecretRowProps {
+  secret: Secret
   draftKey: string
   draftValue: string | null
   isEditing: boolean
@@ -13,13 +13,13 @@ interface ConfigItemRowProps {
   isRevealing: boolean
   isSaving: boolean
   isValueRevealed: boolean
-  onDeleteToggle: (configItem: ConfigItem) => void
+  onDeleteToggle: (secret: Secret) => void
   onDraftKeyChange: (key: string) => void
   onDraftValueChange: (value: string) => void
   onCancelEdit: () => void
-  onReveal: (configItem: ConfigItem) => void
+  onReveal: (secret: Secret) => void
   onSaveEdit: () => void
-  onStartValueEdit: (configItem: ConfigItem) => Promise<void> | void
+  onStartValueEdit: (secret: Secret) => Promise<void> | void
   revealedValue?: string
   shouldFocus?: boolean
   validationError?: string
@@ -28,8 +28,8 @@ interface ConfigItemRowProps {
 const maskedValue = '************'
 const emptyValue = '(empty)'
 
-export function ConfigItemRow({
-  configItem,
+export function SecretRow({
+  secret,
   draftKey,
   draftValue,
   isEditing,
@@ -47,13 +47,13 @@ export function ConfigItemRow({
   revealedValue,
   shouldFocus = false,
   validationError,
-}: ConfigItemRowProps) {
+}: SecretRowProps) {
   const keyCellRef = useRef<HTMLTableCellElement>(null)
   const keyFieldRef = useRef<HTMLInputElement>(null)
   const valueFieldRef = useRef<HTMLTextAreaElement>(null)
   const shouldMoveCaretRef = useRef(false)
   const isStartingValueEditRef = useRef(false)
-  const errorId = `config-item-${configItem.id}-key-error`
+  const errorId = `secret-${secret.id}-key-error`
 
   useEffect(() => {
     if (!shouldFocus) {
@@ -104,7 +104,7 @@ export function ConfigItemRow({
       return revealedValue
     }
 
-    return configItem.hasValue ? maskedValue : emptyValue
+    return secret.hasValue ? maskedValue : emptyValue
   }
 
   function renderEditingValue() {
@@ -116,7 +116,7 @@ export function ConfigItemRow({
       return draftValue
     }
 
-    return configItem.hasValue ? maskedValue : ''
+    return secret.hasValue ? maskedValue : ''
   }
 
   function handleValueFieldFocus() {
@@ -124,7 +124,7 @@ export function ConfigItemRow({
       !isEditing ||
       isMarkedForDeletion ||
       isSaving ||
-      !configItem.hasValue ||
+      !secret.hasValue ||
       draftValue !== null ||
       isStartingValueEditRef.current
     ) {
@@ -133,13 +133,13 @@ export function ConfigItemRow({
 
     shouldMoveCaretRef.current = true
     isStartingValueEditRef.current = true
-    void Promise.resolve(onStartValueEdit(configItem)).finally(() => {
+    void Promise.resolve(onStartValueEdit(secret)).finally(() => {
       isStartingValueEditRef.current = false
     })
   }
 
   const isValueFieldLocked =
-    isEditing && configItem.hasValue && draftValue === null && !isMarkedForDeletion
+    isEditing && secret.hasValue && draftValue === null && !isMarkedForDeletion
 
   return (
     <tr
@@ -155,7 +155,7 @@ export function ConfigItemRow({
         tabIndex={shouldFocus ? -1 : undefined}
       >
         <div className={styles.fieldGroup}>
-          <label className={styles.visuallyHidden} htmlFor={`key-${configItem.id}`}>
+          <label className={styles.visuallyHidden} htmlFor={`key-${secret.id}`}>
             Key
           </label>
           <input
@@ -168,13 +168,13 @@ export function ConfigItemRow({
               validationError && styles.textFieldError,
             )}
             disabled={!isEditing || isSaving || isMarkedForDeletion}
-            id={`key-${configItem.id}`}
+            id={`key-${secret.id}`}
             onChange={(event) => onDraftKeyChange(event.target.value)}
             onKeyDown={handleKeyDown}
             readOnly={!isEditing || isMarkedForDeletion}
             ref={keyFieldRef}
             type="text"
-            value={(isEditing ? draftKey : configItem.key)}
+            value={isEditing ? draftKey : secret.key}
           />
           {isEditing && validationError ? (
             <span className={styles.inlineKeyError} id={errorId} role="alert">
@@ -184,7 +184,7 @@ export function ConfigItemRow({
         </div>
       </th>
       <td className={styles.valueCell}>
-        <label className={styles.visuallyHidden} htmlFor={`value-${configItem.id}`}>
+        <label className={styles.visuallyHidden} htmlFor={`value-${secret.id}`}>
           Value
         </label>
         <textarea
@@ -194,7 +194,7 @@ export function ConfigItemRow({
             isMarkedForDeletion && styles.markedForDeletionField,
           )}
           disabled={!isEditing || isSaving || isMarkedForDeletion}
-          id={`value-${configItem.id}`}
+          id={`value-${secret.id}`}
           onClick={handleValueFieldFocus}
           onFocus={handleValueFieldFocus}
           onChange={(event) => onDraftValueChange(event.target.value)}
@@ -207,7 +207,7 @@ export function ConfigItemRow({
       </td>
       <td className={styles.actionsColumn}>
         <div className={styles.rowActions}>
-          {configItem.hasValue ? (
+          {secret.hasValue ? (
             <button
               className={cx(
                 styles.iconAction,
@@ -215,11 +215,11 @@ export function ConfigItemRow({
                 isMarkedForDeletion && styles.iconActionRevealMuted,
               )}
               disabled={isRevealing}
-              onClick={() => onReveal(configItem)}
+              onClick={() => onReveal(secret)}
               type="button"
             >
               <span className={styles.visuallyHidden}>
-                {isValueRevealed ? `Hide ${configItem.key}` : `Reveal ${configItem.key}`}
+                {isValueRevealed ? `Hide ${secret.key}` : `Reveal ${secret.key}`}
               </span>
               {isValueRevealed ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -232,13 +232,13 @@ export function ConfigItemRow({
                 isMarkedForDeletion && styles.iconActionDeleteActive,
               )}
               disabled={isSaving}
-              onClick={() => onDeleteToggle(configItem)}
+              onClick={() => onDeleteToggle(secret)}
               type="button"
             >
               <span className={styles.visuallyHidden}>
                 {isMarkedForDeletion
-                  ? `Undo delete ${configItem.key}`
-                  : `Delete ${configItem.key}`}
+                  ? `Undo delete ${secret.key}`
+                  : `Delete ${secret.key}`}
               </span>
               {isMarkedForDeletion ? <UndoIcon /> : <TrashIcon />}
             </button>

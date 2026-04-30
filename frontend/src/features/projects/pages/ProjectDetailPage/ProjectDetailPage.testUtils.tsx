@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { Navigate, createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
 import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
-import { ProjectSecretsPage } from '../../../config-items/pages/ProjectSecretsPage'
+import { SecretsPage } from '../../../config-items/pages'
 import { MembersPage } from '../../members/pages'
 import { GeneralPage } from './GeneralPage'
 import { ProjectDetailPage } from './ProjectDetailPage'
@@ -67,7 +67,7 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
           },
           {
             path: 'secrets',
-            element: <ProjectSecretsPage />,
+            element: <SecretsPage />,
           },
           {
             path: 'members',

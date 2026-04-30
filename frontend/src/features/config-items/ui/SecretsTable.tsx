@@ -1,10 +1,11 @@
 import { cx } from '../../../shared/utils/cx'
-import type { ConfigItem, ConfigItemsTableRowState } from '../model'
-import { ConfigItemRow } from './ConfigItemRow'
-import { ImportConfigItemsModal } from './ImportConfigItemsModal'
-import styles from './ConfigItemsTable.module.css'
+import type { Secret } from '../domain'
+import type { SecretRowViewModel } from '../application'
+import { ImportSecretsModal } from './ImportSecretsModal'
+import { SecretRow } from './SecretRow'
+import styles from './SecretsTable.module.css'
 
-interface ConfigItemsTableProps {
+interface SecretsTableProps {
   environmentName: string
   isEditing: boolean
   isError: boolean
@@ -13,23 +14,23 @@ interface ConfigItemsTableProps {
   isLoading: boolean
   isSaving: boolean
   loadErrorMessage?: string
-  rows: ConfigItemsTableRowState[]
+  rows: SecretRowViewModel[]
   onCancelEdit: () => void
   onCloseImportModal: () => void
-  onDraftKeyChange: (configItem: ConfigItem, nextDraftKey: string) => void
-  onDraftValueChange: (configItem: ConfigItem, nextDraftValue: string) => void
+  onDraftKeyChange: (secret: Secret, nextDraftKey: string) => void
+  onDraftValueChange: (secret: Secret, nextDraftValue: string) => void
   onImport: (content: string) => Promise<void>
-  onOpenAddConfigItem: () => void
+  onOpenAddSecret: () => void
   onOpenImportModal: () => void
-  onReveal: (configItem: ConfigItem) => Promise<void>
+  onReveal: (secret: Secret) => Promise<void>
   onRetry: () => void
   onSaveEdit: () => Promise<void>
   onStartEdit: () => void
-  onStartValueEdit: (configItem: ConfigItem) => Promise<void> | void
-  onToggleDelete: (configItem: ConfigItem) => void
+  onStartValueEdit: (secret: Secret) => Promise<void> | void
+  onToggleDelete: (secret: Secret) => void
 }
 
-export function ConfigItemsTable({
+export function SecretsTable({
   environmentName,
   isEditing,
   isError,
@@ -44,7 +45,7 @@ export function ConfigItemsTable({
   onDraftKeyChange,
   onDraftValueChange,
   onImport,
-  onOpenAddConfigItem,
+  onOpenAddSecret,
   onOpenImportModal,
   onReveal,
   onRetry,
@@ -52,7 +53,7 @@ export function ConfigItemsTable({
   onStartEdit,
   onStartValueEdit,
   onToggleDelete,
-}: ConfigItemsTableProps) {
+}: SecretsTableProps) {
   const hasRows = rows.length > 0
 
   return (
@@ -122,7 +123,7 @@ export function ConfigItemsTable({
           </p>
           <button
             className={cx(styles.button, styles.buttonPrimary)}
-            onClick={onOpenAddConfigItem}
+            onClick={onOpenAddSecret}
             type="button"
           >
             Add Secret
@@ -158,8 +159,8 @@ export function ConfigItemsTable({
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <ConfigItemRow
-                    configItem={row.configItem}
+                  <SecretRow
+                    secret={row.secret}
                     draftKey={row.draftKey}
                     draftValue={row.draftValue}
                     isEditing={isEditing}
@@ -167,14 +168,14 @@ export function ConfigItemsTable({
                     isRevealing={row.isRevealing}
                     isSaving={isSaving}
                     isValueRevealed={row.isValueRevealed}
-                    key={row.configItem.id}
+                    key={row.secret.id}
                     onCancelEdit={onCancelEdit}
                     onDeleteToggle={onToggleDelete}
                     onDraftKeyChange={(nextDraftKey) =>
-                      onDraftKeyChange(row.configItem, nextDraftKey)
+                      onDraftKeyChange(row.secret, nextDraftKey)
                     }
                     onDraftValueChange={(nextDraftValue) =>
-                      onDraftValueChange(row.configItem, nextDraftValue)
+                      onDraftValueChange(row.secret, nextDraftValue)
                     }
                     onReveal={onReveal}
                     onSaveEdit={() => void onSaveEdit()}
@@ -194,7 +195,7 @@ export function ConfigItemsTable({
                 <button
                   className={cx(styles.button, styles.buttonPrimary)}
                   disabled={isSaving}
-                  onClick={onOpenAddConfigItem}
+                  onClick={onOpenAddSecret}
                   type="button"
                 >
                   Add Secret
@@ -232,7 +233,7 @@ export function ConfigItemsTable({
       ) : null}
 
       {isImportModalOpen ? (
-        <ImportConfigItemsModal
+        <ImportSecretsModal
           isEditing={isEditing}
           isPending={isImporting}
           onCancel={onCloseImportModal}

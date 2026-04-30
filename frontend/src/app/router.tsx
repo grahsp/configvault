@@ -1,7 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
-import { ProjectSecretsPage } from '../features/config-items/pages/ProjectSecretsPage'
+import { SecretsPage } from '../features/config-items/pages'
 import { MembersPage } from '../features/projects/members/pages'
 import { GeneralPage } from '../features/projects/pages/ProjectDetailPage'
 import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage'
@@ -44,7 +44,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'secrets',
-            element: <ProjectSecretsPage />,
+            element: <SecretsPage />,
           },
           {
             path: 'members',

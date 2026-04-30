@@ -1,21 +1,21 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { cx } from '../../../shared/utils/cx'
-import styles from './ConfigItemsTable.module.css'
+import styles from './SecretsTable.module.css'
 
-interface ImportConfigItemsModalProps {
+interface ImportSecretsModalProps {
   isEditing: boolean
   isPending: boolean
   onCancel: () => void
   onSubmit: (content: string) => Promise<void>
 }
 
-export function ImportConfigItemsModal({
+export function ImportSecretsModal({
   isEditing,
   isPending,
   onCancel,
   onSubmit,
-}: ImportConfigItemsModalProps) {
+}: ImportSecretsModalProps) {
   const [content, setContent] = useState('')
   const trimmedContent = content.trim()
 
