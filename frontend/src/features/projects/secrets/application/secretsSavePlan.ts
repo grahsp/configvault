@@ -2,7 +2,7 @@ import { type SecretBatchOperation } from '../api'
 import type { Secret } from '../domain'
 import type { NewSecretDraft, SecretDraft } from './secretsEditor.types.ts'
 import { toLocalSecret } from './secretsEditorDrafts.ts'
-import { buildSecretRows } from './secretRowViewModels.ts'
+import { getSecretValidationErrorMap } from './secretRowViewModels.ts'
 
 export function buildSaveOperations({
   secrets,
@@ -16,20 +16,16 @@ export function buildSaveOperations({
   pendingDeletionIds: string[]
 }) {
   const tableSecrets = [...secrets, ...newSecrets.map(toLocalSecret)]
-  const invalidSecretIds = buildSecretRows({
-    drafts,
-    focusedSecretId: null,
-    highlightedValidationIds: [],
-    isEditing: true,
-    newSecrets,
-    pendingDeletionIds,
-    revealedValues: {},
-    revealingId: null,
-    tableSecrets,
-    visibleRevealedValues: {},
-  })
-    .filter((row) => Boolean(row.validationError))
-    .map((row) => row.secret.id)
+  const invalidSecretIds = Object.entries(
+    getSecretValidationErrorMap(
+      tableSecrets,
+      drafts,
+      newSecrets,
+      pendingDeletionIds,
+    ),
+  )
+    .filter(([, error]) => Boolean(error))
+    .map(([secretId]) => secretId)
 
   if (invalidSecretIds.length > 0) {
     return { invalidSecretIds, operations: [] as SecretBatchOperation[] }

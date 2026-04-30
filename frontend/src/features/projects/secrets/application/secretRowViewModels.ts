@@ -30,7 +30,7 @@ export function buildSecretRows({
   tableSecrets: Secret[]
   visibleRevealedValues: Record<string, boolean>
 }) {
-  const validationErrors = getValidationErrors(
+  const validationErrors = getSecretValidationErrorMap(
     tableSecrets,
     drafts,
     newSecrets,
@@ -55,7 +55,7 @@ export function buildSecretRows({
   }))
 }
 
-function getValidationErrors(
+export function getSecretValidationErrorMap(
   tableSecrets: Secret[],
   drafts: Record<string, SecretDraft>,
   newSecrets: NewSecretDraft[],
