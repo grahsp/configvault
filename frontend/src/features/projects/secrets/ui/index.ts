@@ -1,3 +1,6 @@
 export * from './SecretRow.tsx'
 export * from './SecretsTable.tsx'
+export * from './SecretsTableFooterActions.tsx'
+export * from './SecretsTableHeaderActions.tsx'
+export * from './SecretsTableStates.tsx'
 export * from './ImportSecretsModal.tsx'

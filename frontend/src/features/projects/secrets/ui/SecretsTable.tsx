@@ -1,8 +1,14 @@
-import { Button, StatePanel } from '../../../../shared/ui'
 import type { Secret } from '../domain'
 import type { SecretRowViewModel } from '../application'
 import { ImportSecretsModal } from './ImportSecretsModal.tsx'
 import { SecretRow } from './SecretRow.tsx'
+import { SecretsTableFooterActions } from './SecretsTableFooterActions.tsx'
+import { SecretsTableHeaderActions } from './SecretsTableHeaderActions.tsx'
+import {
+  SecretsEmptyState,
+  SecretsErrorState,
+  SecretsLoadingState,
+} from './SecretsTableStates.tsx'
 import styles from './SecretsTable.module.css'
 
 interface SecretsTableProps {
@@ -55,6 +61,13 @@ export function SecretsTable({
   onToggleDelete,
 }: SecretsTableProps) {
   const hasRows = rows.length > 0
+  const showHeaderActions =
+    !isEditing && environmentName && !isLoading && !isError && hasRows
+  const showLoadingState = isLoading
+  const showErrorState = Boolean(environmentName) && isError
+  const showEmptyState =
+    Boolean(environmentName) && !isLoading && !isError && !hasRows
+  const showTable = Boolean(environmentName) && !isLoading && !isError && hasRows
 
   return (
     <section className={styles.sectionCard}>
@@ -65,78 +78,27 @@ export function SecretsTable({
           updates from one edit state.
         </p>
 
-        {!isEditing &&
-        environmentName &&
-        !isLoading &&
-        !isError &&
-        hasRows ? (
-          <div className={styles.sectionHeaderActions}>
-            <Button onClick={onOpenImportModal} type="button" variant="secondary">
-              Import .env
-            </Button>
-            <Button onClick={onStartEdit} type="button" variant="secondary">
-              Edit
-            </Button>
-          </div>
+        {showHeaderActions ? (
+          <SecretsTableHeaderActions
+            onOpenImportModal={onOpenImportModal}
+            onStartEdit={onStartEdit}
+          />
         ) : null}
       </div>
 
-      {isLoading ? (
-        <StatePanel
-          className={styles.sectionState}
-          role="status"
-          title="Loading secrets..."
-        >
-          <p>
-            Config item keys are being prepared.
-          </p>
-        </StatePanel>
-      ) : null}
+      <SecretsLoadingState isVisible={showLoadingState} />
+      <SecretsErrorState
+        errorMessage={loadErrorMessage}
+        isVisible={showErrorState}
+        onRetry={onRetry}
+      />
+      <SecretsEmptyState
+        isVisible={showEmptyState}
+        onOpenAddSecret={onOpenAddSecret}
+        onOpenImportModal={onOpenImportModal}
+      />
 
-      {environmentName && isError ? (
-        <StatePanel
-          actions={
-            <Button onClick={onRetry} type="button" variant="secondary">
-              Retry
-            </Button>
-          }
-          className={styles.sectionState}
-          role="alert"
-          title="Failed to load secrets."
-          tone="error"
-        >
-          <p>{loadErrorMessage}</p>
-        </StatePanel>
-      ) : null}
-
-      {environmentName &&
-      !isLoading &&
-      !isError &&
-      !hasRows ? (
-        <StatePanel
-          actions={
-            <>
-              <Button onClick={onOpenAddSecret} type="button" variant="primary">
-                Add Secret
-              </Button>
-              <Button onClick={onOpenImportModal} type="button" variant="secondary">
-                Import .env
-              </Button>
-            </>
-          }
-          className={styles.sectionState}
-          title="No secrets yet"
-        >
-          <p>
-            Add a secret key to start tracking values across environments.
-          </p>
-        </StatePanel>
-      ) : null}
-
-      {environmentName &&
-      !isLoading &&
-      !isError &&
-      hasRows ? (
+      {showTable ? (
         <>
           <div className={styles.tableWrapper}>
             <table className={styles.configItemsTable}>
@@ -185,46 +147,13 @@ export function SecretsTable({
           </div>
 
           {isEditing ? (
-            <div className={styles.sectionFooterActions}>
-              <div className={styles.sectionFooterPrimaryActions}>
-                <Button
-                  className={styles.footerPrimaryButton}
-                  disabled={isSaving}
-                  onClick={onOpenAddSecret}
-                  type="button"
-                  variant="primary"
-                >
-                  Add Secret
-                </Button>
-                <Button
-                  className={styles.footerPrimaryButton}
-                  disabled={isSaving}
-                  onClick={onOpenImportModal}
-                  type="button"
-                  variant="secondary"
-                >
-                  Import .env
-                </Button>
-              </div>
-              <div className={styles.sectionFooterSecondaryActions}>
-                <Button
-                  disabled={isSaving}
-                  onClick={() => void onSaveEdit()}
-                  type="button"
-                  variant="primary"
-                >
-                  {isSaving ? 'Saving' : 'Save Changes'}
-                </Button>
-                <Button
-                  disabled={isSaving}
-                  onClick={onCancelEdit}
-                  type="button"
-                  variant="secondary"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
+            <SecretsTableFooterActions
+              isSaving={isSaving}
+              onCancelEdit={onCancelEdit}
+              onOpenAddSecret={onOpenAddSecret}
+              onOpenImportModal={onOpenImportModal}
+              onSaveEdit={onSaveEdit}
+            />
           ) : null}
         </>
       ) : null}
