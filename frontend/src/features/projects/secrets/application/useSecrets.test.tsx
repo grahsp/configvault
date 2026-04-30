@@ -13,7 +13,6 @@ const apiMocks = vi.hoisted(() => ({
   getSecrets: vi.fn(),
   importSecrets: vi.fn(),
   saveSecrets: vi.fn(),
-  upsertSecretValue: vi.fn(),
 }))
 
 vi.mock('../api', () => apiMocks)
@@ -230,7 +229,7 @@ describe('secrets application hooks', () => {
 
   it('sets hasValue locally after upserting a secret value', async () => {
     const queryClient = createTestQueryClient()
-    apiMocks.upsertSecretValue.mockResolvedValue(undefined)
+    apiMocks.saveSecrets.mockResolvedValue(undefined)
     queryClient.setQueryData(
       secretsQueryKeys.list(projectId, environmentName),
       existingSecrets,
@@ -254,12 +253,17 @@ describe('secrets application hooks', () => {
       ...existingSecrets[1],
       hasValue: true,
     })
-    expect(apiMocks.upsertSecretValue).toHaveBeenCalledWith(
+    expect(apiMocks.saveSecrets).toHaveBeenCalledWith(
       expect.any(Object),
       projectId,
-      'config-2',
       environmentName,
-      'new-secret-value',
+      [
+        {
+          type: 'set-value',
+          secretId: 'config-2',
+          value: 'new-secret-value',
+        },
+      ],
     )
   })
 })

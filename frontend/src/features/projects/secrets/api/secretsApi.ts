@@ -38,10 +38,6 @@ function buildSecretOperationsPath(projectId: string) {
   return `${buildSecretsPath(projectId)}/operations`
 }
 
-function buildSecretPath(projectId: string, secretId: string) {
-  return `${buildSecretsPath(projectId)}/${encodeURIComponent(secretId)}`
-}
-
 function buildEnvironmentSearch(environmentName: string) {
   return `environment=${encodeURIComponent(environmentName)}`
 }
@@ -63,8 +59,7 @@ function buildSecretValuePath(
   secretId: string,
   environmentName: string,
 ) {
-  return `${buildSecretPath(
-    projectId,
+  return `${buildSecretsPath(projectId)}/${encodeURIComponent(
     secretId,
   )}/value?${buildEnvironmentSearch(environmentName)}`
 }
@@ -109,17 +104,6 @@ export function importSecrets(
   )
 }
 
-export function createSecret(
-  client: ApiClient,
-  projectId: string,
-  key: string,
-) {
-  return client.request<void>(buildSecretsPath(projectId), {
-    method: 'POST',
-    body: JSON.stringify({ key }),
-  })
-}
-
 export function saveSecrets(
   client: ApiClient,
   projectId: string,
@@ -132,28 +116,6 @@ export function saveSecrets(
       environment: environmentName,
       operations,
     }),
-  })
-}
-
-export function renameSecret(
-  client: ApiClient,
-  projectId: string,
-  secretId: string,
-  key: string,
-) {
-  return client.request<void>(buildSecretPath(projectId, secretId), {
-    method: 'PATCH',
-    body: JSON.stringify({ key }),
-  })
-}
-
-export function deleteSecret(
-  client: ApiClient,
-  projectId: string,
-  secretId: string,
-) {
-  return client.request<void>(buildSecretPath(projectId, secretId), {
-    method: 'DELETE',
   })
 }
 
@@ -175,11 +137,11 @@ export function upsertSecretValue(
   environmentName: string,
   value: string,
 ) {
-  return client.request<void>(
-    buildSecretValuePath(projectId, secretId, environmentName),
+  return saveSecrets(client, projectId, environmentName, [
     {
-      method: 'PUT',
-      body: JSON.stringify({ value }),
+      type: 'set-value',
+      secretId,
+      value,
     },
-  )
+  ])
 }

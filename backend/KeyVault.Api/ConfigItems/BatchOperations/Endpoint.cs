@@ -1,4 +1,3 @@
-using System.Text.Json;
 using KeyVault.Api.ConfigItems.BatchOperations.Operations;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
@@ -12,12 +11,11 @@ namespace KeyVault.Api.ConfigItems.BatchOperations;
 internal static class BatchOperationsEndpoint
 {
 	internal static async Task<IResult> Handle(
-		HttpRequest httpRequest,
+		Request request,
 		ICommandDispatcher dispatcher,
 		Guid projectId,
 		CancellationToken ct)
 	{
-		var request = await ReadRequestAsync(httpRequest, ct);
 		var operations = new List<Operation>(request.Operations.Count);
 
 		foreach (var operation in request.Operations)
@@ -27,27 +25,6 @@ internal static class BatchOperationsEndpoint
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();
-	}
-
-	private static async Task<Request> ReadRequestAsync(HttpRequest httpRequest, CancellationToken ct)
-	{
-		try
-		{
-			var request = await httpRequest.ReadFromJsonAsync<Request>(cancellationToken: ct);
-
-			if (request is null)
-				throw new ValidationException("Request body is required.");
-
-			return request;
-		}
-		catch (JsonException ex)
-		{
-			throw new ValidationException(ex.Message);
-		}
-		catch (NotSupportedException ex)
-		{
-			throw new ValidationException(ex.Message);
-		}
 	}
 
 	private static Operation MapOperation(

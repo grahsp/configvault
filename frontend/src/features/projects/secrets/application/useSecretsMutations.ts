@@ -5,7 +5,6 @@ import {
   getSecretValue,
   importSecrets,
   saveSecrets,
-  upsertSecretValue,
   type SecretBatchOperation,
 } from '../api'
 import type { Secret, SecretValue } from '../domain'
@@ -63,12 +62,11 @@ export function useSecretsMutations(
     UpsertSecretValueVariables
   >({
     mutationFn: ({ secretId, value }) =>
-      upsertSecretValue(
+      saveSecrets(
         client,
         projectId,
-        secretId,
         environmentName,
-        value,
+        [{ type: 'set-value', secretId, value }],
       ),
     onSuccess: (_data, { secretId }) => {
       queryClient.setQueryData<Secret[]>(queryKey, (current = []) =>

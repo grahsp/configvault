@@ -1,12 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ApiClient } from '../../../../api/apiClient.ts'
 import {
-  deleteSecret,
   exportSecrets,
   getSecretValue,
   getSecrets,
   importSecrets,
-  renameSecret,
   saveSecrets,
   upsertSecretValue,
 } from './secretsApi.ts'
@@ -74,42 +72,6 @@ describe('secrets api', () => {
     )
   })
 
-  it('renames a secret with encoded project and secret ids', async () => {
-    const client = createMockClient()
-    vi.mocked(client.request).mockResolvedValue(undefined)
-
-    await expect(
-      renameSecret(
-        client,
-        'project/with space',
-        'config/with space',
-        'RENAMED_KEY',
-      ),
-    ).resolves.toBeUndefined()
-
-    expect(client.request).toHaveBeenCalledWith(
-      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space',
-      {
-        method: 'PATCH',
-        body: JSON.stringify({ key: 'RENAMED_KEY' }),
-      },
-    )
-  })
-
-  it('deletes a secret with encoded project and secret ids', async () => {
-    const client = createMockClient()
-    vi.mocked(client.request).mockResolvedValue(undefined)
-
-    await deleteSecret(client, 'project/with space', 'config/with space')
-
-    expect(client.request).toHaveBeenCalledWith(
-      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space',
-      {
-        method: 'DELETE',
-      },
-    )
-  })
-
   it('loads a secret value with encoded path and environment values', async () => {
     const client = createMockClient()
     const secretValue = { value: 'secret-value' }
@@ -167,7 +129,7 @@ describe('secrets api', () => {
     )
   })
 
-  it('upserts a secret value with encoded path and environment values', async () => {
+  it('upserts a secret value through the batch operations endpoint', async () => {
     const client = createMockClient()
     vi.mocked(client.request).mockResolvedValue(undefined)
 
@@ -182,10 +144,19 @@ describe('secrets api', () => {
     ).resolves.toBeUndefined()
 
     expect(client.request).toHaveBeenCalledWith(
-      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value?environment=prod%2Feu%20west',
+      '/projects/project%2Fwith%20space/secrets/operations',
       {
-        method: 'PUT',
-        body: JSON.stringify({ value: 'secret-value' }),
+        method: 'POST',
+        body: JSON.stringify({
+          environment: 'prod/eu west',
+          operations: [
+            {
+              type: 'set-value',
+              secretId: 'config/with space',
+              value: 'secret-value',
+            },
+          ],
+        }),
       },
     )
   })

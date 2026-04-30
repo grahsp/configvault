@@ -7,9 +7,9 @@ public static class ConfigItemEndpoints
 {
 	public static void AddConfigItemEndpoints(this IEndpointRouteBuilder builder)
 	{
-		var configItems = builder.MapGroup("/projects/{projectId}/config-items")
+		var configItems = builder.MapGroup("/projects/{projectId}/secrets")
 			.RequireAuthorization(AuthorizationPolicies.UserOnly)
-			.WithTags("Config Items");
+			.WithTags("Secrets");
 
 		configItems.MapGet("", GetConfigItems.Endpoint.Handle);
 		configItems.MapPost("", AddConfigItem.Endpoint.Handle);
@@ -19,12 +19,12 @@ public static class ConfigItemEndpoints
 		configItems.MapDelete("/{configItemId}", RemoveConfigItem.Endpoint.Handle);
 		
 		var configValues = builder.MapGroup("/projects/{projectId}")
-			.WithTags("Config Values");
+			.WithTags("Secrets");
 		
 		configValues.MapGet("/export", ExportConfig.Endpoint.Handle);
 		configValues.MapPost("/import", ImportConfig.Endpoint.Handle);
 		
-		configValues.MapPut("/config-items/{configItemId}/value", SetConfigValue.Endpoint.Handle);
-		configValues.MapGet("/config-items/{configItemId}/value", GetConfigValue.Endpoint.Handle);
+		configValues.MapPut("/secrets/{configItemId}/value", SetConfigValue.Endpoint.Handle);
+		configValues.MapGet("/secrets/{configItemId}/value", GetConfigValue.Endpoint.Handle);
 	}
 }

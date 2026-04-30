@@ -23,7 +23,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		var configItemId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
 
 		var response = await client.PostAsJsonAsync(
-			$"/projects/{projectId}/config-items/operations",
+			$"/projects/{projectId}/secrets/operations",
 			new
 			{
 				environment = "production",
@@ -39,6 +39,30 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 	}
 
 	[Fact]
+	public async Task PostOperations_ShouldAcceptFrontendSecretIdPayload()
+	{
+		await using var host = fixture.CreateDefaultHost();
+		await TestFixture.ResetAsync(host);
+		var client = host.CreateJsonClient("batch-owner");
+		var projectId = await CreateProjectAsync(client);
+		var configItemId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
+
+		var response = await client.PostAsJsonAsync(
+			$"/projects/{projectId}/secrets/operations",
+			new
+			{
+				environment = "production",
+				operations = new object[]
+				{
+					new { type = "rename", secretId = configItemId, key = "PUBLIC_KEY" },
+					new { type = "set-value", secretId = configItemId, value = "updated-secret" },
+				},
+			});
+
+		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+	}
+
+	[Fact]
 	public async Task PostOperations_ShouldReturnBadRequest_ForUnknownOperationType()
 	{
 		await using var host = fixture.CreateDefaultHost();
@@ -47,7 +71,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
-			$"/projects/{projectId}/config-items/operations",
+			$"/projects/{projectId}/secrets/operations",
 			CreateJsonContent(
 				"""
 				{
@@ -75,7 +99,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
-			$"/projects/{projectId}/config-items/operations",
+			$"/projects/{projectId}/secrets/operations",
 			CreateJsonContent(
 				"""
 				{
@@ -103,7 +127,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsync(
-			$"/projects/{projectId}/config-items/operations",
+			$"/projects/{projectId}/secrets/operations",
 			CreateJsonContent(
 				"""
 				{
@@ -131,7 +155,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		var projectId = await CreateProjectAsync(client);
 
 		var response = await client.PostAsJsonAsync(
-			$"/projects/{projectId}/config-items/operations",
+			$"/projects/{projectId}/secrets/operations",
 			new
 			{
 				environment = "production",
@@ -205,7 +229,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 		string key)
 	{
 		var create = await client.PostAsJsonAsync(
-			$"/projects/{projectId}/config-items",
+			$"/projects/{projectId}/secrets",
 			new { key });
 		create.EnsureSuccessStatusCode();
 
