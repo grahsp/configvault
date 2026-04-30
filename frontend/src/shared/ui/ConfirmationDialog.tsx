@@ -1,6 +1,6 @@
-import {cx} from '../utils/cx.ts'
-import styles from '../../features/projects/environments/ui/EnvironmentDropdown/EnvironmentDropdown.module.css'
-import type {ReactNode} from "react";
+import type { ReactNode } from 'react'
+import { Button } from './Button'
+import { Modal } from './Modal'
 
 export interface ConfirmationDialogProps {
   cancelLabel?: string
@@ -25,44 +25,40 @@ export function ConfirmationDialog({
   title,
   children,
 }: ConfirmationDialogProps) {
-  const titleId = `${title.replace(/\s+/g, '-').toLocaleLowerCase()}-title`
-
   return (
-    <div className={styles.modalBackdrop} role="presentation">
-      <div
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={cx(styles.modal, styles.modalCompact)}
-        role="dialog"
-      >
-        <h2 id={titleId}>{title}</h2>
-        {children}
-
-        {errorMessage ? (
-          <p className={styles.createError} role="alert">
-            {errorMessage}
-          </p>
-        ) : null}
-
-        <div className={styles.modalActions}>
-          <button
-            className={cx(styles.modalButton, styles.modalButtonSecondary)}
+    <Modal
+      actions={
+        <>
+          <Button
             disabled={isPending}
             onClick={onCancel}
             type="button"
+            variant="secondary"
           >
             {cancelLabel}
-          </button>
-          <button
-            className={cx(styles.modalButton, styles.modalButtonDanger)}
+          </Button>
+          <Button
             disabled={isPending}
             onClick={onConfirm}
             type="button"
+            variant="danger"
           >
             {isPending ? pendingConfirmLabel ?? confirmLabel : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </>
+      }
+      size="sm"
+      title={title}
+    >
+      <>
+        {children}
+
+        {errorMessage ? (
+          <p role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
+      </>
+    </Modal>
   )
 }
