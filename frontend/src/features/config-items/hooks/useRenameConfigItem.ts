@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
 import { renameConfigItem } from '../api/configItemsApi'
 import type { ConfigItem } from '../types/ConfigItem'
 import { configItemQueryKeys } from './configItemQueryKeys'
-import { useAuthenticatedConfigItemsClient } from './useConfigItems'
 
 interface RenameConfigItemVariables {
   configItemId: string
@@ -14,7 +14,7 @@ interface RenameConfigItemContext {
 }
 
 export function useRenameConfigItem(projectId: string, environmentName: string) {
-  const client = useAuthenticatedConfigItemsClient()
+  const client = useAuthenticatedApiClient()
   const queryClient = useQueryClient()
   const queryKey = configItemQueryKeys.list(projectId, environmentName)
 

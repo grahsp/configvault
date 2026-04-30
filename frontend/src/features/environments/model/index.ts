@@ -11,7 +11,6 @@ export {
 export { useCreateEnvironment } from './useCreateEnvironment'
 export { useDeleteEnvironment } from './useDeleteEnvironment'
 export {
-  useAuthenticatedEnvironmentClient,
   useEnvironments,
 } from './useEnvironments'
 export { useEnvironmentDropdown } from './useEnvironmentDropdown'

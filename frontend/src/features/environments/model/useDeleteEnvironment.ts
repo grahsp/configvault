@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuthenticatedApiClient } from '../../../shared/api/useAuthenticatedApiClient'
 import { deleteEnvironment } from '../api/environmentsApi'
 import type { Environment } from './environment'
 import { environmentQueryKeys } from './environmentQueryKeys'
-import { useAuthenticatedEnvironmentClient } from './useEnvironments'
 
 export function useDeleteEnvironment(projectId: string) {
-  const client = useAuthenticatedEnvironmentClient()
+  const client = useAuthenticatedApiClient()
   const queryClient = useQueryClient()
 
   return useMutation({
