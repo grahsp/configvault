@@ -3,7 +3,7 @@
   justify-items: start;
   gap: var(--space-3);
   align-content: center;
-  min-height: 180px;
+  min-height: var(--panel-min-height);
   padding: var(--space-6);
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-md);

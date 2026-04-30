@@ -8,9 +8,13 @@ body {
     'Satoshi', 'Avenir Next', 'Segoe UI', ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 32%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-  color: #0f172a;
+    radial-gradient(circle at top, var(--color-primary-glow), transparent 32%),
+    linear-gradient(
+      180deg,
+      var(--color-surface-muted) 0%,
+      var(--color-surface-muted-strong) 100%
+    );
+  color: var(--color-inverse);
 }
 
 *,

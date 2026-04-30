@@ -1,8 +1,8 @@
 .environmentDropdown {
   position: relative;
   display: inline-grid;
-  gap: 6px;
-  width: 180px;
+  gap: var(--space-1-5);
+  width: var(--dropdown-width);
   max-width: 100%;
 }
 
@@ -10,17 +10,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  min-height: 34px;
+  gap: var(--space-2);
+  min-height: var(--input-height-sm);
   width: 100%;
-  padding: 6px 9px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #0f172a;
+  padding: var(--space-1-5) var(--space-2-25);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-contrast);
+  color: var(--color-inverse);
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
@@ -42,49 +42,49 @@
 .createInput:focus-visible,
 .createButton:focus-visible,
 .deleteAction:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.22);
+  outline: 3px solid var(--color-primary-focus-soft);
   outline-offset: 2px;
 }
 
 .chevron {
-  color: #475569;
-  font-size: 0.85rem;
+  color: var(--color-text-body);
+  font-size: var(--font-size-body-sm);
 }
 
 .menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + var(--space-1-5));
   left: 0;
   z-index: 10;
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   width: 100%;
-  min-width: 220px;
-  padding: 6px;
-  border: 1px solid #d8dee8;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  min-width: var(--dropdown-min-width);
+  padding: var(--space-1-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-contrast);
+  box-shadow: var(--shadow-panel-soft);
 }
 
 .optionRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px;
+  gap: var(--space-1);
   align-items: stretch;
 }
 
 .option,
 .addAction {
   width: 100%;
-  min-height: 38px;
-  padding: 8px 10px;
+  min-height: var(--input-height-md);
+  padding: var(--space-2) var(--space-6-5);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
-  color: #0f172a;
+  color: var(--color-inverse);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-align: left;
   cursor: pointer;
 }
@@ -97,42 +97,42 @@
 .option:hover,
 .optionActive,
 .addAction:hover {
-  background: #f1f5f9;
+  background: var(--color-surface-muted-hover);
 }
 
 .optionSelected {
-  background: #e0f2fe;
+  background: var(--color-surface-info);
 }
 
 .divider {
   height: 1px;
   margin: 4px 0;
-  background: #e5e7eb;
+  background: var(--color-border-subtle);
 }
 
 .addAction {
-  color: #2563eb;
+  color: var(--color-primary-hover);
 }
 
 .deleteAction {
-  min-height: 38px;
-  padding: 8px;
+  min-height: var(--input-height-md);
+  padding: var(--space-2);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
-  color: #b91c1c;
+  color: var(--color-text-danger);
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
 .deleteAction:hover {
-  background: #fee2e2;
+  background: var(--color-danger-soft);
 }
 
 .deleteAction:disabled {
-  color: #94a3b8;
+  color: var(--color-text-placeholder);
   cursor: not-allowed;
   opacity: 0.8;
 }
@@ -143,24 +143,24 @@
 
 .createForm {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .createLabel {
   display: grid;
-  gap: 6px;
-  color: #334155;
-  font-size: 0.85rem;
-  font-weight: 700;
+  gap: var(--space-1-5);
+  color: var(--color-text-body-strong);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-bold);
 }
 
 .createInput {
-  min-height: 38px;
+  min-height: var(--input-height-md);
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  color: #0f172a;
+  padding: var(--space-2) var(--space-6-5);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  color: var(--color-inverse);
   font: inherit;
 }
 
@@ -172,16 +172,16 @@
 .createActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .createButton {
-  min-height: 36px;
-  padding: 7px 10px;
+  min-height: var(--button-height);
+  padding: 7px var(--space-6-5);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
@@ -191,85 +191,85 @@
 }
 
 .createSubmit {
-  background: #2563eb;
-  color: #ffffff;
+  background: var(--color-primary-hover);
+  color: var(--color-surface-contrast);
 }
 
 .createCancel {
-  border-color: #cbd5e1;
-  background: #ffffff;
-  color: #334155;
+  border-color: var(--color-border-soft);
+  background: var(--color-surface-contrast);
+  color: var(--color-text-body-strong);
 }
 
 .createError {
   margin: 0;
-  color: #b91c1c;
-  font-size: 0.9rem;
-  font-weight: 700;
+  color: var(--color-text-danger);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
 }
 
 .emptyState,
 .errorState {
   margin: 0;
-  padding: 10px;
-  color: #475569;
-  font-weight: 700;
+  padding: var(--space-6-5);
+  color: var(--color-text-body);
+  font-weight: var(--font-weight-bold);
 }
 
 .errorState {
-  color: #b91c1c;
+  color: var(--color-text-danger);
 }
 
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
-  padding: 24px;
-  background: rgba(15, 23, 42, 0.4);
+  padding: var(--space-6);
+  background: var(--color-overlay);
 }
 
 .modal {
-  width: min(100%, 520px);
-  padding: 24px;
-  border: 1px solid #d8dee8;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18);
+  width: min(100%, var(--modal-width-md));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-contrast);
+  box-shadow: var(--shadow-xl);
 }
 
 .modalCompact {
-  width: min(100%, 440px);
+  width: min(100%, var(--modal-width-sm));
 }
 
 .modal h2 {
   margin: 0;
-  font-size: 1.55rem;
+  font-size: var(--font-size-modal-title);
 }
 
 .modalCopy {
-  margin: 16px 0 0;
-  line-height: 1.6;
-  color: #475569;
+  margin: var(--space-4) 0 0;
+  line-height: var(--line-height-comfortable);
+  color: var(--color-text-body);
 }
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .modalButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 18px;
+  padding: var(--space-3) var(--space-5-5);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
@@ -279,24 +279,24 @@
 }
 
 .modalButtonSecondary {
-  border-color: #cbd5e1;
-  background: #ffffff;
-  color: #0f172a;
+  border-color: var(--color-border-soft);
+  background: var(--color-surface-contrast);
+  color: var(--color-inverse);
 }
 
 .modalButtonDanger {
-  background: #b91c1c;
-  color: #ffffff;
+  background: var(--color-text-danger);
+  color: var(--color-surface-contrast);
 }
 
 @media (max-width: 640px) {
   .modalBackdrop {
     align-items: end;
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .modal {
-    max-height: calc(100vh - 32px);
+    max-height: calc(100vh - var(--space-7));
     overflow: auto;
   }
 

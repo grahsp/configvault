@@ -23,11 +23,11 @@
 }
 
 .sm {
-  --modal-max-width: 440px;
+  --modal-max-width: var(--modal-width-sm);
 }
 
 .md {
-  --modal-max-width: 520px;
+  --modal-max-width: var(--modal-width-md);
 }
 
 .header {

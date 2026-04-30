@@ -8,19 +8,43 @@
     --color-surface-elevated: #1f2933;
     --color-surface-contrast: #ffffff;
     --color-surface-muted: #f8fafc;
+    --color-surface-muted-hover: #f1f5f9;
+    --color-surface-muted-strong: #eef2f7;
     --color-surface-danger: #fef2f2;
+    --color-surface-danger-muted: #fff7f7;
+    --color-surface-success: #f0fdf4;
+    --color-surface-success-muted: #ecfdf5;
+    --color-surface-info: #e0f2fe;
+    --color-surface-pink-soft: #fdf2f8;
+    --color-surface-contrast-muted: #fdfefe;
+    --color-surface-contrast-subtle: #fefefe;
 
     --color-border: #1f2a37;
     --color-border-muted: #111827;
     --color-border-strong: #d8dee8;
+    --color-border-soft: #cbd5e1;
+    --color-border-subtle: #e5e7eb;
+    --color-border-glass: rgba(148, 163, 184, 0.24);
     --color-border-danger: #fecaca;
+    --color-border-success: #86efac;
 
     --color-text: #e5e7eb;
     --color-text-muted: #9ca3af;
     --color-text-subtle: #6b7280;
     --color-text-strong: #111827;
     --color-text-body: #475569;
+    --color-text-body-strong: #334155;
+    --color-text-secondary: #374151;
+    --color-text-tertiary: #4b5563;
+    --color-text-placeholder: #94a3b8;
+    --color-text-disabled: #64748b;
     --color-text-danger: #b91c1c;
+    --color-text-danger-strong: #991b1b;
+    --color-text-danger-emphasis: #7f1d1d;
+    --color-text-success: #14532d;
+    --color-text-success-strong: #047857;
+    --color-text-pink: #c08497;
+    --color-text-pink-muted: #d49aa9;
 
     --color-inverse: #020617;
 
@@ -32,6 +56,9 @@
     --color-primary-hover: #2563eb;
     --color-primary-active: #1d4ed8;
     --color-primary-soft: rgba(59, 130, 246, 0.12);
+    --color-primary-glow: rgba(59, 130, 246, 0.14);
+    --color-primary-soft-strong: rgba(37, 99, 235, 0.12);
+    --color-primary-focus-soft: rgba(37, 99, 235, 0.22);
 
     /* =========================
        COLORS - SEMANTIC
@@ -55,6 +82,8 @@
     --color-active: rgba(255, 255, 255, 0.08);
     --color-focus: rgba(59, 130, 246, 0.5);
     --color-overlay: rgba(15, 23, 42, 0.4);
+    --color-surface-glass: rgba(255, 255, 255, 0.72);
+    --color-surface-glass-subtle: rgba(255, 255, 255, 0.5);
 
     /* =========================
        SPACING (4px system)
@@ -62,11 +91,17 @@
 
     --space-0: 0;
     --space-1: 4px;
+    --space-1-5: 6px;
     --space-2: 8px;
+    --space-2-25: 9px;
+    --space-2-75: 11px;
     --space-3: 12px;
+    --space-3-5: 14px;
     --space-4: 16px;
     --space-5: 20px;
+    --space-5-5: 18px;
     --space-6: 24px;
+    --space-6-5: 10px;
     --space-7: 32px;
     --space-8: 40px;
     --space-9: 48px;
@@ -79,7 +114,10 @@
     --radius-none: 0;
     --radius-sm: 6px;
     --radius-md: 8px;
+    --radius-md-lg: 10px;
     --radius-lg: 12px;
+    --radius-lg-xl: 14px;
+    --radius-2xl: 20px;
     --radius-xl: 16px;
     --radius-full: 9999px;
 
@@ -96,14 +134,37 @@
     --font-size-lg: 16px;
     --font-size-xl: 18px;
     --font-size-2xl: 20px;
+    --font-size-3xs: 0.78rem;
+    --font-size-2xs: 0.8rem;
+    --font-size-caption: 0.82rem;
+    --font-size-body-sm: 0.85rem;
+    --font-size-body-md: 0.9rem;
+    --font-size-body-lg: 0.92rem;
+    --font-size-body-xl: 0.96rem;
+    --font-size-title-xs: 1.05rem;
+    --font-size-title-sm: 1.08rem;
+    --font-size-title-md: 1.1rem;
+    --font-size-title-lg: 1.25rem;
+    --font-size-display-sm: 2rem;
+    --font-size-display-lg: 2.75rem;
+    --font-size-modal-title: 1.55rem;
+    --font-size-section-title: 1.5rem;
 
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
 
     --line-height-tight: 1.2;
     --line-height-normal: 1.5;
+    --line-height-snug: 1.35;
+    --line-height-relaxed: 1.55;
+    --line-height-comfortable: 1.6;
     --line-height-loose: 1.7;
+
+    --letter-spacing-wide: 0.04em;
+    --letter-spacing-wider: 0.08em;
 
     /* =========================
        SHADOWS (subtle)
@@ -113,6 +174,13 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.45);
     --shadow-xl: 0 28px 70px rgba(15, 23, 42, 0.18);
+    --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.08);
+    --shadow-card-soft: 0 20px 48px rgba(15, 23, 42, 0.06);
+    --shadow-panel: 0 18px 40px rgba(15, 23, 42, 0.16);
+    --shadow-panel-soft: 0 18px 40px rgba(15, 23, 42, 0.14);
+    --shadow-glass: 0 20px 50px rgba(15, 23, 42, 0.06);
+    --shadow-glass-strong: 0 18px 40px rgba(15, 23, 42, 0.18);
+    --shadow-primary-soft: 0 12px 28px rgba(37, 99, 235, 0.12);
 
     /* =========================
        TRANSITIONS
@@ -137,6 +205,29 @@
 
     --input-height: 36px;
     --button-height: 36px;
+    --input-height-sm: 34px;
+    --input-height-md: 38px;
+    --input-height-lg: 42px;
+    --card-min-height-sm: 88px;
+    --panel-min-height: 180px;
+    --panel-min-height-lg: 220px;
+    --icon-button-size: 38px;
+    --icon-size-md: 21px;
+    --control-width-sm: 92px;
+    --control-width-md: 104px;
+    --control-width-lg: 112px;
+    --control-width-xl: 132px;
+    --nav-height-offset: 88px;
+    --content-max-width: 1120px;
+    --dropdown-width: 180px;
+    --dropdown-min-width: 220px;
+    --table-min-width-sm: 560px;
+    --table-min-width-md: 600px;
+    --modal-width-sm: 440px;
+    --modal-width-md: 520px;
+    --toast-width: 360px;
 
     --container-max-width: 1200px;
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 780px;
 }
