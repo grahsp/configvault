@@ -1,13 +1,7 @@
-import {
-  type ButtonHTMLAttributes,
-  type KeyboardEvent as ReactKeyboardEvent,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from 'react'
+import { type ButtonHTMLAttributes } from 'react'
 import { cx } from '../utils/cx'
 import styles from './SplitButton.module.css'
+import { useMenuButtonState } from './useMenuButtonState'
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger'
 
@@ -32,45 +26,17 @@ export function SplitButton({
   onMenuActionClick,
   variant,
 }: SplitButtonProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const menuId = useId()
-  const rootRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined
-    }
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen])
-
-  const handleToggleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      setIsOpen(true)
-    }
-  }
+  const {
+    closeMenu,
+    handleTriggerClick,
+    handleTriggerKeyDown,
+    isOpen,
+    menuId,
+    rootRef,
+  } = useMenuButtonState()
 
   const handleMenuActionClick = () => {
-    setIsOpen(false)
+    closeMenu()
     onMenuActionClick()
   }
 
@@ -94,8 +60,8 @@ export function SplitButton({
         aria-label={menuLabel}
         className={cx(styles.toggle, styles[variant])}
         disabled={disabled}
-        onClick={() => setIsOpen((open) => !open)}
-        onKeyDown={handleToggleKeyDown}
+        onClick={handleTriggerClick}
+        onKeyDown={handleTriggerKeyDown}
         type="button"
       >
         <DownArrowIcon />

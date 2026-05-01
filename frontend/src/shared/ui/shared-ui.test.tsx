@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { Button } from './Button'
 import buttonStyles from './Button.module.css'
 import { ConfirmationDialog } from './ConfirmationDialog'
+import { KebabMenuButton } from './KebabMenuButton'
+import kebabMenuButtonStyles from './KebabMenuButton.module.css'
 import { Modal } from './Modal'
 import { SplitButton } from './SplitButton'
 import splitButtonStyles from './SplitButton.module.css'
@@ -94,6 +96,39 @@ describe('shared ui primitives', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Import Secrets' }))
 
     expect(onMenuActionClick).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('renders a kebab menu trigger and runs menu actions', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+
+    render(
+      <KebabMenuButton
+        items={[
+          {
+            label: 'Copy Secrets (.env)',
+            onSelect,
+          },
+        ]}
+        label="Secret actions"
+      />,
+    )
+
+    const trigger = screen.getByRole('button', { name: 'Secret actions' })
+
+    expect(trigger).toHaveClass(kebabMenuButtonStyles.trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveTextContent('...')
+
+    await user.keyboard('{Tab}{Enter}')
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('menuitem', { name: 'Copy Secrets (.env)' }))
+
+    expect(onSelect).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 

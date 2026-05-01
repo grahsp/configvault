@@ -1,5 +1,6 @@
 export * from './Button'
 export * from './ConfirmationDialog'
+export * from './KebabMenuButton'
 export * from './Modal'
 export * from './SplitButton'
 export * from './StatePanel'
