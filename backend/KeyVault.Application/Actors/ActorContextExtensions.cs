@@ -5,16 +5,23 @@ namespace KeyVault.Application.Actors;
 
 public static class ActorContextExtensions
 {
-	public static bool TryGetUserId(this IActorContext actor, out UserId? userId)
+	public static bool TryGetUserId(this IActorContext actor, out UserId userId)
 	{
-		userId = actor.UserId;
-		return userId is not null;
+		userId = default;
+		
+		if (actor is UserActorContext user)
+		{
+			userId = user.UserId;
+			return true;
+		}
+		
+		return false;
 	}
 
 	public static UserId RequireUserId(this IActorContext actor)
 	{
-		return actor.TryGetUserId(out var userId)
-			? userId!
+		return actor is UserActorContext user
+			? user.UserId
 			: throw new ForbiddenException();
 	}
 }

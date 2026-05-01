@@ -5,7 +5,7 @@ namespace KeyVault.Domain.Users;
 
 public sealed class User
 {
-	public UserId Id { get; } = null!;
+	public UserId Id { get; }
 	
 	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;

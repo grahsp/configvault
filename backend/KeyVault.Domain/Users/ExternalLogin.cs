@@ -7,7 +7,7 @@ public sealed class ExternalLogin
 	public string Issuer { get; private init; } = null!;
 	public string Subject { get; private init; } = null!;
 
-	public UserId UserId { get; private init; } = null!;
+	public UserId UserId { get; private init; }
 
 	private ExternalLogin() {}
 

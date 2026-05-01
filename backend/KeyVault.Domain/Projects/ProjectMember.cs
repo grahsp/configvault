@@ -5,7 +5,7 @@ namespace KeyVault.Domain.Projects;
 public sealed class ProjectMember
 {
 	public Guid ProjectId { get; private init; }
-	public UserId UserId { get; private init; } = null!;
+	public UserId UserId { get; private init; }
 	
 	public ProjectRole Role { get; private set; }
 	

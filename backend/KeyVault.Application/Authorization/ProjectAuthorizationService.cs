@@ -17,7 +17,7 @@ public sealed class ProjectAuthorizationService(
 		return await CanAccessInternalAsync(
 			capability,
 			actor,
-			_ => Task.FromResult(context.UserId is {} userId && project.IsMember(userId)),
+			_ => Task.FromResult(context is UserActorContext user && project.IsMember(user.UserId)),
 			ct);
 	}
 

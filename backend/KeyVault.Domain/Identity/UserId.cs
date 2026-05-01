@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace KeyVault.Domain.Identity;
 
-public sealed record UserId
+public readonly record struct UserId
 {
 	public Guid Value { get; }
 
@@ -11,9 +11,15 @@ public sealed record UserId
 		Value = value;
 	}
 
-	public static UserId New() => new(Guid.NewGuid());
+	public static UserId New() => new UserId(Guid.NewGuid());
 
-	public static UserId Create(Guid value) => new(value);
+	public static UserId Create(Guid value)
+	{
+		if (value == Guid.Empty)
+			throw new ArgumentException("UserId cannot be empty", nameof(value));
+		
+		return new UserId(value);
+	}
 
 	public static UserId Parse(string value)
 	{
@@ -23,11 +29,14 @@ public sealed record UserId
 		return userId;
 	}
 
-	public static bool TryParse(string? value, [NotNullWhen(true)] out UserId? userId)
+	public static bool TryParse(string? value, [NotNullWhen(true)] out UserId userId)
 	{
-		userId = null;
+		userId = default;
 
 		if (!Guid.TryParseExact(value, "N", out var guid))
+			return false;
+
+		if (guid == Guid.Empty)
 			return false;
 
 		userId = new UserId(guid);

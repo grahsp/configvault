@@ -17,9 +17,9 @@ public sealed class ActorResolver(RoleCapabilities roleCapabilities, IScopeCapab
 			return new Actor(machine.Id, capabilities);
 		}
 
-		if (context.UserId is {} userId)
+		if (context is UserActorContext user)
 		{
-			var member = project.Members.SingleOrDefault(x => x.UserId == userId);
+			var member = project.Members.SingleOrDefault(x => x.UserId == user.UserId);
 			
 			if (member is not null)
 				capabilities.UnionWith(roleCapabilities.For(member.Role));
