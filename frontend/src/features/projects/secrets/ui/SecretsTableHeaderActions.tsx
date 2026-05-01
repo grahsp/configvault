@@ -1,4 +1,4 @@
-import { Button } from '../../../../shared/ui'
+import { SplitButton } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface SecretsTableHeaderActionsProps {
@@ -12,12 +12,14 @@ export function SecretsTableHeaderActions({
 }: SecretsTableHeaderActionsProps) {
   return (
     <div className={styles.sectionHeaderActions}>
-      <Button onClick={onOpenAddSecret} type="button" variant="primary">
-        Add Secret
-      </Button>
-      <Button onClick={onOpenImportModal} type="button" variant="secondary">
-        Import .env
-      </Button>
+      <SplitButton
+        actionLabel="+ Add Secret"
+        menuActionLabel="Import Secrets"
+        menuLabel="Open secret actions"
+        onActionClick={onOpenAddSecret}
+        onMenuActionClick={onOpenImportModal}
+        variant="primary"
+      />
     </div>
   )
 }

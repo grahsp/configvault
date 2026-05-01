@@ -1,4 +1,4 @@
-import { Button, StatePanel } from '../../../../shared/ui'
+import { Button, SplitButton, StatePanel } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface SecretsLoadingStateProps {
@@ -71,14 +71,14 @@ export function SecretsEmptyState({
   return (
     <StatePanel
       actions={
-        <>
-          <Button onClick={onOpenAddSecret} type="button" variant="primary">
-            Add Secret
-          </Button>
-          <Button onClick={onOpenImportModal} type="button" variant="secondary">
-            Import .env
-          </Button>
-        </>
+        <SplitButton
+          actionLabel="+ Add Secret"
+          menuActionLabel="Import Secrets"
+          menuLabel="Open secret actions"
+          onActionClick={onOpenAddSecret}
+          onMenuActionClick={onOpenImportModal}
+          variant="primary"
+        />
       }
       className={styles.sectionState}
       title="No secrets yet"

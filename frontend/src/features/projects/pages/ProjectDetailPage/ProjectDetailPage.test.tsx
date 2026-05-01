@@ -143,7 +143,9 @@ describe('ProjectDetailPage', () => {
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Add Secret' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '+ Add Secret' }),
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'Delete project' }),
     ).not.toBeInTheDocument()
@@ -235,7 +237,7 @@ describe('ProjectDetailPage', () => {
       '/projects/project-1/members?environmentId=env-staging',
     )
     expect(
-      screen.queryByRole('button', { name: 'Add Secret' }),
+      screen.queryByRole('button', { name: '+ Add Secret' }),
     ).not.toBeInTheDocument()
   })
 
