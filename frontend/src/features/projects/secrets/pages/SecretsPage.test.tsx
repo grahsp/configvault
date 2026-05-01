@@ -20,6 +20,18 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+function stubClipboardWrite() {
+  const writeText = vi.fn().mockResolvedValue(undefined)
+  vi.stubGlobal('navigator', {
+    ...window.navigator,
+    clipboard: {
+      writeText,
+    },
+  })
+
+  return writeText
+}
+
 function createDeferredResponse() {
   let resolve: (response: Response) => void = () => undefined
   const response = new Promise<Response>((next) => {
@@ -65,6 +77,12 @@ async function openImportSecrets(user: ReturnType<typeof userEvent.setup>) {
     await screen.findByRole('button', { name: 'Open secret actions' }),
   )
   await user.click(screen.getByRole('menuitem', { name: 'Import Secrets' }))
+}
+
+async function openSecretActionsMenu(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(
+    await screen.findByRole('button', { name: 'Secret actions' }),
+  )
 }
 
 const projectDetails = {
@@ -129,6 +147,48 @@ describe('SecretsPage', () => {
         '/projects/project-1/secrets?environment=production',
       ),
       expect.any(Object),
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Secret actions' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('copies a secrets export from the kebab menu', async () => {
+    const user = userEvent.setup()
+    const writeText = stubClipboardWrite()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/export',
+        response: new Response('API_KEY=secret-value', {
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          status: 200,
+        }),
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await openSecretActionsMenu(user)
+    await user.click(screen.getByRole('menuitem', { name: 'Copy Secrets (.env)' }))
+
+    expect(await screen.findByText('Secrets export copied')).toBeInTheDocument()
+    expect(writeText).toHaveBeenCalledWith('API_KEY=secret-value')
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      expect.stringContaining('/projects/project-1/export?environment=production'),
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      }),
     )
   })
 

@@ -12,9 +12,11 @@ import {
 import styles from './SecretsTable.module.css'
 
 interface SecretsTableProps {
+  canCopyExport: boolean
   environmentName: string
   isError: boolean
   hasUnsavedChanges: boolean
+  isCopyingExport: boolean
   isImportModalOpen: boolean
   isImporting: boolean
   isLoading: boolean
@@ -23,6 +25,7 @@ interface SecretsTableProps {
   rows: SecretRowViewModel[]
   onCancelEdit: () => void
   onCloseImportModal: () => void
+  onCopyExport: () => Promise<void>
   onDraftKeyChange: (secret: Secret, nextDraftKey: string) => void
   onDraftValueChange: (secret: Secret, nextDraftValue: string) => void
   onImport: (content: string) => Promise<void>
@@ -36,9 +39,11 @@ interface SecretsTableProps {
 }
 
 export function SecretsTable({
+  canCopyExport,
   environmentName,
   isError,
   hasUnsavedChanges,
+  isCopyingExport,
   isImportModalOpen,
   isImporting,
   isLoading,
@@ -47,6 +52,7 @@ export function SecretsTable({
   rows,
   onCancelEdit,
   onCloseImportModal,
+  onCopyExport,
   onDraftKeyChange,
   onDraftValueChange,
   onImport,
@@ -59,7 +65,8 @@ export function SecretsTable({
   onToggleDelete,
 }: SecretsTableProps) {
   const hasRows = rows.length > 0
-  const showHeaderActions = Boolean(environmentName) && !isLoading && !isError && hasRows
+  const showHeaderActions =
+    Boolean(environmentName) && !isLoading && !isError && hasRows
   const showLoadingState = isLoading
   const showErrorState = Boolean(environmentName) && isError
   const showEmptyState =
@@ -77,6 +84,9 @@ export function SecretsTable({
 
         {showHeaderActions ? (
           <SecretsTableHeaderActions
+            canCopyExport={canCopyExport}
+            isCopyingExport={isCopyingExport}
+            onCopyExport={onCopyExport}
             onOpenAddSecret={onOpenAddSecret}
             onOpenImportModal={onOpenImportModal}
           />

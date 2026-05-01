@@ -1,12 +1,18 @@
-import { SplitButton } from '../../../../shared/ui'
+import { KebabMenuButton, SplitButton } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface SecretsTableHeaderActionsProps {
+  canCopyExport: boolean
+  isCopyingExport: boolean
+  onCopyExport: () => Promise<void>
   onOpenAddSecret: () => void
   onOpenImportModal: () => void
 }
 
 export function SecretsTableHeaderActions({
+  canCopyExport,
+  isCopyingExport,
+  onCopyExport,
   onOpenAddSecret,
   onOpenImportModal,
 }: SecretsTableHeaderActionsProps) {
@@ -20,6 +26,18 @@ export function SecretsTableHeaderActions({
         onMenuActionClick={onOpenImportModal}
         variant="primary"
       />
+      {canCopyExport ? (
+        <KebabMenuButton
+          disabled={isCopyingExport}
+          items={[
+            {
+              label: 'Copy Secrets (.env)',
+              onSelect: () => void onCopyExport(),
+            },
+          ]}
+          label="Secret actions"
+        />
+      ) : null}
     </div>
   )
 }

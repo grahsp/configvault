@@ -1,5 +1,4 @@
 import { useOutletContext } from 'react-router-dom'
-import { Button } from '../../../../shared/ui'
 import { useSecretsEditor } from '../application'
 import type { ProjectLayoutContext } from '../../pages/ProjectDetailPage'
 import { SecretsTable } from '../ui'
@@ -15,23 +14,12 @@ export function SecretsPage() {
 
   return (
     <section className={styles.page}>
-      {editor.canCopyExport ? (
-        <div className={styles.actions}>
-          <Button
-            disabled={editor.isCopyingExport}
-            onClick={editor.onCopyExport}
-            type="button"
-            variant="secondary"
-          >
-            {editor.isCopyingExport ? 'Copying export...' : 'Copy Export'}
-          </Button>
-        </div>
-      ) : null}
-
       <SecretsTable
+        canCopyExport={editor.canCopyExport}
         environmentName={editor.environmentName}
         isError={editor.isError}
         hasUnsavedChanges={editor.hasUnsavedChanges}
+        isCopyingExport={editor.isCopyingExport}
         isImportModalOpen={editor.isImportModalOpen}
         isImporting={editor.isImporting}
         isLoading={editor.isLoading}
@@ -39,6 +27,7 @@ export function SecretsPage() {
         loadErrorMessage={editor.loadErrorMessage}
         onCancelEdit={editor.onCancelEdit}
         onCloseImportModal={editor.onCloseImportModal}
+        onCopyExport={editor.onCopyExport}
         onDraftKeyChange={editor.onDraftKeyChange}
         onDraftValueChange={editor.onDraftValueChange}
         onImport={editor.onImport}
