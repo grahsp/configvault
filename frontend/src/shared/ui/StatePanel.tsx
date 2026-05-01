@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from 'react'
 import { cx } from '../utils/cx'
 import styles from './StatePanel.module.css'
 
-export interface StatePanelProps extends HTMLAttributes<HTMLDivElement> {
+export type StatePanelProps = Omit<HTMLAttributes<HTMLDivElement>, 'role'> & {
   actions?: ReactNode
   children?: ReactNode
   role?: 'status' | 'alert'
