@@ -5,6 +5,8 @@ import { Button } from './Button'
 import buttonStyles from './Button.module.css'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { Modal } from './Modal'
+import { SplitButton } from './SplitButton'
+import splitButtonStyles from './SplitButton.module.css'
 import { StatePanel } from './StatePanel'
 import statePanelStyles from './StatePanel.module.css'
 
@@ -54,6 +56,45 @@ describe('shared ui primitives', () => {
     expect(within(dialog).getByText('Body copy')).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+  })
+
+  it('renders split button actions and menu semantics', async () => {
+    const user = userEvent.setup()
+    const onActionClick = vi.fn()
+    const onMenuActionClick = vi.fn()
+
+    render(
+      <SplitButton
+        actionLabel="+ Add Secret"
+        menuActionLabel="Import Secrets"
+        menuLabel="Open secret actions"
+        onActionClick={onActionClick}
+        onMenuActionClick={onMenuActionClick}
+        variant="primary"
+      />,
+    )
+
+    const actionButton = screen.getByRole('button', { name: '+ Add Secret' })
+    const toggleButton = screen.getByRole('button', {
+      name: 'Open secret actions',
+    })
+
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false')
+    expect(toggleButton.querySelector(`.${splitButtonStyles.toggleIcon}`)).not.toBeNull()
+    expect(toggleButton).not.toHaveTextContent(/^v$/i)
+
+    await user.click(actionButton)
+    expect(onActionClick).toHaveBeenCalledTimes(1)
+
+    await user.click(toggleButton)
+
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('menuitem', { name: 'Import Secrets' }))
+
+    expect(onMenuActionClick).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('renders state panel tones, actions, and roles', () => {

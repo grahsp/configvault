@@ -36,9 +36,17 @@
 }
 
 .primary {
-  background: var(--color-inverse);
+  background: var(--color-primary);
   color: var(--color-surface-contrast);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-primary-soft);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--color-primary-active);
 }
 
 .secondary {

@@ -22,6 +22,7 @@
     --color-border: #d6d8dc;
     --color-border-muted: #c8ccd2;
     --color-border-strong: #d7dbe2;
+    --color-border-inverse-strong: rgba(255, 255, 255, 0.34);
     --color-border-soft: #e4e7ec;
     --color-border-subtle: #eceef2;
     --color-border-glass: rgba(17, 24, 39, 0.08);
