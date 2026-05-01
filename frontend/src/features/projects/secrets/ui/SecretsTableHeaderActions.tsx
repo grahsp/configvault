@@ -1,5 +1,4 @@
 import { KebabMenuButton, SplitButton } from '../../../../shared/ui'
-import styles from './SecretsTable.module.css'
 
 interface SecretsTableHeaderActionsProps {
   canCopyExport: boolean
@@ -17,7 +16,7 @@ export function SecretsTableHeaderActions({
   onOpenImportModal,
 }: SecretsTableHeaderActionsProps) {
   return (
-    <div className={styles.sectionHeaderActions}>
+    <>
       <SplitButton
         actionLabel="+ Add Secret"
         menuActionLabel="Import Secrets"
@@ -38,6 +37,6 @@ export function SecretsTableHeaderActions({
           label="Secret actions"
         />
       ) : null}
-    </div>
+    </>
   )
 }

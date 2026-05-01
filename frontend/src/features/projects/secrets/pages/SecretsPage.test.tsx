@@ -218,6 +218,46 @@ describe('SecretsPage', () => {
     secretsResponse.resolve(jsonResponse([]))
   })
 
+  it('shows the secrets error state and retries the fetch', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: {
+          title: 'Failed',
+          detail: 'Request timed out.',
+          status: 500,
+        },
+        status: 500,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    expect(await screen.findByText('Failed to load secrets.')).toBeInTheDocument()
+    expect(screen.getByText('Request timed out.')).toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/projects/project-1/secrets?environment=production',
+      ),
+      expect.any(Object),
+    )
+  })
+
   it('adds an empty editable secret row from the empty state action', async () => {
     const user = userEvent.setup()
 

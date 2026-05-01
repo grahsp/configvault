@@ -1,41 +1,26 @@
+import type { StatePanelProps } from '../../../../shared/ui'
 import { Button, SplitButton, StatePanel } from '../../../../shared/ui'
-import styles from './SecretsTable.module.css'
 
-interface SecretsLoadingStateProps {
-  isVisible: boolean
-}
+type SecretsStateProps = Pick<StatePanelProps, 'className'>
 
-export function SecretsLoadingState({ isVisible }: SecretsLoadingStateProps) {
-  if (!isVisible) {
-    return null
-  }
-
+export function SecretsLoadingState(props: SecretsStateProps) {
   return (
-    <StatePanel
-      className={styles.sectionState}
-      role="status"
-      title="Loading secrets..."
-    >
+    <StatePanel role="status" title="Loading secrets..." {...props}>
       <p>Secrets are being prepared.</p>
     </StatePanel>
   )
 }
 
-interface SecretsErrorStateProps {
+interface SecretsErrorStateProps extends SecretsStateProps {
   errorMessage?: string
-  isVisible: boolean
   onRetry: () => void
 }
 
 export function SecretsErrorState({
   errorMessage,
-  isVisible,
   onRetry,
+  ...props
 }: SecretsErrorStateProps) {
-  if (!isVisible) {
-    return null
-  }
-
   return (
     <StatePanel
       actions={
@@ -43,31 +28,26 @@ export function SecretsErrorState({
           Retry
         </Button>
       }
-      className={styles.sectionState}
       role="alert"
       title="Failed to load secrets."
       tone="error"
+      {...props}
     >
       <p>{errorMessage}</p>
     </StatePanel>
   )
 }
 
-interface SecretsEmptyStateProps {
-  isVisible: boolean
+interface SecretsEmptyStateProps extends SecretsStateProps {
   onOpenAddSecret: () => void
   onOpenImportModal: () => void
 }
 
 export function SecretsEmptyState({
-  isVisible,
   onOpenAddSecret,
   onOpenImportModal,
+  ...props
 }: SecretsEmptyStateProps) {
-  if (!isVisible) {
-    return null
-  }
-
   return (
     <StatePanel
       actions={
@@ -80,8 +60,8 @@ export function SecretsEmptyState({
           variant="primary"
         />
       }
-      className={styles.sectionState}
       title="No secrets yet"
+      {...props}
     >
       <p>Add a secret key to start tracking values across environments.</p>
     </StatePanel>
