@@ -260,8 +260,7 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: 'Edit' }))
-    await user.click(screen.getByRole('button', { name: 'Add Secret' }))
+    await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Import .env' }))
@@ -354,14 +353,43 @@ describe('SecretsPage', () => {
     ).toBeInTheDocument()
 
     const apiKeyRow = within(table).getByRole('row', {
-      name: /Key API_KEY Value\*{12} Reveal/,
+      name: /Key API_KEY Value\*{12} Reveal .*Delete API_KEY/,
     })
     const databaseRow = within(table).getByRole('row', {
-      name: /Key DATABASE_URL Value\(empty\)/,
+      name: /Key DATABASE_URL Value Delete DATABASE_URL/,
     })
 
     expect(apiKeyRow).toBeInTheDocument()
     expect(databaseRow).toBeInTheDocument()
+  })
+
+  it('removes the edit button and lets existing rows be edited immediately', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+    expect(keyInput).toHaveValue('API_KEY')
+
+    await user.clear(keyInput)
+    await user.type(keyInput, 'PUBLIC_KEY')
+
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
   })
 
   it('highlights a missing key when saving a new empty item', async () => {
@@ -465,9 +493,9 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: 'Edit' }))
-    await user.clear(screen.getByRole('textbox', { name: 'Key' }))
-    await user.type(screen.getByRole('textbox', { name: 'Key' }), 'PUBLIC_KEY')
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    await user.clear(keyInput)
+    await user.type(keyInput, 'PUBLIC_KEY')
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret renamed')).toBeInTheDocument()
@@ -487,6 +515,180 @@ describe('SecretsPage', () => {
         }),
       }),
     )
+  })
+
+  it('cancels direct edits and unsaved new rows back to the last loaded state', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    await user.clear(keyInput)
+    await user.type(keyInput, 'PUBLIC_KEY')
+    await user.click(screen.getByRole('button', { name: 'Add Secret' }))
+
+    const keyInputs = screen.getAllByRole('textbox', { name: 'Key' })
+    expect(keyInputs[0]).toHaveValue('')
+    expect(keyInputs[1]).toHaveValue('PUBLIC_KEY')
+    await user.type(keyInputs[0]!, 'DATABASE_URL')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('API_KEY')
+    expect(screen.queryByDisplayValue('PUBLIC_KEY')).not.toBeInTheDocument()
+    expect(screen.queryByDisplayValue('DATABASE_URL')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+  })
+
+  it('renders newly added secrets above existing rows', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: 'Add Secret' }))
+
+    const keyInputs = screen.getAllByRole('textbox', { name: 'Key' })
+    expect(keyInputs[0]).toHaveValue('')
+    expect(keyInputs[1]).toHaveValue('API_KEY')
+  })
+
+  it('shows dirty actions after deleting an existing row and hides them after cancel', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: 'Delete API_KEY' }))
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+  })
+
+  it('cancels direct edits with Escape', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    await user.clear(keyInput)
+    await user.type(keyInput, 'PUBLIC_KEY')
+    await user.keyboard('{Escape}')
+
+    expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('API_KEY')
+    expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
+  })
+
+  it('saves direct edits with Enter', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/operations',
+        method: 'POST',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [publicKeySecret],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    await user.clear(keyInput)
+    await user.type(keyInput, 'PUBLIC_KEY{Enter}')
+
+    expect(await screen.findByText('Secret renamed')).toBeInTheDocument()
+    expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
+  })
+
+  it('reveals an existing value for edit once and reuses the cached value on the next edit', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value',
+        body: { value: 'secret-value' },
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const valueInput = (await screen.findAllByRole('textbox', { name: 'Value' }))[0]
+    await user.click(valueInput!)
+    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByDisplayValue('secret-value')).not.toBeInTheDocument()
+
+    await user.click(screen.getAllByRole('textbox', { name: 'Value' })[0]!)
+    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+    expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
   })
 
   it('toggles a revealed secret value without fetching twice', async () => {
