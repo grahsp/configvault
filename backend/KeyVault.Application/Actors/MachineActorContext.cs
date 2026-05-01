@@ -4,8 +4,6 @@ namespace KeyVault.Application.Actors;
 
 public sealed class MachineActorContext : IActorContext
 {
-	public ActorType Type => ActorType.Machine;
-	
 	public ActorId Id { get; }
 	public UserId? UserId => null;
 	public IReadOnlyList<string> Scopes { get; }
