@@ -40,7 +40,6 @@ export function useSecretsEditor({
     drafts,
     focusedSecretId,
     highlightedValidationIds,
-    isEditing,
     isImportModalOpen,
     newSecrets,
     pendingDeletionIds,
@@ -49,7 +48,6 @@ export function useSecretsEditor({
     setDrafts,
     setFocusedSecretId,
     setHighlightedValidationIds,
-    setIsEditing,
     setIsImportModalOpen,
     setNewSecrets,
     setPendingDeletionIds,
@@ -60,9 +58,13 @@ export function useSecretsEditor({
   } = useSecretsEditorState(environmentName, resetMutations)
 
   const tableSecrets = useMemo(
-    () => [...secrets, ...newSecrets.map(toLocalSecret)],
+    () => [...newSecrets.map(toLocalSecret), ...secrets],
     [secrets, newSecrets],
   )
+  const hasUnsavedChanges =
+    Object.keys(drafts).length > 0 ||
+    newSecrets.length > 0 ||
+    pendingDeletionIds.length > 0
 
   const rows = useMemo<SecretRowViewModel[]>(
     () =>
@@ -70,7 +72,6 @@ export function useSecretsEditor({
         drafts,
         focusedSecretId,
         highlightedValidationIds,
-        isEditing,
         newSecrets,
         pendingDeletionIds,
         revealedValues,
@@ -82,7 +83,6 @@ export function useSecretsEditor({
       drafts,
       focusedSecretId,
       highlightedValidationIds,
-      isEditing,
       newSecrets,
       pendingDeletionIds,
       revealedValues,
@@ -93,11 +93,9 @@ export function useSecretsEditor({
   )
 
   const editSessionState: SecretsEditSessionController = {
-    isEditing,
     setDrafts,
     setFocusedSecretId,
     setHighlightedValidationIds,
-    setIsEditing,
     setIsImportModalOpen,
     setNewSecrets,
     setPendingDeletionIds,
@@ -125,7 +123,6 @@ export function useSecretsEditor({
   const editSession = useSecretsEditSession({
     resetImportMutation,
     resetSaveMutation,
-    secrets,
     state: editSessionState,
   })
   const revealActions = useSecretsRevealActions({
@@ -139,17 +136,17 @@ export function useSecretsEditor({
     state: saveState,
   })
   const transferActions = useSecretsTransferActions({
+    hasUnsavedChanges,
     handleCancelEdit: editSession.onCancelEdit,
     handleCloseImportModal: editSession.onCloseImportModal,
-    isEditing,
     mutations,
   })
 
   return {
     canCopyExport: Boolean(environmentName),
     environmentName,
+    hasUnsavedChanges,
     isCopyingExport: mutations.exportSecrets.isPending,
-    isEditing,
     isError: secretsQuery.isError,
     isImportModalOpen,
     isImporting: mutations.importSecrets.isPending,
@@ -172,7 +169,6 @@ export function useSecretsEditor({
     onReveal: revealActions.onReveal,
     onRetry: () => secretsQuery.refetch(),
     onSaveEdit: saveActions.onSaveEdit,
-    onStartEdit: editSession.onStartEdit,
     onStartValueEdit: revealActions.onStartValueEdit,
     onToggleDelete: editSession.onToggleDelete,
     rows,

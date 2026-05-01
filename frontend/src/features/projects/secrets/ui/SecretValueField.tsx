@@ -7,7 +7,6 @@ import styles from './SecretsTable.module.css'
 interface SecretValueFieldProps {
   secret: Secret
   draftValue: string | null
-  isEditing: boolean
   isMarkedForDeletion: boolean
   isSaving: boolean
   isValueRevealed: boolean
@@ -24,7 +23,6 @@ const emptyValue = '(empty)'
 export function SecretValueField({
   secret,
   draftValue,
-  isEditing,
   isMarkedForDeletion,
   isSaving,
   isValueRevealed,
@@ -89,7 +87,6 @@ export function SecretValueField({
 
   function handleValueFieldFocus() {
     if (
-      !isEditing ||
       isMarkedForDeletion ||
       isSaving ||
       !secret.hasValue ||
@@ -107,7 +104,7 @@ export function SecretValueField({
   }
 
   const isValueFieldLocked =
-    isEditing && secret.hasValue && draftValue === null && !isMarkedForDeletion
+    secret.hasValue && draftValue === null && !isMarkedForDeletion
 
   return (
     <>
@@ -117,19 +114,18 @@ export function SecretValueField({
       <textarea
         className={cx(
           styles.valueField,
-          !isEditing && styles.readonlyField,
           isMarkedForDeletion && styles.markedForDeletionField,
         )}
-        disabled={!isEditing || isSaving || isMarkedForDeletion}
+        disabled={isSaving || isMarkedForDeletion}
         id={`value-${secret.id}`}
         onChange={(event) => onDraftValueChange(event.target.value)}
         onClick={handleValueFieldFocus}
         onFocus={handleValueFieldFocus}
         onKeyDown={handleKeyDown}
-        readOnly={!isEditing || isMarkedForDeletion || isValueFieldLocked}
+        readOnly={isMarkedForDeletion || isValueFieldLocked}
         ref={valueFieldRef}
         rows={1}
-        value={isEditing ? getEditingValue() : getDisplayValue()}
+        value={draftValue !== null || !secret.hasValue ? getEditingValue() : getDisplayValue()}
       />
     </>
   )

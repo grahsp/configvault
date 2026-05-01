@@ -2,21 +2,21 @@ import { Button } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface SecretsTableHeaderActionsProps {
+  onOpenAddSecret: () => void
   onOpenImportModal: () => void
-  onStartEdit: () => void
 }
 
 export function SecretsTableHeaderActions({
+  onOpenAddSecret,
   onOpenImportModal,
-  onStartEdit,
 }: SecretsTableHeaderActionsProps) {
   return (
     <div className={styles.sectionHeaderActions}>
+      <Button onClick={onOpenAddSecret} type="button" variant="primary">
+        Add Secret
+      </Button>
       <Button onClick={onOpenImportModal} type="button" variant="secondary">
         Import .env
-      </Button>
-      <Button onClick={onStartEdit} type="button" variant="secondary">
-        Edit
       </Button>
     </div>
   )

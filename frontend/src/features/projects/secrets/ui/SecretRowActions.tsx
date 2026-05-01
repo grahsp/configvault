@@ -5,7 +5,6 @@ import styles from './SecretsTable.module.css'
 
 interface SecretRowActionsProps {
   secret: Secret
-  isEditing: boolean
   isMarkedForDeletion: boolean
   isRevealing: boolean
   isSaving: boolean
@@ -16,7 +15,6 @@ interface SecretRowActionsProps {
 
 export function SecretRowActions({
   secret,
-  isEditing,
   isMarkedForDeletion,
   isRevealing,
   isSaving,
@@ -43,25 +41,21 @@ export function SecretRowActions({
           {isValueRevealed ? <EyeOffIcon /> : <EyeIcon />}
         </button>
       ) : null}
-      {isEditing ? (
-        <button
-          className={cx(
-            styles.iconAction,
-            styles.iconActionDelete,
-            isMarkedForDeletion && styles.iconActionDeleteActive,
-          )}
-          disabled={isSaving}
-          onClick={() => onDeleteToggle(secret)}
-          type="button"
-        >
-          <span className={styles.visuallyHidden}>
-            {isMarkedForDeletion
-              ? `Undo delete ${secret.key}`
-              : `Delete ${secret.key}`}
-          </span>
-          {isMarkedForDeletion ? <UndoIcon /> : <TrashIcon />}
-        </button>
-      ) : null}
+      <button
+        className={cx(
+          styles.iconAction,
+          styles.iconActionDelete,
+          isMarkedForDeletion && styles.iconActionDeleteActive,
+        )}
+        disabled={isSaving}
+        onClick={() => onDeleteToggle(secret)}
+        type="button"
+      >
+        <span className={styles.visuallyHidden}>
+          {isMarkedForDeletion ? `Undo delete ${secret.key}` : `Delete ${secret.key}`}
+        </span>
+        {isMarkedForDeletion ? <UndoIcon /> : <TrashIcon />}
+      </button>
     </div>
   )
 }

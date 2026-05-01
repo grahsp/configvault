@@ -30,8 +30,8 @@ export function SecretsPage() {
 
       <SecretsTable
         environmentName={editor.environmentName}
-        isEditing={editor.isEditing}
         isError={editor.isError}
+        hasUnsavedChanges={editor.hasUnsavedChanges}
         isImportModalOpen={editor.isImportModalOpen}
         isImporting={editor.isImporting}
         isLoading={editor.isLoading}
@@ -47,7 +47,6 @@ export function SecretsPage() {
         onReveal={editor.onReveal}
         onRetry={editor.onRetry}
         onSaveEdit={editor.onSaveEdit}
-        onStartEdit={editor.onStartEdit}
         onStartValueEdit={editor.onStartValueEdit}
         onToggleDelete={editor.onToggleDelete}
         rows={editor.rows}

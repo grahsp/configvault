@@ -13,8 +13,8 @@ import styles from './SecretsTable.module.css'
 
 interface SecretsTableProps {
   environmentName: string
-  isEditing: boolean
   isError: boolean
+  hasUnsavedChanges: boolean
   isImportModalOpen: boolean
   isImporting: boolean
   isLoading: boolean
@@ -31,15 +31,14 @@ interface SecretsTableProps {
   onReveal: (secret: Secret) => Promise<void>
   onRetry: () => void
   onSaveEdit: () => Promise<void>
-  onStartEdit: () => void
   onStartValueEdit: (secret: Secret) => Promise<void> | void
   onToggleDelete: (secret: Secret) => void
 }
 
 export function SecretsTable({
   environmentName,
-  isEditing,
   isError,
+  hasUnsavedChanges,
   isImportModalOpen,
   isImporting,
   isLoading,
@@ -56,13 +55,11 @@ export function SecretsTable({
   onReveal,
   onRetry,
   onSaveEdit,
-  onStartEdit,
   onStartValueEdit,
   onToggleDelete,
 }: SecretsTableProps) {
   const hasRows = rows.length > 0
-  const showHeaderActions =
-    !isEditing && environmentName && !isLoading && !isError && hasRows
+  const showHeaderActions = Boolean(environmentName) && !isLoading && !isError && hasRows
   const showLoadingState = isLoading
   const showErrorState = Boolean(environmentName) && isError
   const showEmptyState =
@@ -80,8 +77,8 @@ export function SecretsTable({
 
         {showHeaderActions ? (
           <SecretsTableHeaderActions
+            onOpenAddSecret={onOpenAddSecret}
             onOpenImportModal={onOpenImportModal}
-            onStartEdit={onStartEdit}
           />
         ) : null}
       </div>
@@ -120,7 +117,6 @@ export function SecretsTable({
                     secret={row.secret}
                     draftKey={row.draftKey}
                     draftValue={row.draftValue}
-                    isEditing={isEditing}
                     isMarkedForDeletion={row.isMarkedForDeletion}
                     isRevealing={row.isRevealing}
                     isSaving={isSaving}
@@ -146,12 +142,10 @@ export function SecretsTable({
             </table>
           </div>
 
-          {isEditing ? (
+          {hasUnsavedChanges ? (
             <SecretsTableFooterActions
               isSaving={isSaving}
               onCancelEdit={onCancelEdit}
-              onOpenAddSecret={onOpenAddSecret}
-              onOpenImportModal={onOpenImportModal}
               onSaveEdit={onSaveEdit}
             />
           ) : null}
@@ -160,7 +154,7 @@ export function SecretsTable({
 
       {isImportModalOpen ? (
         <ImportSecretsModal
-          isEditing={isEditing}
+          hasUnsavedChanges={hasUnsavedChanges}
           isPending={isImporting}
           onCancel={onCloseImportModal}
           onSubmit={onImport}

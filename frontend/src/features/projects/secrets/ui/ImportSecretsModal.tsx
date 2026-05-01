@@ -4,14 +4,14 @@ import { Button, Modal } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface ImportSecretsModalProps {
-  isEditing: boolean
+  hasUnsavedChanges: boolean
   isPending: boolean
   onCancel: () => void
   onSubmit: (content: string) => Promise<void>
 }
 
 export function ImportSecretsModal({
-  isEditing,
+  hasUnsavedChanges,
   isPending,
   onCancel,
   onSubmit,
@@ -63,7 +63,7 @@ export function ImportSecretsModal({
             Paste `.env`-formatted content to create or update secrets for this
             environment.
           </p>
-          {isEditing ? (
+          {hasUnsavedChanges ? (
             <p>Unsaved edits in the table will be cleared after import.</p>
           ) : null}
         </>

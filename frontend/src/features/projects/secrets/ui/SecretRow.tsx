@@ -10,7 +10,6 @@ interface SecretRowProps {
   secret: Secret
   draftKey: string
   draftValue: string | null
-  isEditing: boolean
   isMarkedForDeletion: boolean
   isRevealing: boolean
   isSaving: boolean
@@ -31,7 +30,6 @@ export function SecretRow({
   secret,
   draftKey,
   draftValue,
-  isEditing,
   isMarkedForDeletion,
   isRevealing,
   isSaving,
@@ -47,7 +45,6 @@ export function SecretRow({
   shouldFocus = false,
   validationError,
 }: SecretRowProps) {
-  const keyCellRef = useRef<HTMLTableCellElement>(null)
   const keyFieldRef = useRef<HTMLInputElement>(null)
   const errorId = `secret-${secret.id}-key-error`
 
@@ -56,15 +53,8 @@ export function SecretRow({
       return
     }
 
-    if (isEditing) {
-      keyFieldRef.current?.focus()
-      return
-    }
-
-    if (!isEditing) {
-      keyCellRef.current?.focus()
-    }
-  }, [isEditing, shouldFocus])
+    keyFieldRef.current?.focus()
+  }, [shouldFocus])
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -81,16 +71,11 @@ export function SecretRow({
   return (
     <tr
       className={cx(
-        isEditing && styles.editingRow,
+        styles.editingRow,
         isMarkedForDeletion && styles.pendingDeleteRow,
       )}
     >
-      <th
-        className={styles.keyCell}
-        ref={keyCellRef}
-        scope="row"
-        tabIndex={shouldFocus ? -1 : undefined}
-      >
+      <th className={styles.keyCell} scope="row">
         <div className={styles.fieldGroup}>
           <label className={styles.visuallyHidden} htmlFor={`key-${secret.id}`}>
             Key
@@ -100,20 +85,19 @@ export function SecretRow({
             aria-invalid={Boolean(validationError)}
             className={cx(
               styles.textField,
-              !isEditing && styles.readonlyField,
               isMarkedForDeletion && styles.markedForDeletionField,
               validationError && styles.textFieldError,
             )}
-            disabled={!isEditing || isSaving || isMarkedForDeletion}
+            disabled={isSaving || isMarkedForDeletion}
             id={`key-${secret.id}`}
             onChange={(event) => onDraftKeyChange(event.target.value)}
             onKeyDown={handleKeyDown}
-            readOnly={!isEditing || isMarkedForDeletion}
+            readOnly={isMarkedForDeletion}
             ref={keyFieldRef}
             type="text"
-            value={isEditing ? draftKey : secret.key}
+            value={draftKey}
           />
-          {isEditing && validationError ? (
+          {validationError ? (
             <span className={styles.inlineKeyError} id={errorId} role="alert">
               {validationError}
             </span>
@@ -123,7 +107,6 @@ export function SecretRow({
       <td className={styles.valueCell}>
         <SecretValueField
           draftValue={draftValue}
-          isEditing={isEditing}
           isMarkedForDeletion={isMarkedForDeletion}
           isSaving={isSaving}
           isValueRevealed={isValueRevealed}
@@ -137,7 +120,6 @@ export function SecretRow({
       </td>
       <td className={styles.actionsColumn}>
         <SecretRowActions
-          isEditing={isEditing}
           isMarkedForDeletion={isMarkedForDeletion}
           isRevealing={isRevealing}
           isSaving={isSaving}
