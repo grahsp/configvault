@@ -1,18 +1,6 @@
 import type { Secret } from '../domain'
 import { getSecretKeyValidationError } from '../domain'
 
-export function createDrafts(items: Secret[]) {
-  return Object.fromEntries(
-    items.map((secret) => [
-      secret.id,
-      {
-        key: secret.key,
-        value: null,
-      },
-    ]),
-  )
-}
-
 export function createLocalSecretId() {
   return `local-config-item-${crypto.randomUUID()}`
 }

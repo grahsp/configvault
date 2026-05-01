@@ -38,7 +38,6 @@ export interface SecretsEditorStateResult {
   drafts: SecretDraftMap
   focusedSecretId: string | null
   highlightedValidationIds: string[]
-  isEditing: boolean
   isImportModalOpen: boolean
   newSecrets: NewSecretDraft[]
   pendingDeletionIds: string[]
@@ -47,7 +46,6 @@ export interface SecretsEditorStateResult {
   setDrafts: (updater: SecretDraftMapUpdater) => void
   setFocusedSecretId: (value: string | null) => void
   setHighlightedValidationIds: (updater: ValidationIdsUpdater) => void
-  setIsEditing: (value: boolean) => void
   setIsImportModalOpen: (value: boolean) => void
   setNewSecrets: (updater: NewSecretsUpdater) => void
   setPendingDeletionIds: (updater: PendingDeletionIdsUpdater) => void
@@ -60,11 +58,9 @@ export interface SecretsEditorStateResult {
 }
 
 export interface SecretsEditSessionController {
-  isEditing: boolean
   setDrafts: (updater: SecretDraftMapUpdater) => void
   setFocusedSecretId: (value: string | null) => void
   setHighlightedValidationIds: (updater: ValidationIdsUpdater) => void
-  setIsEditing: (value: boolean) => void
   setIsImportModalOpen: (value: boolean) => void
   setNewSecrets: (updater: NewSecretsUpdater) => void
   setPendingDeletionIds: (updater: PendingDeletionIdsUpdater) => void

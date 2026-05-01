@@ -18,7 +18,6 @@ import type {
 interface EditSessionState {
   environmentName: string
   focusedSecretId: string | null
-  isEditing: boolean
 }
 
 interface DraftState {
@@ -49,14 +48,10 @@ type EnvironmentAction = {
 }
 
 type EditSessionAction =
-  | ({
-      type: 'set-focused-secret-id'
-      value: string | null
-    } & EnvironmentAction)
-  | ({
-      type: 'set-is-editing'
-      value: boolean
-    } & EnvironmentAction)
+  {
+    type: 'set-focused-secret-id'
+    value: string | null
+  } & EnvironmentAction
 
 type DraftAction =
   | ({
@@ -125,7 +120,6 @@ export function useSecretsEditorState(
     drafts: currentState.drafts,
     focusedSecretId: currentState.focusedSecretId,
     highlightedValidationIds: currentState.highlightedValidationIds,
-    isEditing: currentState.isEditing,
     isImportModalOpen: currentState.isImportModalOpen,
     newSecrets: currentState.newSecrets,
     pendingDeletionIds: currentState.pendingDeletionIds,
@@ -143,9 +137,6 @@ export function useSecretsEditorState(
         environmentName,
         updater,
       })
-    },
-    setIsEditing: (value: boolean) => {
-      dispatch({ type: 'set-is-editing', environmentName, value })
     },
     setIsImportModalOpen: (value: boolean) => {
       dispatch({ type: 'set-is-import-modal-open', environmentName, value })
@@ -202,7 +193,6 @@ function createInitialState(environmentName: string): SecretsEditorState {
     environmentName,
     focusedSecretId: null,
     highlightedValidationIds: [],
-    isEditing: false,
     isImportModalOpen: false,
     newSecrets: [],
     pendingDeletionIds: [],
@@ -226,9 +216,7 @@ function ensureCurrentEnvironment(
 function isEditSessionAction(
   action: SecretsEditorAction,
 ): action is EditSessionAction {
-  return (
-    action.type === 'set-focused-secret-id' || action.type === 'set-is-editing'
-  )
+  return action.type === 'set-focused-secret-id'
 }
 
 function isDraftAction(action: SecretsEditorAction): action is DraftAction {
@@ -255,8 +243,6 @@ function reduceEditSessionState(
   switch (action.type) {
     case 'set-focused-secret-id':
       return setStateValue(state, 'focusedSecretId', action.value)
-    case 'set-is-editing':
-      return setStateValue(state, 'isEditing', action.value)
   }
 }
 

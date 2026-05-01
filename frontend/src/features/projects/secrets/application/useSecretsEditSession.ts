@@ -1,6 +1,5 @@
 import type { Secret } from '../domain'
 import {
-  createDrafts,
   createLocalSecretId,
   getUpdatedValidationIds,
   isLocalSecretId,
@@ -10,33 +9,15 @@ import type { SecretsEditSessionController } from './secretsEditor.types.ts'
 interface UseSecretsEditSessionOptions {
   resetImportMutation: () => void
   resetSaveMutation: () => void
-  secrets: Secret[]
   state: SecretsEditSessionController
 }
 
 export function useSecretsEditSession({
   resetImportMutation,
   resetSaveMutation,
-  secrets,
   state,
 }: UseSecretsEditSessionOptions) {
-  function handleStartEdit() {
-    resetSaveMutation()
-    state.setDrafts(createDrafts(secrets))
-    state.setHighlightedValidationIds([])
-    state.setPendingDeletionIds([])
-    state.setIsEditing(true)
-  }
-
   function handleOpenAddSecret() {
-    if (!state.isEditing) {
-      resetSaveMutation()
-      state.setDrafts(createDrafts(secrets))
-      state.setHighlightedValidationIds([])
-      state.setPendingDeletionIds([])
-      state.setIsEditing(true)
-    }
-
     const id = createLocalSecretId()
 
     resetSaveMutation()
@@ -57,7 +38,6 @@ export function useSecretsEditSession({
     state.setNewSecrets([])
     state.setHighlightedValidationIds([])
     state.setPendingDeletionIds([])
-    state.setIsEditing(false)
     state.setFocusedSecretId(null)
   }
 
@@ -72,6 +52,8 @@ export function useSecretsEditSession({
   }
 
   function handleDeleteToggle(secret: Secret) {
+    resetSaveMutation()
+
     if (isLocalSecretId(secret.id)) {
       state.setNewSecrets((current) =>
         current.filter((item) => item.id !== secret.id),
@@ -144,7 +126,6 @@ export function useSecretsEditSession({
     onDraftValueChange: handleDraftValueChange,
     onOpenAddSecret: handleOpenAddSecret,
     onOpenImportModal: handleOpenImportModal,
-    onStartEdit: handleStartEdit,
     onToggleDelete: handleDeleteToggle,
   }
 }

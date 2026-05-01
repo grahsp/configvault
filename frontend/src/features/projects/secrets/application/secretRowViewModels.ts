@@ -11,7 +11,6 @@ export function buildSecretRows({
   drafts,
   focusedSecretId,
   highlightedValidationIds,
-  isEditing,
   newSecrets,
   pendingDeletionIds,
   revealedValues,
@@ -22,7 +21,6 @@ export function buildSecretRows({
   drafts: Record<string, SecretDraft>
   focusedSecretId: string | null
   highlightedValidationIds: string[]
-  isEditing: boolean
   newSecrets: NewSecretDraft[]
   pendingDeletionIds: string[]
   revealedValues: Record<string, string>
@@ -48,10 +46,9 @@ export function buildSecretRows({
       ? revealedValues[secret.id]
       : undefined,
     shouldFocus: secret.id === focusedSecretId,
-    validationError:
-      isEditing && highlightedValidationIds.includes(secret.id)
-        ? validationErrors[secret.id]
-        : undefined,
+    validationError: highlightedValidationIds.includes(secret.id)
+      ? validationErrors[secret.id]
+      : undefined,
   }))
 }
 

@@ -3,16 +3,16 @@ import { getErrorMessage } from './secretsOperationMessages.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
 interface UseSecretsTransferActionsOptions {
+  hasUnsavedChanges: boolean
   handleCancelEdit: () => void
   handleCloseImportModal: () => void
-  isEditing: boolean
   mutations: UseSecretsMutationsResult
 }
 
 export function useSecretsTransferActions({
+  hasUnsavedChanges,
   handleCancelEdit,
   handleCloseImportModal,
-  isEditing,
   mutations,
 }: UseSecretsTransferActionsOptions) {
   const { addToast } = useToast()
@@ -24,7 +24,7 @@ export function useSecretsTransferActions({
         message: 'Secrets imported',
         type: 'success',
       })
-      if (isEditing) {
+      if (hasUnsavedChanges) {
         handleCancelEdit()
       }
       handleCloseImportModal()
