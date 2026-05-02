@@ -95,6 +95,10 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1/members',
         body: [],
       },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -313,10 +317,41 @@ describe('ProjectDetailPage', () => {
       },
       {
         path: '/projects/project-1/invitations',
+        body: [
+          {
+            invitationId: 'invite-1',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T11:00:00Z',
+            expiresAt: '2025-02-08T11:00:00Z',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/invitations',
         method: 'POST',
         body: {
           token: 'invite-token',
         },
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [
+          {
+            invitationId: 'invite-1',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T11:00:00Z',
+            expiresAt: '2025-02-08T11:00:00Z',
+          },
+          {
+            invitationId: 'invite-2',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T12:00:00Z',
+            expiresAt: '2025-02-08T12:00:00Z',
+          },
+        ],
       },
     ])
 
@@ -335,6 +370,122 @@ describe('ProjectDetailPage', () => {
     expect(
       await screen.findByText('Invitation URL copied to clipboard.'),
     ).toBeInTheDocument()
+  })
+
+  it('shows active invitation links for users who can manage members', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [
+          {
+            invitationId: 'invite-1',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T11:00:00Z',
+            expiresAt: '2025-02-08T11:00:00Z',
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    const invitationTable = await screen.findByRole('table', {
+      name: 'Active invitation links',
+    })
+
+    expect(
+      within(invitationTable).getByRole('columnheader', { name: 'Created by' }),
+    ).toBeInTheDocument()
+    expect(
+      within(invitationTable).getByRole('columnheader', { name: 'Created' }),
+    ).toBeInTheDocument()
+    expect(
+      within(invitationTable).getByRole('columnheader', { name: 'Expires' }),
+    ).toBeInTheDocument()
+    expect(
+      within(invitationTable).getByRole('button', { name: 'Revoke' }),
+    ).toBeEnabled()
+    expect(screen.getByRole('heading', { name: 'Invitation links' })).toBeInTheDocument()
+    expect(screen.getByText('Olivia Owner')).toBeInTheDocument()
+  })
+
+  it('revokes an invitation link after confirmation and refreshes the list', async () => {
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [
+          {
+            invitationId: 'invite-1',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T11:00:00Z',
+            expiresAt: '2025-02-08T11:00:00Z',
+          },
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/invitations/revoke/invite-1',
+        status: 200,
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(await screen.findByRole('button', { name: 'Revoke' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Revoke invitation link' })
+    expect(within(dialog).getByText('Revoke this invitation link?')).toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Revoke' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/invitations/revoke/invite-1'),
+        expect.objectContaining({ method: 'POST' }),
+      ),
+    )
+    expect(await screen.findByText('No active invitation links.')).toBeInTheDocument()
   })
 
   it('renders the general route directly', async () => {
@@ -407,6 +558,10 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1/members',
         response: membersResponse.response,
       },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -466,6 +621,18 @@ describe('ProjectDetailPage', () => {
             displayName: null,
             role: 'member',
             isCurrentUser: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [
+          {
+            invitationId: 'invite-1',
+            createdById: 'current-user',
+            createdByName: 'Olivia Owner',
+            createdAt: '2025-02-01T11:00:00Z',
+            expiresAt: '2025-02-08T11:00:00Z',
           },
         ],
       },
@@ -560,6 +727,10 @@ describe('ProjectDetailPage', () => {
           },
         ],
       },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -635,6 +806,9 @@ describe('ProjectDetailPage', () => {
       screen.getByRole('button', { name: 'Remove Alex Admin' }),
     ).toBeDisabled()
     expect(
+      screen.queryByRole('heading', { name: 'Invitation links' }),
+    ).not.toBeInTheDocument()
+    expect(
       screen.queryByRole('form', { name: 'Add member' }),
     ).not.toBeInTheDocument()
   })
@@ -655,6 +829,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: true,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
 
@@ -688,6 +866,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: true,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
     const user = userEvent.setup()
@@ -732,6 +914,10 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
         method: 'POST',
         path: '/projects/project-1/members/new-user',
         status: 204,
@@ -752,6 +938,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: false,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
     const user = userEvent.setup()
@@ -802,6 +992,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: true,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
       {
         method: 'POST',
@@ -856,6 +1050,10 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
         method: 'PUT',
         path: '/projects/project-1/members/user-member',
         status: 204,
@@ -876,6 +1074,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: false,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
     const user = userEvent.setup()
@@ -924,6 +1126,10 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
         method: 'PUT',
         path: '/projects/project-1/members/user-member',
         body: { message: 'Role change rejected.' },
@@ -969,6 +1175,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: false,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
     const user = userEvent.setup()
@@ -1019,6 +1229,10 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
         method: 'DELETE',
         path: '/projects/project-1/members/user-member',
         status: 204,
@@ -1033,6 +1247,10 @@ describe('ProjectDetailPage', () => {
             isCurrentUser: true,
           },
         ],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
       },
     ])
     const user = userEvent.setup()
@@ -1083,6 +1301,10 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
         method: 'DELETE',
         path: '/projects/project-1/members/user-member',
         body: { message: 'Member removal rejected.' },
@@ -1122,6 +1344,10 @@ describe('ProjectDetailPage', () => {
         body: { message: 'Members service failed.' },
         status: 500,
       },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -1147,6 +1373,10 @@ describe('ProjectDetailPage', () => {
       },
       {
         path: '/projects/project-1/members',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/invitations',
         body: [],
       },
     ])
