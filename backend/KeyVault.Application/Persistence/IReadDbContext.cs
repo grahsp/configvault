@@ -1,4 +1,5 @@
 using KeyVault.Domain.ConfigItems;
+using KeyVault.Domain.Invitations;
 using KeyVault.Domain.Projects;
 using KeyVault.Domain.Users;
 using Environment = KeyVault.Domain.Projects.Environment;
@@ -14,4 +15,5 @@ public interface IReadDbContext
 	IQueryable<ConfigItem> ConfigItems { get; }
 	IQueryable<ConfigValue> ConfigValues { get; }
 	IQueryable<ProjectMember> ProjectMembers { get; }
+	IQueryable<ProjectInvitation> Invitations { get; }
 }

@@ -29,6 +29,7 @@ public sealed class CapabilitySet
 		Admin.Extend([
 			ProjectCapability.Create(ProjectResource.Project, ProjectPermission.Delete),
 			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write),
+			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Read),
 			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Delete),
 		]);
 }

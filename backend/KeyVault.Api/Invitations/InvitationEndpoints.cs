@@ -9,7 +9,8 @@ public static class InvitationEndpoints
 		var invitations = builder.MapGroup("/projects/{projectId}/invitations/")
 			.RequireAuthorization()
 			.WithTags("Invitations");
-		
+
+		invitations.MapGet("", ActiveInvitations.Endpoint.Handle);
 		invitations.MapPost("", CreateInvitation.Endpoint.Handle);
 		invitations.MapPost("/revoke/{invitationId}", RevokeInvitation.Endpoint.Handle);
 		

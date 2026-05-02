@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	IQueryable<Project> IReadDbContext.Projects => Projects;
 	
 	public DbSet<ProjectInvitation> Invitations { get; set; }
+	IQueryable<ProjectInvitation> IReadDbContext.Invitations => Invitations;
 	
 	public DbSet<ProjectDataKey> DataKeys { get; set; }
 	IQueryable<ProjectDataKey> IReadDbContext.DataKeys => DataKeys;
