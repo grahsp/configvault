@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyVault.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260502101642_AddProjectInvitations")]
+    [Migration("20260502134953_AddProjectInvitations")]
     partial class AddProjectInvitations
     {
         /// <inheritdoc />
@@ -248,6 +248,7 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DisplayName")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 

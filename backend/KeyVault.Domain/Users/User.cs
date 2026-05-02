@@ -9,8 +9,8 @@ public sealed class User
 	
 	private readonly List<ExternalLogin> _externalLogins = [];
 	public IReadOnlyList<ExternalLogin> ExternalLogins => _externalLogins;
-	
-	public string? DisplayName { get; private set; }
+
+	public string DisplayName { get; private set; } = null!;
 	public string? Email { get; private set; }
 	public DateTimeOffset CreatedAt { get; private init; }
 	public DateTimeOffset? ActivatedAt { get; private set; }

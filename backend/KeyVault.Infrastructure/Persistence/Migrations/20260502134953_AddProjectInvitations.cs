@@ -11,6 +11,18 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "DisplayName",
+                table: "users",
+                type: "character varying(256)",
+                maxLength: 256,
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "character varying(256)",
+                oldMaxLength: 256,
+                oldNullable: true);
+
             migrationBuilder.CreateTable(
                 name: "project_invitations",
                 columns: table => new
@@ -44,6 +56,16 @@ namespace KeyVault.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "project_invitations");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "DisplayName",
+                table: "users",
+                type: "character varying(256)",
+                maxLength: 256,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(256)",
+                oldMaxLength: 256);
         }
     }
 }
