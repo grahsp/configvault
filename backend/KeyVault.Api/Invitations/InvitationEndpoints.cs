@@ -11,5 +11,6 @@ public static class InvitationEndpoints
 			.WithTags("Invitations");
 		
 		invitations.MapGet("", CreateInvitation.Endpoint.Handle);
+		invitations.MapGet("/accept/{token}", AcceptInvitation.Endpoint.Handle);
 	}
 }
