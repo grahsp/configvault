@@ -7,10 +7,13 @@ public static class InvitationEndpoints
 	public static void AddInvitationEndpoints(this IEndpointRouteBuilder builder)
 	{
 		var invitations = builder.MapGroup("/projects/{projectId}/invitations/")
-			.RequireAuthorization(AuthorizationPolicies.UserOnly)
+			.RequireAuthorization()
 			.WithTags("Invitations");
 		
-		invitations.MapGet("", CreateInvitation.Endpoint.Handle);
-		invitations.MapGet("/accept/{token}", AcceptInvitation.Endpoint.Handle);
+		invitations.MapPost("", CreateInvitation.Endpoint.Handle);
+		invitations.MapPost("/revoke/{invitationId}", RevokeInvitation.Endpoint.Handle);
+		
+		invitations.MapGet("/accept/{token}", AcceptInvitation.Endpoint.Handle)
+			.RequireAuthorization(AuthorizationPolicies.UserOnly);
 	}
 }

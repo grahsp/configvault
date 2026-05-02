@@ -6,6 +6,13 @@ namespace KeyVault.Infrastructure.Persistence.Repositories;
 
 public class EfProjectInvitationRepository(AppDbContext db) : IProjectInvitationRepository
 {
+	public async Task<ProjectInvitation?> GetByIdAsync(Guid invitationId, CancellationToken ct)
+	{
+		return await db.Invitations
+			.Where(i => i.Id == invitationId)
+			.SingleOrDefaultAsync(ct);
+	}
+
 	public async Task<ProjectInvitation?> GetByTokenAsync(InvitationTokenHash tokenHash, CancellationToken ct)
 	{
 		return await db.Invitations
