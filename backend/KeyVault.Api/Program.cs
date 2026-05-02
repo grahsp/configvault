@@ -2,6 +2,7 @@ using KeyVault.Api.Authentication;
 using KeyVault.Api.ConfigItems;
 using KeyVault.Api.Configuration;
 using KeyVault.Api.DependencyInjection;
+using KeyVault.Api.Invitations;
 using KeyVault.Api.Middleware;
 using KeyVault.Api.Projects;
 using KeyVault.Api.Users;
@@ -55,6 +56,7 @@ public class Program
 
 		app.AddUserEndpoints();
 		app.AddProjectEndpoints();
+		app.AddInvitationEndpoints();
 		app.AddConfigItemEndpoints();
 
 		app.Run();
