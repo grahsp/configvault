@@ -23,13 +23,14 @@ public sealed class CapabilitySet
 			ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage),
 			ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Manage),
 			ProjectCapability.Create(ProjectResource.Environment, ProjectPermission.Manage),
+			
+			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Read),
+			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write),
+			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Delete),
 		]);
 
 	public static readonly CapabilitySet Owner =
 		Admin.Extend([
 			ProjectCapability.Create(ProjectResource.Project, ProjectPermission.Delete),
-			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write),
-			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Read),
-			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Delete),
 		]);
 }
