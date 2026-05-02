@@ -8,8 +8,8 @@ internal static class Endpoint
 	internal static async Task<IResult> Handle(ICommandDispatcher dispatcher, string token, CancellationToken ct)
 	{
 		var command = new Command(token);
-		await dispatcher.DispatchAsync(command, ct);
+		var result = await dispatcher.DispatchAsync(command, ct);
 
-		return Results.Ok();
+		return Results.Ok(new { projectId = result.ProjectId });
 	}
 }

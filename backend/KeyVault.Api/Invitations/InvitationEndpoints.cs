@@ -13,8 +13,9 @@ public static class InvitationEndpoints
 		invitations.MapGet("", ActiveInvitations.Endpoint.Handle);
 		invitations.MapPost("", CreateInvitation.Endpoint.Handle);
 		invitations.MapPost("/revoke/{invitationId}", RevokeInvitation.Endpoint.Handle);
-		
-		invitations.MapGet("/accept/{token}", AcceptInvitation.Endpoint.Handle)
-			.RequireAuthorization(AuthorizationPolicies.UserOnly);
+
+		builder.MapGet("/invitations/accept/{token}", AcceptInvitation.Endpoint.Handle)
+			.RequireAuthorization(AuthorizationPolicies.UserOnly)
+			.WithTags("Invitations");
 	}
 }

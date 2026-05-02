@@ -18,9 +18,9 @@ public class Handler(
 	ITokenService tokens,
 	IUnitOfWork uow,
 	TimeProvider time)
-	: ICommandHandler<Command, Unit>
+	: ICommandHandler<Command, Response>
 {
-	public async Task<Unit> HandleAsync(Command command, CancellationToken ct)
+	public async Task<Response> HandleAsync(Command command, CancellationToken ct)
 	{
 		var userId = actor.RequireUserId();
 		
@@ -45,6 +45,6 @@ public class Handler(
 			throw new InvitationAlreadyHandledException(ex);
 		}
 
-		return Unit.Value;
+		return new Response(project.Id);
 	}
 }
