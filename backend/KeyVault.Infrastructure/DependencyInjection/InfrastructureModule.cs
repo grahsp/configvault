@@ -3,6 +3,7 @@ using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Abstractions.Identity;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems;
+using KeyVault.Application.Invitations;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Users;
@@ -24,6 +25,11 @@ public static class InfrastructureModule
 {
 	public static void AddInfrastructureModule(this IServiceCollection services, IConfiguration configuration)
 	{
+		services.AddOptions<ProjectInvitationOptions>()
+			.Bind(configuration.GetSection(ProjectInvitationOptions.Section))
+			.Validate(x => x.Lifetime > TimeSpan.Zero)
+			.ValidateOnStart();
+		
 		services.AddOptions<DatabaseOptions>()
 			.Bind(configuration.GetSection(DatabaseOptions.Section))
 			.Validate(option =>
