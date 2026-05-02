@@ -2,7 +2,8 @@ namespace KeyVault.Domain.Projects;
 
 public enum ProjectRole
 {
-	Owner,
-	Admin,
-	Member,
+	None = 0,
+	Member = 1,
+	Admin = 2,
+	Owner = 3,
 }
