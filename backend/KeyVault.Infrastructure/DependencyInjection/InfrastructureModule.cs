@@ -77,6 +77,8 @@ public static class InfrastructureModule
 		services.AddSingleton<IMasterKeyProvider, ConfigurationMasterKeyProvider>();
 		services.AddSingleton<IEnvelopeEncryptionService, EnvelopeEncryptionService>();
 		
+		services.AddSingleton<ITokenService, TokenService>();
+		
 		services.AddSingleton<EnvConfigFormat>();
 		services.AddSingleton<IConfigFormatResolver, ConfigFormatResolver>();
 		services.AddSingleton<IConfigImporter>(sp => sp.GetRequiredService<EnvConfigFormat>());
