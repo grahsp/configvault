@@ -2,6 +2,7 @@ using System.Text.Json;
 using KeyVault.Api.Authentication.Exceptions;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.Exceptions;
+using KeyVault.Domain.Invitations;
 using KeyVault.Infrastructure.ConfigItems.Formats;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,7 @@ public static class ProblemDetailsFactory
 			UnsupportedMediaTypeException => Create(StatusCodes.Status415UnsupportedMediaType, "Unsupported media type", ex.Message),
 			ForbiddenException => Create(StatusCodes.Status404NotFound, "Resource not found", "The requested resource was not found."),
 			NotFoundException => Create(StatusCodes.Status404NotFound, "Resource not found", "The requested resource was not found."),
+			InvitationException => Create(StatusCodes.Status404NotFound, "Invitation not found", "The invitation is invalid or has expired."),
 			DomainException => Create(StatusCodes.Status409Conflict, "Conflict with current state", ex.Message),
 			_ => Create(StatusCodes.Status500InternalServerError, "Internal server error", "An unexpected error occurred.")
 		};
