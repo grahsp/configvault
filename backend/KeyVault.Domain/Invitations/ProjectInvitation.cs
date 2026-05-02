@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using KeyVault.Domain.Identity;
 
 namespace KeyVault.Domain.Invitations;
@@ -8,7 +7,7 @@ public class ProjectInvitation
 	public Guid Id { get; }
 	public Guid ProjectId { get; private init; }
 
-	[Timestamp] public byte[] RowVersion { get; private set; } = null!;
+	public uint Version { get; private set; }
 
 	public InvitationTokenHash TokenHash { get; private init; }
 

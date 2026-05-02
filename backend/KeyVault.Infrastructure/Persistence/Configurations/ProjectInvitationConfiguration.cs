@@ -26,8 +26,8 @@ public class ProjectInvitationConfiguration : IEntityTypeConfiguration<ProjectIn
 		builder.Property(x => x.ProjectId)
 			.IsRequired();
 
-		builder.Property(x => x.RowVersion)
-			.IsRowVersion();
+		builder.Property(x => x.Version)
+			.IsConcurrencyToken();
 
 		builder.Property(x => x.CreatedAt)
 			.IsRequired();
