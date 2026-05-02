@@ -18,11 +18,11 @@ public class Handler(
 	{
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 		    ?? throw new ProjectNotFoundException(command.ProjectId);
-		
-		await authorization.EnsureCanAccessAsync(
+
+		authorization.EnsureCanAccess(
 			ProjectCapability.Create(ProjectResource.Environment, ProjectPermission.Manage),
-			project,
-			ct);
+			project);
+		
 		project.RemoveEnvironment(command.EnvironmentId);
 		await uow.SaveChangesAsync(ct);
 

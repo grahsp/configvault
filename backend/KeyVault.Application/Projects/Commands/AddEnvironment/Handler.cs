@@ -21,10 +21,10 @@ public sealed class Handler(
 		var project = await repository.GetByIdAsync(command.ProjectId, ct)
 			?? throw new ProjectNotFoundException(command.ProjectId);
 
-		await authorization.EnsureCanAccessAsync(
+		authorization.EnsureCanAccess(
 			ProjectCapability.Create(ProjectResource.Environment, ProjectPermission.Manage),
-			project,
-			ct);
+			project);
+		
 		var environment = project.AddEnvironment(command.EnvironmentName, time.GetUtcNow());
 		await uow.SaveChangesAsync(ct);
 

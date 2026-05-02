@@ -21,10 +21,9 @@ public sealed class Handler(
 		var project = await projects.GetByIdAsync(query.ProjectId, ct)
 			?? throw new ProjectNotFoundException(query.ProjectId);
 
-		await authorization.EnsureCanAccessAsync(
+		authorization.EnsureCanAccess(
 			ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read),
-			project,
-			ct);
+			project);
 		
 		if (!project.TryGetEnvironment(query.EnvironmentName, out var environment))
 			throw new EnvironmentNotFoundException(query.EnvironmentName);

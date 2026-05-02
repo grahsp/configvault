@@ -5,6 +5,8 @@ namespace KeyVault.Application.Authorization;
 
 public interface IProjectAuthorizationService
 {
-	Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct);
-	Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct);
+	bool CanAccess(ProjectCapability capability, Project project);
+	Task<bool> CanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct);
+	void EnsureCanAccess(ProjectCapability capability, Project project);
+	Task EnsureCanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct);
 }

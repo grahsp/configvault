@@ -23,11 +23,10 @@ public sealed class Handler(
 		              ?? throw new ProjectNotFoundException(command.ProjectId);
 		
 		var batch = new OperationBatch([new RenameItem(command.ConfigItemId, command.Key)]);
-		
-		await authorization.EnsureCanAccessAsync(
+
+		authorization.EnsureCanAccess(
 			ProjectCapability.Create(ProjectResource.ConfigItem, ProjectPermission.Manage),
-			project,
-			ct);
+			project);
 
 		var prepared = await planner.PrepareAsync(project, batch, ct);
 		await executor.ExecuteAsync(prepared, ct);

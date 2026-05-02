@@ -10,28 +10,27 @@ public sealed class ProjectAuthorizationService(
 	IActorResolver resolver)
 	: IProjectAuthorizationService
 {
-	public async Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+	public bool CanAccess(ProjectCapability capability, Project project)
 	{
-		var actor = await resolver.ResolveAsync(context, project, ct);
-
-		return await CanAccessInternalAsync(
-			capability,
-			actor,
-			_ => Task.FromResult(context is UserActorContext user && project.IsMember(user.UserId)),
-			ct);
+		var actor = resolver.Resolve(context, project);
+		return actor.Has(capability);
 	}
-
-	public async Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+	
+	public async Task<bool> CanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
 	{
-		if (!await CanAccessAsync(capability, project, ct))
+		var actor = await resolver.ResolveAsync(context, projectId, ct);
+		return actor.Has(capability);
+	}
+	
+	public void EnsureCanAccess(ProjectCapability capability, Project project)
+	{
+		if (!CanAccess(capability, project))
 			throw new ForbiddenException();
 	}
-
-	private async Task<bool> CanAccessInternalAsync(ProjectCapability capability, Actor actor, Func<CancellationToken, Task<bool>> hasProjectAccess, CancellationToken ct)
+	
+	public async Task EnsureCanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
 	{
-		if (!actor.Has(capability))
-			return false;
-
-		return await hasProjectAccess(ct);
+		if (!await CanAccessAsync(capability, projectId, ct))
+			throw new ForbiddenException();
 	}
 }

@@ -22,7 +22,7 @@ public sealed class Handler(
 		              ?? throw new ProjectNotFoundException(command.ProjectId);
 
 		foreach (var capability in RequiredCapabilitiesFor(command.Batch))
-			await authorization.EnsureCanAccessAsync(capability, project, ct);
+			authorization.EnsureCanAccess(capability, project);
 
 		var prepared = await planner.PrepareAsync(project, command.Batch, ct);
 		await executor.ExecuteAsync(prepared, ct);

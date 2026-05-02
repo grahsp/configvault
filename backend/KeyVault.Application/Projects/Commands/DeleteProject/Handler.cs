@@ -19,10 +19,9 @@ public sealed class Handler(
 		var project = await repository.GetByIdAsync(command.Id, ct)
 			?? throw new ProjectNotFoundException(command.Id);
 
-		await authorization.EnsureCanAccessAsync(
+		authorization.EnsureCanAccess(
 			ProjectCapability.Create(ProjectResource.Project, ProjectPermission.Delete),
-			project,
-			ct);
+			project);
 
 		repository.Remove(project);
 		await uow.SaveChangesAsync(ct);
