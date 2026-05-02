@@ -57,7 +57,7 @@ export function MembersPage() {
                 type="button"
                 variant="secondary"
               >
-                {createInvitationMutation.isPending ? 'Inviting...' : 'Invite'}
+                {createInvitationMutation.isPending ? 'Inviting...' : 'Invite Link'}
               </Button>
             ) : null
           }
@@ -136,7 +136,9 @@ export function MembersPage() {
       {canManageMembers ? (
         <div className={`${styles.contentSection} ${styles.invitationSection}`}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Active links</h2>
+            <h2 className={`${styles.sectionTitle} ${styles.invitationSectionTitle}`}>
+              Invitations
+            </h2>
           </div>
 
           {invitationError ? (

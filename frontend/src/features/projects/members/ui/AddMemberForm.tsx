@@ -46,7 +46,7 @@ export function AddMemberForm({
           className={styles.textInput}
           disabled={isPending}
           onChange={(event) => onUserIdChange(event.target.value)}
-          placeholder="User ID"
+          placeholder="Add by user ID"
           type="text"
           value={userId}
         />

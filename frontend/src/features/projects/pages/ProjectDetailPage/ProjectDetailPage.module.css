@@ -104,7 +104,7 @@
 
 .membersSection {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
   margin-top: var(--space-6);
 }
 
@@ -143,6 +143,10 @@
   font-size: var(--font-size-title-lg);
   font-weight: var(--font-weight-extrabold);
   color: var(--color-text-strong);
+}
+
+.invitationSectionTitle {
+  font-weight: var(--font-weight-bold);
 }
 
 .sectionState {
