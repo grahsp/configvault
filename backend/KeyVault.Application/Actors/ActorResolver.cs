@@ -46,10 +46,12 @@ public sealed class ActorResolver(IReadDbContext db, RoleCapabilities roleCapabi
 		{
 			var role = await db.ProjectMembers
 				.Where(m => m.ProjectId == projectId && m.UserId == user.UserId)
-				.Select(m => m.Role)
+				.Select(m => (ProjectRole?)m.Role)
 				.SingleOrDefaultAsync(ct);
 			
-			capabilities.UnionWith(roleCapabilities.For(role));
+			if (role is not null)
+				capabilities.UnionWith(roleCapabilities.For(role.Value));
+			
 			return new Actor(context.Id, capabilities);
 		}
 
