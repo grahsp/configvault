@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useOutletContext, useParams } from 'react-router-dom'
+import { useToast } from '../../../../../shared/components/toast/useToast'
 import {
   canRoleManageMembers,
   getMemberDisplayName,
   type ProjectMember,
 } from '../../domain'
+import { useCreateInvitation } from '../../../invitations/application'
 import {
   useAddMember,
   useMembers,
   useRemoveMember,
 } from '../../application'
 import { getErrorMessage } from '../../../domain'
-import type { ProjectLayoutContext } from '../../../pages/ProjectDetailPage'
+import type { ProjectLayoutContext } from '../../../pages'
 
 export function useMembersPageState() {
   const { projectId } = useParams()
@@ -19,10 +21,13 @@ export function useMembersPageState() {
   const resolvedProjectId = projectId ?? ''
   const membersQuery = useMembers(resolvedProjectId)
   const addMemberMutation = useAddMember(resolvedProjectId)
+  const createInvitationMutation = useCreateInvitation(resolvedProjectId)
   const removeMemberMutation = useRemoveMember(resolvedProjectId)
+  const { addToast } = useToast()
   const [memberPendingRemoval, setMemberPendingRemoval] =
     useState<ProjectMember | null>(null)
   const [userId, setUserId] = useState('')
+  const [invitationError, setInvitationError] = useState('')
   const [validationError, setValidationError] = useState('')
 
   const members = membersQuery.data ?? []
@@ -83,12 +88,54 @@ export function useMembersPageState() {
     })
   }
 
+  async function generateInvitation() {
+    if (!resolvedProjectId || createInvitationMutation.isPending) {
+      return
+    }
+
+    createInvitationMutation.reset()
+    setInvitationError('')
+
+    try {
+      const { token } = await createInvitationMutation.mutateAsync()
+      const inviteUrl = new URL(`/invitations/${encodeURIComponent(token)}`, window.location.origin)
+
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard access is unavailable in this browser.')
+      }
+
+      await navigator.clipboard.writeText(inviteUrl.toString())
+      addToast({
+        message: 'Invitation URL copied to clipboard.',
+        type: 'success',
+      })
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error &&
+        error.message === 'Clipboard access is unavailable in this browser.'
+          ? error.message
+          : getErrorMessage(
+              error,
+              'Invitation URL could not be generated.',
+            )
+
+      setInvitationError(message)
+      addToast({
+        message,
+        type: 'error',
+      })
+    }
+  }
+
   return {
     addMemberErrorMessage,
     addMemberMutation,
     canManageMembers,
+    createInvitationMutation,
     closeRemoveDialog,
     confirmRemoveMember,
+    generateInvitation,
+    invitationError,
     memberPendingRemoval,
     members,
     membersQuery,

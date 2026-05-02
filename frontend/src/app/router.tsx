@@ -1,11 +1,12 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
-import { SecretsPage } from '../features/projects/secrets/pages'
-import { MembersPage } from '../features/projects/members/pages'
-import { GeneralPage } from '../features/projects/pages/ProjectDetailPage'
-import { ProjectDetailPage } from '../features/projects/pages/ProjectDetailPage'
-import { ProjectsPage } from '../features/projects/pages/ProjectsPage/ProjectsPage'
+import { InvitationPage } from '../features/projects/invitations/pages'
+import { SecretsPage } from '../features/projects/secrets'
+import { MembersPage } from '../features/projects'
+import { GeneralPage } from '../features/projects'
+import { ProjectDetailPage } from '../features/projects'
+import { ProjectsPage } from '../features/projects'
 import { ProfilePage } from '../features/users'
 import { HomePage } from './pages/HomePage'
 
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: 'invitations/:token',
+        element: <InvitationPage />,
       },
       {
         path: 'projects',

@@ -39,14 +39,14 @@ export function AppLayout() {
               <>
                 <button
                   className={cx(styles.button, styles.buttonSecondary)}
-                  onClick={login}
+                  onClick={() => login()}
                   type="button"
                 >
                   Log in
                 </button>
                 <button
                   className={cx(styles.button, styles.buttonPrimary)}
-                  onClick={signup}
+                  onClick={() => signup()}
                   type="button"
                 >
                   Register

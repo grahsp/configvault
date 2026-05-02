@@ -12,6 +12,9 @@ export function MembersPage() {
     canManageMembers,
     closeRemoveDialog,
     confirmRemoveMember,
+    createInvitationMutation,
+    generateInvitation,
+    invitationError,
     memberPendingRemoval,
     members,
     membersQuery,
@@ -31,7 +34,25 @@ export function MembersPage() {
         <h2 className={styles.sectionTitle} id="members-title">
           Members
         </h2>
+        {canManageMembers ? (
+          <Button
+            onClick={generateInvitation}
+            type="button"
+            variant="secondary"
+            disabled={createInvitationMutation.isPending}
+          >
+            {createInvitationMutation.isPending
+              ? 'Generating invitation...'
+              : 'Generate invitation URL'}
+          </Button>
+        ) : null}
       </div>
+
+      {invitationError ? (
+        <p className={styles.formError} role="alert">
+          {invitationError}
+        </p>
+      ) : null}
 
       <AddMemberForm
         canManageMembers={canManageMembers}

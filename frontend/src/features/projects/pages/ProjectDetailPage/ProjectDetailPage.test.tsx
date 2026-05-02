@@ -277,6 +277,64 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByRole('form', { name: 'Add member' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Generate invitation URL' }),
+    ).toBeInTheDocument()
+  })
+
+  it('creates and copies an invitation URL from the members page', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+
+    vi.stubGlobal('navigator', {
+      ...window.navigator,
+      clipboard: {
+        writeText,
+      },
+    })
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        method: 'POST',
+        body: {
+          token: 'invite-token',
+        },
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Generate invitation URL' }),
+    )
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        'http://localhost:3000/invitations/invite-token',
+      )
+    })
+
+    expect(
+      await screen.findByText('Invitation URL copied to clipboard.'),
+    ).toBeInTheDocument()
   })
 
   it('renders the general route directly', async () => {
