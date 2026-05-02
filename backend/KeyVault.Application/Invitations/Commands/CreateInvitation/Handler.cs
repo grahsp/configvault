@@ -33,7 +33,7 @@ public class Handler(
 			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write),
 			project);
 		
-		var token = tokens.GenerateToken();
+		var token = tokens.GenerateToken("invitation");
 		var hash = tokens.HashToken(token);
 
 		var invitation = ProjectInvitation.Create(
