@@ -66,21 +66,13 @@ public sealed class Project
 	public bool IsMember(UserId id) => TryGetMember(id, out _);
 	
 	public ProjectMember RequireMember(UserId id)
-	{
-		return Members.SingleOrDefault(m => m.UserId == id)
-		       ?? throw new ProjectMemberNotFoundException();
-	}
+		=> Members.SingleOrDefault(m => m.UserId == id)
+		   ?? throw new ProjectMemberNotFoundException();
 
 	public bool TryGetMember(UserId id, [NotNullWhen(true)] out ProjectMember? member)
 	{
 		member = Members.SingleOrDefault(m => m.UserId == id);
 		return member != null;
-	}
-	
-	public void RequireRole(ProjectMember member, ProjectRole requiredRole)
-	{
-		if (member.Role > requiredRole)
-			throw new InsufficientProjectRoleException();
 	}
 
 	public void AddMember(UserId userId, ProjectRole role)
@@ -109,8 +101,9 @@ public sealed class Project
 	{
 		if (role == ProjectRole.Owner)
 			throw new InvalidRoleException();
+		
 		var member = RequireMember(userId);
-
+		
 		member.SetRole(role);
 	}
 
