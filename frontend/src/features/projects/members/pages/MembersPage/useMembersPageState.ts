@@ -6,7 +6,12 @@ import {
   getMemberDisplayName,
   type ProjectMember,
 } from '../../domain'
-import { useCreateInvitation } from '../../../invitations/application'
+import {
+  useActiveInvitations,
+  useCreateInvitation,
+  useRevokeInvitation,
+} from '../../../invitations/application'
+import type { ActiveInvitation } from '../../../invitations/domain'
 import {
   useAddMember,
   useMembers,
@@ -26,6 +31,8 @@ export function useMembersPageState() {
   const { addToast } = useToast()
   const [memberPendingRemoval, setMemberPendingRemoval] =
     useState<ProjectMember | null>(null)
+  const [invitationPendingRevocation, setInvitationPendingRevocation] =
+    useState<ActiveInvitation | null>(null)
   const [userId, setUserId] = useState('')
   const [invitationError, setInvitationError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -34,6 +41,12 @@ export function useMembersPageState() {
   const canManageMembers = canRoleManageMembers(
     project.role ?? project.currentUserRole,
   )
+  const invitationsQuery = useActiveInvitations(
+    resolvedProjectId,
+    canManageMembers,
+  )
+  const invitations = invitationsQuery.data ?? []
+  const revokeInvitationMutation = useRevokeInvitation(resolvedProjectId)
   const addMemberErrorMessage =
     validationError ||
     (addMemberMutation.isError
@@ -88,6 +101,30 @@ export function useMembersPageState() {
     })
   }
 
+  function openRevokeInvitationDialog(invitation: ActiveInvitation) {
+    revokeInvitationMutation.reset()
+    setInvitationPendingRevocation(invitation)
+  }
+
+  function closeRevokeInvitationDialog() {
+    if (revokeInvitationMutation.isPending) {
+      return
+    }
+
+    revokeInvitationMutation.reset()
+    setInvitationPendingRevocation(null)
+  }
+
+  function confirmRevokeInvitation() {
+    if (!invitationPendingRevocation || revokeInvitationMutation.isPending) {
+      return
+    }
+
+    revokeInvitationMutation.mutate(invitationPendingRevocation.invitationId, {
+      onSuccess: () => setInvitationPendingRevocation(null),
+    })
+  }
+
   async function generateInvitation() {
     if (!resolvedProjectId || createInvitationMutation.isPending) {
       return
@@ -133,14 +170,29 @@ export function useMembersPageState() {
     canManageMembers,
     createInvitationMutation,
     closeRemoveDialog,
+    closeRevokeInvitationDialog,
+    confirmRevokeInvitation,
     confirmRemoveMember,
     generateInvitation,
     invitationError,
+    invitationPendingRevocation,
+    invitations,
+    invitationsQuery,
     memberPendingRemoval,
     members,
     membersQuery,
     openRemoveDialog,
+    openRevokeInvitationDialog,
     projectId: resolvedProjectId,
+    revokeInvitationDialogCreatedByName: invitationPendingRevocation?.createdByName ?? '',
+    revokeInvitationDialogExpiresAt: invitationPendingRevocation?.expiresAt ?? '',
+    revokeInvitationErrorMessage: revokeInvitationMutation.isError
+      ? getErrorMessage(
+          revokeInvitationMutation.error,
+          'Something went wrong while revoking this invitation link.',
+        )
+      : '',
+    revokeInvitationMutation,
     removeMemberDialogDisplayName: memberPendingRemoval
       ? getMemberDisplayName(memberPendingRemoval)
       : '',

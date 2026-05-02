@@ -1,5 +1,7 @@
 export * from './AddMemberForm'
+export * from './InvitationLinksTable'
 export * from './MemberRow'
 export * from './MembersTable'
 export * from './RemoveMemberDialog'
+export * from './RevokeInvitationDialog'
 export * from './RoleSelector'

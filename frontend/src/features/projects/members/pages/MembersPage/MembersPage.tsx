@@ -1,6 +1,12 @@
 import { Button, StatePanel } from '../../../../../shared/ui'
-import { AddMemberForm, MembersTable, RemoveMemberDialog } from '../../ui'
-import { getErrorMessage } from '../../../domain'
+import {
+  AddMemberForm,
+  InvitationLinksTable,
+  MembersTable,
+  RemoveMemberDialog,
+  RevokeInvitationDialog,
+} from '../../ui'
+import { formatCreatedDate, getErrorMessage } from '../../../domain'
 import { useMembersPageState } from './useMembersPageState'
 import { MemberRowContainer } from './MemberRowContainer'
 import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
@@ -11,15 +17,25 @@ export function MembersPage() {
     addMemberMutation,
     canManageMembers,
     closeRemoveDialog,
+    closeRevokeInvitationDialog,
+    confirmRevokeInvitation,
     confirmRemoveMember,
     createInvitationMutation,
     generateInvitation,
     invitationError,
+    invitationPendingRevocation,
+    invitations,
+    invitationsQuery,
     memberPendingRemoval,
     members,
     membersQuery,
     openRemoveDialog,
+    openRevokeInvitationDialog,
     projectId,
+    revokeInvitationDialogCreatedByName,
+    revokeInvitationDialogExpiresAt,
+    revokeInvitationErrorMessage,
+    revokeInvitationMutation,
     removeMemberDialogDisplayName,
     removeMemberErrorMessage,
     removeMemberMutation,
@@ -52,6 +68,88 @@ export function MembersPage() {
         <p className={styles.formError} role="alert">
           {invitationError}
         </p>
+      ) : null}
+
+      {canManageMembers ? (
+        <>
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>Invitation links</h3>
+          </div>
+
+          {invitationsQuery.isPending ? (
+            <StatePanel
+              className={styles.sectionState}
+              role="status"
+              title="Loading invitation links..."
+            >
+              <p>
+                Active invitation links are being prepared.
+              </p>
+            </StatePanel>
+          ) : null}
+
+          {invitationsQuery.isError ? (
+            <StatePanel
+              actions={
+                <Button
+                  onClick={() => invitationsQuery.refetch()}
+                  type="button"
+                  variant="secondary"
+                >
+                  Retry
+                </Button>
+              }
+              className={styles.sectionState}
+              role="alert"
+              title="Failed to load invitation links."
+              tone="error"
+            >
+              <p>
+                {getErrorMessage(
+                  invitationsQuery.error,
+                  'Something went wrong while loading invitation links.',
+                )}
+              </p>
+            </StatePanel>
+          ) : null}
+
+          {!invitationsQuery.isPending &&
+          !invitationsQuery.isError &&
+          invitations.length === 0 ? (
+            <StatePanel className={styles.sectionState} title="No active invitation links.">
+              <p>
+                Generate an invitation URL to grant project access with a link.
+              </p>
+            </StatePanel>
+          ) : null}
+
+          {!invitationsQuery.isPending &&
+          !invitationsQuery.isError &&
+          invitations.length > 0 ? (
+            <InvitationLinksTable>
+              {invitations.map((invitation) => (
+                <tr key={invitation.invitationId}>
+                  <th scope="row">{invitation.createdByName}</th>
+                  <td>{formatCreatedDate(invitation.createdAt)}</td>
+                  <td>{formatCreatedDate(invitation.expiresAt)}</td>
+                  <td>
+                    <Button
+                      disabled={
+                        revokeInvitationMutation.isPending &&
+                        invitationPendingRevocation?.invitationId === invitation.invitationId
+                      }
+                      onClick={() => openRevokeInvitationDialog(invitation)}
+                      type="button"
+                      variant="danger"
+                    >
+                      Revoke
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </InvitationLinksTable>
+          ) : null}
+        </>
       ) : null}
 
       <AddMemberForm
@@ -133,6 +231,17 @@ export function MembersPage() {
           isPending={removeMemberMutation.isPending}
           onCancel={closeRemoveDialog}
           onConfirm={confirmRemoveMember}
+        />
+      ) : null}
+
+      {invitationPendingRevocation ? (
+        <RevokeInvitationDialog
+          createdByName={revokeInvitationDialogCreatedByName}
+          errorMessage={revokeInvitationErrorMessage}
+          expiresAt={formatCreatedDate(revokeInvitationDialogExpiresAt)}
+          isPending={revokeInvitationMutation.isPending}
+          onCancel={closeRevokeInvitationDialog}
+          onConfirm={confirmRevokeInvitation}
         />
       ) : null}
     </section>
