@@ -1,8 +1,9 @@
-import { type FormEvent, useId } from 'react'
+import { type FormEvent, type ReactNode, useId } from 'react'
 import { Button } from '../../../../shared/ui'
 import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 interface AddMemberFormProps {
+  actions?: ReactNode
   canManageMembers: boolean
   errorMessage: string
   isPending: boolean
@@ -12,6 +13,7 @@ interface AddMemberFormProps {
 }
 
 export function AddMemberForm({
+  actions,
   canManageMembers,
   errorMessage,
   isPending,
@@ -19,7 +21,6 @@ export function AddMemberForm({
   onUserIdChange,
   userId,
 }: AddMemberFormProps) {
-  const inputId = useId()
   const errorId = useId()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -38,29 +39,30 @@ export function AddMemberForm({
       onSubmit={handleSubmit}
     >
       <div className={styles.formField}>
-        <label className={styles.formLabel} htmlFor={inputId}>
-          User ID
-        </label>
         <input
+          aria-label="User ID"
           aria-describedby={errorMessage ? errorId : undefined}
           aria-invalid={errorMessage ? 'true' : undefined}
           className={styles.textInput}
           disabled={isPending}
-          id={inputId}
           onChange={(event) => onUserIdChange(event.target.value)}
+          placeholder="User ID"
           type="text"
           value={userId}
         />
       </div>
 
-      <Button
-        className={styles.memberAction}
-        disabled={isPending}
-        type="submit"
-        variant="secondary"
-      >
-        {isPending ? 'Adding' : 'Add Member'}
-      </Button>
+      <div className={styles.memberActions}>
+        <Button
+          className={`${styles.memberAction} ${styles.memberActionSquare}`}
+          disabled={isPending}
+          type="submit"
+          variant="primary"
+        >
+          {isPending ? 'Adding' : '+ Add'}
+        </Button>
+        {actions}
+      </div>
 
       {errorMessage ? (
         <p className={styles.formError} id={errorId} role="alert">

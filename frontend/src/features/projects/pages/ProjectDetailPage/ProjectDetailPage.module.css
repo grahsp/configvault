@@ -108,6 +108,19 @@
   margin-top: var(--space-6);
 }
 
+.contentSection {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.membersContentSection {
+  gap: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-contrast);
+  overflow: hidden;
+}
+
 .generalSection {
   display: grid;
   gap: var(--space-4);
@@ -251,7 +264,20 @@
 }
 
 .memberAction {
+  min-height: var(--input-height-lg);
   min-width: var(--control-width-lg);
+}
+
+.memberActionSquare {
+  border-radius: var(--radius-md);
+}
+
+.memberActions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .memberActionUnavailable {
@@ -267,6 +293,19 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface-contrast);
+}
+
+.membersContentSection .addMemberForm {
+  padding: var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  background: transparent;
+}
+
+.membersContentSection .tableWrapper {
+  border: 0;
+  border-radius: 0;
 }
 
 .addMemberForm .formError {
@@ -285,8 +324,10 @@
 }
 
 .textInput {
+  box-sizing: border-box;
   width: 100%;
   min-height: var(--input-height-lg);
+  height: var(--input-height-lg);
   padding: var(--space-2-25) var(--space-2-75);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
@@ -390,6 +431,10 @@
 
   .addMemberForm {
     grid-template-columns: 1fr;
+  }
+
+  .memberActions {
+    justify-content: stretch;
   }
 
   .dangerActionButton {

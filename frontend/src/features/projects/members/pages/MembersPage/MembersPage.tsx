@@ -45,36 +45,101 @@ export function MembersPage() {
   } = useMembersPageState()
 
   return (
-    <section className={styles.membersSection} aria-labelledby="members-title">
-      <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle} id="members-title">
-          Members
-        </h2>
-        {canManageMembers ? (
-          <Button
-            onClick={generateInvitation}
-            type="button"
-            variant="secondary"
-            disabled={createInvitationMutation.isPending}
+    <section className={styles.membersSection} aria-label="Project members">
+      <div className={`${styles.contentSection} ${styles.membersContentSection}`}>
+        <AddMemberForm
+          actions={
+            canManageMembers ? (
+              <Button
+                className={`${styles.memberAction} ${styles.memberActionSquare}`}
+                disabled={createInvitationMutation.isPending}
+                onClick={generateInvitation}
+                type="button"
+                variant="secondary"
+              >
+                {createInvitationMutation.isPending ? 'Inviting...' : 'Invite'}
+              </Button>
+            ) : null
+          }
+          canManageMembers={canManageMembers}
+          errorMessage={addMemberErrorMessage}
+          isPending={addMemberMutation.isPending}
+          onSubmit={submitAddMember}
+          onUserIdChange={setUserId}
+          userId={userId}
+        />
+
+        {membersQuery.isPending ? (
+          <StatePanel
+            className={styles.sectionState}
+            role="status"
+            title="Loading members..."
           >
-            {createInvitationMutation.isPending
-              ? 'Generating invitation...'
-              : 'Generate invitation URL'}
-          </Button>
+            <p>
+              Project access details are being prepared.
+            </p>
+          </StatePanel>
+        ) : null}
+
+        {membersQuery.isError ? (
+          <StatePanel
+            actions={
+              <Button
+                onClick={() => membersQuery.refetch()}
+                type="button"
+                variant="secondary"
+              >
+                Retry
+              </Button>
+            }
+            className={styles.sectionState}
+            role="alert"
+            title="Failed to load members."
+            tone="error"
+          >
+            <p>
+              {getErrorMessage(
+                membersQuery.error,
+                'Something went wrong while loading project members.',
+              )}
+            </p>
+          </StatePanel>
+        ) : null}
+
+        {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
+          <StatePanel className={styles.sectionState} title="No members found.">
+            <p>
+              Members with project access will appear here.
+            </p>
+          </StatePanel>
+        ) : null}
+
+        {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (
+          <MembersTable>
+            {members.map((member) => (
+              <MemberRowContainer
+                canManageMembers={canManageMembers}
+                isRemovePending={
+                  removeMemberMutation.isPending &&
+                  memberPendingRemoval?.userId === member.userId
+                }
+                key={member.userId}
+                member={member}
+                onRemove={openRemoveDialog}
+                projectId={projectId}
+              />
+            ))}
+          </MembersTable>
         ) : null}
       </div>
 
-      {invitationError ? (
-        <p className={styles.formError} role="alert">
-          {invitationError}
-        </p>
-      ) : null}
-
       {canManageMembers ? (
-        <>
-          <div className={styles.sectionHeader}>
-            <h3 className={styles.sectionTitle}>Invitation links</h3>
-          </div>
+        <div className={styles.contentSection}>
+          {invitationError ? (
+            <p className={styles.formError} role="alert">
+              {invitationError}
+            </p>
+          ) : null}
 
           {invitationsQuery.isPending ? (
             <StatePanel
@@ -149,79 +214,7 @@ export function MembersPage() {
               ))}
             </InvitationLinksTable>
           ) : null}
-        </>
-      ) : null}
-
-      <AddMemberForm
-        canManageMembers={canManageMembers}
-        errorMessage={addMemberErrorMessage}
-        isPending={addMemberMutation.isPending}
-        onSubmit={submitAddMember}
-        onUserIdChange={setUserId}
-        userId={userId}
-      />
-
-      {membersQuery.isPending ? (
-        <StatePanel
-          className={styles.sectionState}
-          role="status"
-          title="Loading members..."
-        >
-          <p>
-            Project access details are being prepared.
-          </p>
-        </StatePanel>
-      ) : null}
-
-      {membersQuery.isError ? (
-        <StatePanel
-          actions={
-            <Button
-              onClick={() => membersQuery.refetch()}
-              type="button"
-              variant="secondary"
-            >
-              Retry
-            </Button>
-          }
-          className={styles.sectionState}
-          role="alert"
-          title="Failed to load members."
-          tone="error"
-        >
-          <p>
-            {getErrorMessage(
-              membersQuery.error,
-              'Something went wrong while loading project members.',
-            )}
-          </p>
-        </StatePanel>
-      ) : null}
-
-      {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-        <StatePanel className={styles.sectionState} title="No members found.">
-          <p>
-            Members with project access will appear here.
-          </p>
-        </StatePanel>
-      ) : null}
-
-      {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (
-        <MembersTable>
-          {members.map((member) => (
-            <MemberRowContainer
-              canManageMembers={canManageMembers}
-              isRemovePending={
-                removeMemberMutation.isPending &&
-                memberPendingRemoval?.userId === member.userId
-              }
-              key={member.userId}
-              member={member}
-              onRemove={openRemoveDialog}
-              projectId={projectId}
-            />
-          ))}
-        </MembersTable>
+        </div>
       ) : null}
 
       {memberPendingRemoval ? (
