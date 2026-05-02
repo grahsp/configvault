@@ -134,7 +134,11 @@ export function MembersPage() {
       </div>
 
       {canManageMembers ? (
-        <div className={styles.contentSection}>
+        <div className={`${styles.contentSection} ${styles.invitationSection}`}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Active links</h2>
+          </div>
+
           {invitationError ? (
             <p className={styles.formError} role="alert">
               {invitationError}
