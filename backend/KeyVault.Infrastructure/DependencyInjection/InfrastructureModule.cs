@@ -70,6 +70,7 @@ public static class InfrastructureModule
 		
 		services.AddScoped<IUserRepository, EfUserRepository>();
 		services.AddScoped<IProjectRepository, EfProjectRepository>();
+		services.AddScoped<IProjectInvitationRepository, EfProjectInvitationRepository>();
 		services.AddScoped<IConfigItemRepository, EfConfigItemRepository>();
 
 		services.AddSingleton<IAeadEncryption, AesGcmEncryption>();
