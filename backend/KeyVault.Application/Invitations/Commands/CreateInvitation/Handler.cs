@@ -29,7 +29,7 @@ public class Handler(
 		var project = await projects.GetByIdAsync(command.ProjectId, ct)
 		              ?? throw new ProjectNotFoundException(command.ProjectId);
 		
-		await authorization.EnsureCanAccessAsync(ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Write), project, ct);
+		await authorization.EnsureCanAccessAsync(ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write), project, ct);
 		
 		var token = tokens.GenerateToken();
 		var hash = tokens.HashToken(token);

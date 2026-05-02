@@ -28,6 +28,6 @@ public sealed class CapabilitySet
 	public static readonly CapabilitySet Owner =
 		Admin.Extend([
 			ProjectCapability.Create(ProjectResource.Project, ProjectPermission.Delete),
-			ProjectCapability.Create(ProjectResource.ProjectMember, ProjectPermission.Write),
+			ProjectCapability.Create(ProjectResource.Invitation, ProjectPermission.Write),
 		]);
 }
