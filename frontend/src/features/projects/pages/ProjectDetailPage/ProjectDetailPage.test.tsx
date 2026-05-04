@@ -272,7 +272,9 @@ describe('ProjectDetailPage', () => {
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
 
-    expect(screen.getByRole('heading', { name: 'Members' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Project members' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
       'aria-current',
       'page',
@@ -282,7 +284,7 @@ describe('ProjectDetailPage', () => {
       screen.getByRole('form', { name: 'Add member' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Generate invitation URL' }),
+      screen.getByRole('button', { name: 'Invite Link' }),
     ).toBeInTheDocument()
   })
 
@@ -358,7 +360,7 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Generate invitation URL' }),
+      await screen.findByRole('button', { name: 'Invite Link' }),
     )
 
     await waitFor(() => {
@@ -423,7 +425,7 @@ describe('ProjectDetailPage', () => {
     expect(
       within(invitationTable).getByRole('button', { name: 'Revoke' }),
     ).toBeEnabled()
-    expect(screen.getByRole('heading', { name: 'Invitation links' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Invitations' })).toBeInTheDocument()
     expect(screen.getByText('Olivia Owner')).toBeInTheDocument()
   })
 
@@ -806,7 +808,7 @@ describe('ProjectDetailPage', () => {
       screen.getByRole('button', { name: 'Remove Alex Admin' }),
     ).toBeDisabled()
     expect(
-      screen.queryByRole('heading', { name: 'Invitation links' }),
+      screen.queryByRole('heading', { name: 'Invitations' }),
     ).not.toBeInTheDocument()
     expect(
       screen.queryByRole('form', { name: 'Add member' }),
@@ -846,7 +848,7 @@ describe('ProjectDetailPage', () => {
       within(addMemberForm).getByRole('textbox', { name: 'User ID' }),
     ).toBeInTheDocument()
     expect(
-      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+      within(addMemberForm).getByRole('button', { name: '+ Add' }),
     ).toBeEnabled()
   })
 
@@ -881,7 +883,7 @@ describe('ProjectDetailPage', () => {
     })
 
     await user.click(
-      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+      within(addMemberForm).getByRole('button', { name: '+ Add' }),
     )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -957,7 +959,7 @@ describe('ProjectDetailPage', () => {
 
     await user.type(userIdInput, ' new-user ')
     await user.click(
-      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+      within(addMemberForm).getByRole('button', { name: '+ Add' }),
     )
 
     await waitFor(() =>
@@ -1017,7 +1019,7 @@ describe('ProjectDetailPage', () => {
 
     await user.type(userIdInput, 'new-user')
     await user.click(
-      within(addMemberForm).getByRole('button', { name: 'Add Member' }),
+      within(addMemberForm).getByRole('button', { name: '+ Add' }),
     )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -1389,7 +1391,9 @@ describe('ProjectDetailPage', () => {
 
     await user.click(screen.getByRole('link', { name: 'Members' }))
 
-    expect(screen.getByRole('heading', { name: 'Members' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Project members' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute(
       'aria-current',
       'page',
