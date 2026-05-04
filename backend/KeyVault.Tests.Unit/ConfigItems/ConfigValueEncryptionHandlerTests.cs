@@ -60,8 +60,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	[Fact]
 	public async Task GetConfigValue_ShouldThrowForbidden_WhenUserIsNotProjectMember()
 	{
-		var fixture = new Fixture();
-		fixture.User.UserId = UserId.New();
+		var fixture = new Fixture(UserId.New());
 		fixture.Configuration.SetValue(
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
@@ -77,7 +76,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 	private sealed class Fixture
 	{
-		public FakeUserContext User { get; } = new();
+		public FakeUserContext User { get; }
 		public FakeProjectRepository Projects { get; } = new();
 		public FakeConfigItemRepository Configurations { get; } = new();
 		public FakeUnitOfWork Uow { get; } = new();
@@ -88,9 +87,11 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public ConfigItem Configuration { get; }
 		public KeyVault.Domain.Projects.Environment DevelopmentEnvironment { get; }
 
-		public Fixture()
+		public Fixture(UserId? actorUserId = null)
 		{
-			Project = Project.Create(User.UserId, "project", TestEncryptedValue(1), Time.GetUtcNow());
+			var ownerUserId = UserId.New();
+			User = new FakeUserContext(actorUserId ?? ownerUserId);
+			Project = Project.Create(ownerUserId, "project", TestEncryptedValue(1), Time.GetUtcNow());
 			DevelopmentEnvironment = Project.Environments.Single(e => e.Name == "development");
 			Configuration = ConfigItem.Create(Project.Id, ConfigKey.Create("SECRET"), Time.GetUtcNow());
 
@@ -98,7 +99,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 			Configurations.Configuration = Configuration;
 			ProjectAuthorization = new ProjectAuthorizationService(
 				User,
-				new ActorResolver(new RoleCapabilities(), new FakeScopeCapabilities()));
+				new ActorResolver(new FakeReadDbContext(Project), new RoleCapabilities(), new FakeScopeCapabilities()));
 		}
 
 		public SetConfigValueHandler CreateSetConfigValueHandler()
@@ -164,6 +165,8 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public IQueryable<ConfigItem> ConfigItems => Enumerable.Empty<ConfigItem>().AsQueryable();
 		public IQueryable<ConfigValue> ConfigValues => Enumerable.Empty<ConfigValue>().AsQueryable();
 		public IQueryable<ProjectMember> ProjectMembers => project.Members.AsQueryable();
+		public IQueryable<KeyVault.Domain.Invitations.ProjectInvitation> Invitations
+			=> Enumerable.Empty<KeyVault.Domain.Invitations.ProjectInvitation>().AsQueryable();
 	}
 
 	private sealed class FakeUnitOfWork : IUnitOfWork

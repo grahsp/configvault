@@ -183,14 +183,23 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		public Project? Project { get; private set; }
 		public ProjectCapability? ForbiddenCapability { get; set; }
 
-		public Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+		public bool CanAccess(ProjectCapability capability, Project project)
+			=> ForbiddenCapability != capability;
+
+		public Task<bool> CanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
 			=> Task.FromResult(ForbiddenCapability != capability);
 
-		public Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+		public void EnsureCanAccess(ProjectCapability capability, Project project)
 		{
 			Capabilities.Add(capability);
 			Project = project;
 
+			if (ForbiddenCapability == capability)
+				throw new ForbiddenException();
+		}
+
+		public Task EnsureCanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
+		{
 			if (ForbiddenCapability == capability)
 				throw new ForbiddenException();
 

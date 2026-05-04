@@ -16,6 +16,7 @@ public static class ProblemDetailsFactory
 		{
 			ValidationException => Create(StatusCodes.Status400BadRequest, "Validation failed", ex.Message),
 			JsonException => Create(StatusCodes.Status400BadRequest, "Validation failed", ex.Message),
+			NotSupportedException => Create(StatusCodes.Status400BadRequest, "Validation failed", ex.Message),
 			MissingAuthenticationClaimException => Create(StatusCodes.Status401Unauthorized, "Authentication failed", ex.Message),
 			UnsupportedMediaTypeException => Create(StatusCodes.Status415UnsupportedMediaType, "Unsupported media type", ex.Message),
 			ForbiddenException => Create(StatusCodes.Status404NotFound, "Resource not found", "The requested resource was not found."),

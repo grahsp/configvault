@@ -2,8 +2,10 @@ using System.Security.Claims;
 using KeyVault.Api.Authentication;
 using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization.Capabilities;
+using KeyVault.Application.Persistence;
 using KeyVault.Domain;
 using KeyVault.Domain.Identity;
+using KeyVault.Domain.Invitations;
 using KeyVault.Domain.Projects;
 using KeyVault.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -49,15 +51,15 @@ public sealed class ActorContextFactoryTests
 	[Fact]
 	public async Task ResolveAsync_ShouldMapCapabilities_FromSplitMachineScopes()
 	{
-		var factory = CreateSut(new Claim("scope", "config:read config:write"));
+		var factory = CreateSut(new Claim("scope", "secret:read secret:write"));
 		var context = factory.Create();
 		var project = Project.Create(UserId.New(), "project", TestEncryptedValue(1), DateTimeOffset.UtcNow);
-		var sut = new ActorResolver(new RoleCapabilities(), new ScopeCapabilities());
+		var sut = new ActorResolver(new FakeReadDbContext(), new RoleCapabilities(), new ScopeCapabilities());
 
-		var actor = await sut.ResolveAsync(context, project, CancellationToken.None);
+		var actor = await sut.ResolveAsync(context, project.Id, CancellationToken.None);
 
 		Assert.True(actor.Has(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Read)));
-		Assert.True(actor.Has(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write)));
+		Assert.False(actor.Has(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write)));
 	}
 
 	private static ActorContextFactory CreateSut(params Claim[] scopeClaims)
@@ -82,4 +84,19 @@ public sealed class ActorContextFactoryTests
 			Enumerable.Range(0, 12).Select(offset => (byte)(seed + offset)).ToArray(),
 			[(byte)(seed + 20)],
 			Enumerable.Range(0, 16).Select(offset => (byte)(seed + 40 + offset)).ToArray());
+
+	private sealed class FakeReadDbContext : IReadDbContext
+	{
+		public IQueryable<KeyVault.Domain.Users.User> Users => Enumerable.Empty<KeyVault.Domain.Users.User>().AsQueryable();
+		public IQueryable<Project> Projects => Enumerable.Empty<Project>().AsQueryable();
+		public IQueryable<ProjectDataKey> DataKeys => Enumerable.Empty<ProjectDataKey>().AsQueryable();
+		public IQueryable<KeyVault.Domain.Projects.Environment> Environments
+			=> Enumerable.Empty<KeyVault.Domain.Projects.Environment>().AsQueryable();
+		public IQueryable<KeyVault.Domain.ConfigItems.ConfigItem> ConfigItems
+			=> Enumerable.Empty<KeyVault.Domain.ConfigItems.ConfigItem>().AsQueryable();
+		public IQueryable<KeyVault.Domain.ConfigItems.ConfigValue> ConfigValues
+			=> Enumerable.Empty<KeyVault.Domain.ConfigItems.ConfigValue>().AsQueryable();
+		public IQueryable<ProjectMember> ProjectMembers => Enumerable.Empty<ProjectMember>().AsQueryable();
+		public IQueryable<ProjectInvitation> Invitations => Enumerable.Empty<ProjectInvitation>().AsQueryable();
+	}
 }

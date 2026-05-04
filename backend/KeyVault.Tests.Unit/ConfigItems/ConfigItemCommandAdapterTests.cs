@@ -153,19 +153,24 @@ public sealed class ConfigItemCommandAdapterTests
 		public ProjectCapability? Capability { get; private set; }
 		public Project? Project { get; private set; }
 
-		public Task<bool> CanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+		public bool CanAccess(ProjectCapability capability, Project project)
 		{
 			Capability = capability;
 			Project = project;
-			return Task.FromResult(true);
+			return true;
 		}
 
-		public Task EnsureCanAccessAsync(ProjectCapability capability, Project project, CancellationToken ct)
+		public Task<bool> CanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
+			=> Task.FromResult(true);
+
+		public void EnsureCanAccess(ProjectCapability capability, Project project)
 		{
 			Capability = capability;
 			Project = project;
-			return Task.CompletedTask;
 		}
+
+		public Task EnsureCanAccessAsync(ProjectCapability capability, Guid projectId, CancellationToken ct)
+			=> Task.CompletedTask;
 	}
 
 	private sealed class CapturingPlanner : IConfigItemBatchPlanner

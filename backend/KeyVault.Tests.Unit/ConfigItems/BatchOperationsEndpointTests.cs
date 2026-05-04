@@ -1,6 +1,4 @@
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
 using KeyVault.Api.ConfigItems.BatchOperations;
 using KeyVault.Api.ConfigItems.BatchOperations.Operations;
 using KeyVault.Application.Abstractions.Messaging;
@@ -104,18 +102,14 @@ public sealed class BatchOperationsEndpointTests
 			"Handle",
 			BindingFlags.Static | BindingFlags.NonPublic,
 			[
-				typeof(HttpRequest),
+				typeof(Request),
 				typeof(ICommandDispatcher),
 				typeof(Guid),
 				typeof(CancellationToken)
 			])
 			?? throw new InvalidOperationException("BatchOperations endpoint handler not found.");
 
-		var context = new DefaultHttpContext();
-		context.Request.ContentType = "application/json";
-		context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request)));
-
-		var task = (Task<IResult>)handle.Invoke(null, [context.Request, dispatcher, projectId, CancellationToken.None])!;
+		var task = (Task<IResult>)handle.Invoke(null, [request, dispatcher, projectId, CancellationToken.None])!;
 		return await task;
 	}
 

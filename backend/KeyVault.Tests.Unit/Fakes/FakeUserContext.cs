@@ -1,13 +1,12 @@
 using KeyVault.Application.Actors;
+using KeyVault.Application.Authentication;
 using KeyVault.Domain.Identity;
 
 namespace KeyVault.Tests.Unit.Fakes;
 
-public sealed class FakeUserContext : IActorContext
+public sealed class FakeUserContext(UserId? userId = null, string issuer = "https://issuer.example", string subject = "subject")
+	: UserActorContext(new ResolvedUser(userId ?? UserId.New()), ActorId.User(issuer, subject))
 {
-	public string Issuer { get; set; } = "https://issuer.example";
-	public string Subject { get; set; } = "subject";
-	public ActorId Id => ActorId.User(Issuer, Subject);
-	public UserId UserId { get; set; } = UserId.New();
-	public bool IsActive { get; set; } = true;
+	public string Issuer { get; } = issuer;
+	public string Subject { get; } = subject;
 }
