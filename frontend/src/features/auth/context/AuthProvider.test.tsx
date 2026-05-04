@@ -1,10 +1,16 @@
 import { render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { PropsWithChildren } from 'react'
+import type { ReactNode } from 'react'
 import { AuthProvider } from './AuthProvider'
+import type { AuthRedirectState } from '../utils/authRedirectState'
+
+interface MockAuth0ProviderProps {
+  children?: ReactNode
+  onRedirectCallback?: (appState?: AuthRedirectState) => void
+}
 
 const { auth0ProviderMock } = vi.hoisted(() => ({
-  auth0ProviderMock: vi.fn(({ children }: PropsWithChildren) => children),
+  auth0ProviderMock: vi.fn(({ children }: MockAuth0ProviderProps) => children),
 }))
 
 vi.mock('@auth0/auth0-react', () => ({
@@ -66,8 +72,9 @@ describe('AuthProvider', () => {
 
       const props = auth0ProviderMock.mock.calls[0]?.[0]
       expect(props).toBeDefined()
+      expect(props?.onRedirectCallback).toBeTypeOf('function')
 
-      props.onRedirectCallback({
+      props!.onRedirectCallback!({
         returnTo: '/invitations/invite-token',
       })
 
@@ -89,8 +96,9 @@ describe('AuthProvider', () => {
 
       const props = auth0ProviderMock.mock.calls[0]?.[0]
       expect(props).toBeDefined()
+      expect(props?.onRedirectCallback).toBeTypeOf('function')
 
-      props.onRedirectCallback(undefined)
+      props!.onRedirectCallback!(undefined)
 
       expect(location.replace).toHaveBeenCalledWith('/projects')
     } finally {
