@@ -13,6 +13,7 @@ using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
 using KeyVault.Domain.ConfigItems;
+using KeyVault.Domain.ConfigItems.Exceptions;
 using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
@@ -29,15 +30,53 @@ public sealed class ConfigValueEncryptionHandlerTests
 	{
 		var fixture = new Fixture();
 		var sut = fixture.CreateSetConfigValueHandler();
-		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret");
+		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret", 0);
 
 		await sut.HandleAsync(command, CancellationToken.None);
 
 		var value = Assert.Single(fixture.Configuration.Values);
 		Assert.Equal(fixture.Encryption.EncryptedSecret.Payload.ToArray(), value.Value.Payload.ToArray());
+		Assert.Equal(1u, value.Revision);
 		Assert.Equal("secret", fixture.Encryption.EncryptedPlaintext);
 		Assert.Equal(fixture.Project.CurrentDataKey.Value.Payload.ToArray(), fixture.Encryption.EncryptionWrappedKey!.Payload.ToArray());
 		Assert.True(fixture.Uow.SaveChangesCalled);
+	}
+
+	[Fact]
+	public async Task SetConfigValue_ShouldSkipNoOp_WhenPlaintextIsUnchanged()
+	{
+		var fixture = new Fixture();
+		fixture.Configuration.SetValue(
+			fixture.DevelopmentEnvironment.Id,
+			fixture.Encryption.EncryptedSecret,
+			fixture.User.Id,
+			fixture.Time.GetUtcNow(),
+			0);
+		var sut = fixture.CreateSetConfigValueHandler();
+		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret", 1);
+
+		await sut.HandleAsync(command, CancellationToken.None);
+
+		var value = Assert.Single(fixture.Configuration.Values);
+		Assert.Equal(1u, value.Revision);
+		Assert.Null(fixture.Encryption.EncryptedPlaintext);
+		Assert.True(fixture.Uow.SaveChangesCalled);
+	}
+
+	[Fact]
+	public async Task SetConfigValue_ShouldThrowConflict_WhenExpectedRevisionIsStale()
+	{
+		var fixture = new Fixture();
+		fixture.Configuration.SetValue(
+			fixture.DevelopmentEnvironment.Id,
+			fixture.Encryption.EncryptedSecret,
+			fixture.User.Id,
+			fixture.Time.GetUtcNow(),
+			0);
+		var sut = fixture.CreateSetConfigValueHandler();
+		var command = new SetConfigValueCommand(fixture.Project.Id, fixture.Configuration.Id, "development", "secret-2", 0);
+
+		await Assert.ThrowsAsync<StaleConfigValueRevisionException>(() => sut.HandleAsync(command, CancellationToken.None));
 	}
 
 	[Fact]
@@ -45,7 +84,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	{
 		var fixture = new Fixture();
 		var encryptedValue = fixture.Encryption.EncryptedSecret;
-		fixture.Configuration.SetValue(fixture.DevelopmentEnvironment.Id, encryptedValue, fixture.User.Id, fixture.Time.GetUtcNow());
+		fixture.Configuration.SetValue(fixture.DevelopmentEnvironment.Id, encryptedValue, fixture.User.Id, fixture.Time.GetUtcNow(), 0);
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
 
@@ -53,6 +92,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		Assert.NotNull(result);
 		Assert.Equal(fixture.Encryption.DecryptedSecret, result.Value);
+		Assert.Equal(1u, result.Revision);
 		Assert.Equal(encryptedValue.Payload.ToArray(), fixture.Encryption.DecryptedValue!.Payload.ToArray());
 		Assert.Equal(fixture.Project.CurrentDataKey.Value.Payload.ToArray(), fixture.Encryption.DecryptionWrappedKey!.Payload.ToArray());
 	}
@@ -65,7 +105,8 @@ public sealed class ConfigValueEncryptionHandlerTests
 			fixture.DevelopmentEnvironment.Id,
 			fixture.Encryption.EncryptedSecret,
 			ActorId.User("https://issuer.example", "other-subject"),
-			fixture.Time.GetUtcNow());
+			fixture.Time.GetUtcNow(),
+			0);
 
 		var sut = fixture.CreateGetConfigValueHandler();
 		var query = new GetConfigValueQuery(fixture.Project.Id, fixture.Configuration.Id, "development");
@@ -127,6 +168,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 	private sealed class FakeConfigItemRepository : IConfigItemRepository
 	{
 		public ConfigItem? Configuration { get; set; }
+		public List<ConfigValueRevision> Revisions { get; } = [];
 
 		public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
 			=> Task.FromResult(Configuration?.Id == id ? Configuration : null);
@@ -153,6 +195,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct) => throw new NotImplementedException();
 		public void Add(ConfigItem configItem) => throw new NotImplementedException();
+		public void AddRevision(ConfigValueRevision revision) => Revisions.Add(revision);
 		public void Remove(ConfigItem configItem) => throw new NotImplementedException();
 	}
 
@@ -164,6 +207,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 		public IQueryable<KeyVault.Domain.Projects.Environment> Environments => project.Environments.AsQueryable();
 		public IQueryable<ConfigItem> ConfigItems => Enumerable.Empty<ConfigItem>().AsQueryable();
 		public IQueryable<ConfigValue> ConfigValues => Enumerable.Empty<ConfigValue>().AsQueryable();
+		public IQueryable<ConfigValueRevision> ConfigValueRevisions => Enumerable.Empty<ConfigValueRevision>().AsQueryable();
 		public IQueryable<ProjectMember> ProjectMembers => project.Members.AsQueryable();
 		public IQueryable<KeyVault.Domain.Invitations.ProjectInvitation> Invitations
 			=> Enumerable.Empty<KeyVault.Domain.Invitations.ProjectInvitation>().AsQueryable();

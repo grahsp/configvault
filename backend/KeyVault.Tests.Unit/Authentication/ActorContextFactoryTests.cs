@@ -96,6 +96,8 @@ public sealed class ActorContextFactoryTests
 			=> Enumerable.Empty<KeyVault.Domain.ConfigItems.ConfigItem>().AsQueryable();
 		public IQueryable<KeyVault.Domain.ConfigItems.ConfigValue> ConfigValues
 			=> Enumerable.Empty<KeyVault.Domain.ConfigItems.ConfigValue>().AsQueryable();
+		public IQueryable<KeyVault.Domain.ConfigItems.ConfigValueRevision> ConfigValueRevisions
+			=> Enumerable.Empty<KeyVault.Domain.ConfigItems.ConfigValueRevision>().AsQueryable();
 		public IQueryable<ProjectMember> ProjectMembers => Enumerable.Empty<ProjectMember>().AsQueryable();
 		public IQueryable<ProjectInvitation> Invitations => Enumerable.Empty<ProjectInvitation>().AsQueryable();
 	}

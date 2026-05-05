@@ -26,7 +26,7 @@ public sealed class BatchOperationsEndpointTests
 			[
 				new CreateConfigItemRequest("NEW_SECRET", "initial-secret"),
 				new RenameConfigItemRequest(configItemId, "RENAMED_SECRET"),
-				new SetConfigItemValueRequest(configItemId, "secret"),
+				new SetConfigItemValueRequest(configItemId, "secret", 3),
 				new DeleteConfigItemRequest(deleteId),
 			]);
 
@@ -55,6 +55,7 @@ public sealed class BatchOperationsEndpointTests
 				var setValue = Assert.IsType<SetValue>(operation);
 				Assert.Equal(configItemId, setValue.ConfigItemId);
 				Assert.Equal("secret", setValue.Value);
+				Assert.Equal(3u, setValue.ExpectedRevision);
 			},
 			operation =>
 			{

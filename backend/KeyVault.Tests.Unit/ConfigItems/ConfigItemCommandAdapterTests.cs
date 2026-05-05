@@ -103,7 +103,7 @@ public sealed class ConfigItemCommandAdapterTests
 			fixture.Executor);
 		var configItemId = Guid.NewGuid();
 
-		await sut.HandleAsync(new SetConfigValueCommand(fixture.Project.Id, configItemId, "production", "secret"), CancellationToken.None);
+		await sut.HandleAsync(new SetConfigValueCommand(fixture.Project.Id, configItemId, "production", "secret", 2), CancellationToken.None);
 
 		Assert.Equal(ProjectCapability.Create(ProjectResource.ConfigValue, ProjectPermission.Write), fixture.Authorization.Capability);
 		var batch = fixture.Planner.Batch!;
@@ -111,6 +111,7 @@ public sealed class ConfigItemCommandAdapterTests
 		var operation = Assert.IsType<SetValue>(Assert.Single(batch.Operations));
 		Assert.Equal(configItemId, operation.ConfigItemId);
 		Assert.Equal("secret", operation.Value);
+		Assert.Equal(2u, operation.ExpectedRevision);
 		Assert.Same(fixture.PreparedBatch, fixture.Executor.Batch);
 	}
 

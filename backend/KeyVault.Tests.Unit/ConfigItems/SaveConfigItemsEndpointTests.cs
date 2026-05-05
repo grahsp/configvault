@@ -24,7 +24,7 @@ public sealed class SaveConfigItemsEndpointTests
 		var request = new Request(
 			"development",
 			[
-				new ConfigItemUpdateRequest(configItemId, "RENAMED_SECRET", "secret")
+				new ConfigItemUpdateRequest(configItemId, "RENAMED_SECRET", "secret", 4)
 			],
 			[deleteId]);
 
@@ -47,6 +47,7 @@ public sealed class SaveConfigItemsEndpointTests
 				var setValue = Assert.IsType<SetValue>(operation);
 				Assert.Equal(configItemId, setValue.ConfigItemId);
 				Assert.Equal("secret", setValue.Value);
+				Assert.Equal(4u, setValue.ExpectedRevision);
 			},
 			operation =>
 			{
@@ -62,7 +63,7 @@ public sealed class SaveConfigItemsEndpointTests
 		var request = new Request(
 			"development",
 			[
-				new ConfigItemUpdateRequest(Guid.NewGuid(), "not valid", null)
+				new ConfigItemUpdateRequest(Guid.NewGuid(), "not valid", null, null)
 			],
 			[]);
 

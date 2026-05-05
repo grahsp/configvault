@@ -25,7 +25,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		var batch = new OperationBatch(
 			[
 				new RenameItem(Guid.NewGuid(), ConfigKey.Create("RENAMED_SECRET")),
-				new SetValue(Guid.NewGuid(), "secret")
+				new SetValue(Guid.NewGuid(), "secret", 1)
 			],
 			"development");
 		var command = new BatchCommand(fixture.Project.Id, batch);
@@ -55,7 +55,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		var batch = new OperationBatch(
 			[
 				new CreateItem(ConfigKey.Create("SECRET"), null),
-				new SetValue(Guid.NewGuid(), "secret")
+				new SetValue(Guid.NewGuid(), "secret", 1)
 			],
 			"development");
 		var sut = new BatchHandler(
@@ -101,7 +101,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		var batch = new OperationBatch(
 			[
 				new CreateItem(ConfigKey.Create("FIRST"), null),
-				new SetValue(Guid.NewGuid(), "secret"),
+				new SetValue(Guid.NewGuid(), "secret", 1),
 				new CreateItem(ConfigKey.Create("SECOND"), null)
 			],
 			"development");
@@ -127,7 +127,7 @@ public sealed class ExecuteBatchOperationsHandlerTests
 		var batch = new OperationBatch(
 			[
 				new RenameItem(Guid.NewGuid(), ConfigKey.Create("RENAMED_SECRET")),
-				new SetValue(Guid.NewGuid(), "secret")
+				new SetValue(Guid.NewGuid(), "secret", 1)
 			],
 			"development");
 		var sut = new BatchHandler(

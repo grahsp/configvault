@@ -31,7 +31,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 				{
 					new { type = "create", key = "NEW_SECRET", initialValue = "initial-secret" },
 					new { type = "rename", secretId = configItemId, key = "PUBLIC_KEY" },
-					new { type = "set-value", secretId = configItemId, value = "updated-secret" },
+					new { type = "set-value", secretId = configItemId, value = "updated-secret", expectedRevision = 0 },
 				},
 			});
 
@@ -55,7 +55,7 @@ public sealed class BatchOperationsEndpointTests(TestFixture fixture) : IClassFi
 				operations = new object[]
 				{
 					new { type = "rename", secretId = configItemId, key = "PUBLIC_KEY" },
-					new { type = "set-value", secretId = configItemId, value = "updated-secret" },
+					new { type = "set-value", secretId = configItemId, value = "updated-secret", expectedRevision = 0 },
 				},
 			});
 
