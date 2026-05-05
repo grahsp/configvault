@@ -26,5 +26,8 @@ public static class ConfigItemEndpoints
 		
 		configValues.MapPut("/secrets/{configItemId}/value", SetConfigValue.Endpoint.Handle);
 		configValues.MapGet("/secrets/{configItemId}/value", GetConfigValue.Endpoint.Handle);
+		configValues.MapGet("/secrets/{configItemId}/value/revisions", GetConfigValueRevisions.Endpoint.Handle);
+		configValues.MapGet("/secrets/{configItemId}/value/revisions/{revision}", GetConfigValueRevision.Endpoint.Handle);
+		configValues.MapPost("/secrets/{configItemId}/value/revisions/{revision}/restore", RestoreConfigValueRevision.Endpoint.Handle);
 	}
 }

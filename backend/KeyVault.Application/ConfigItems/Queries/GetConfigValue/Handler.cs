@@ -37,6 +37,6 @@ public sealed class Handler(
 
 
 		var decrypted = encryption.DecryptSecret(value.Value, project.CurrentDataKey.Value);
-		return new ConfigValueView(decrypted, value.LastModifiedAt);
+		return new ConfigValueView(decrypted, value.Revision, value.LastModifiedAt);
 	}
 }
