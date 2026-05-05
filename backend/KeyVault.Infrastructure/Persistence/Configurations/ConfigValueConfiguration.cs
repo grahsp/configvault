@@ -30,6 +30,10 @@ public class ConfigValueConfiguration : IEntityTypeConfiguration<ConfigValue>
 				value => value.Payload.ToArray(),
 				payload => EncryptedValue.FromPayload(payload));
 
+		builder.Property(x => x.Revision)
+			.IsConcurrencyToken()
+			.IsRequired();
+
 		builder.Property(x => x.LastModifiedBy)
 			.HasActorIdConversion()
 			.IsRequired();

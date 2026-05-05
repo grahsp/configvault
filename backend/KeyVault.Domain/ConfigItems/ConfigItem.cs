@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using KeyVault.Domain.ConfigItems.Exceptions;
 using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 
@@ -40,16 +41,28 @@ public sealed class ConfigItem
 		return value != null;
 	}
 
-	public void SetValue(Guid environmentId, EncryptedValue value, ActorId actorId, DateTimeOffset now)
+	public ConfigValueRevision SetValue(
+		Guid environmentId,
+		EncryptedValue value,
+		ActorId actorId,
+		DateTimeOffset now,
+		uint expectedRevision)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
 		if (TryGetValue(environmentId, out var existing))
 		{
-			existing.SetValue(value, actorId, now);
-			return;
+			if (existing.Revision != expectedRevision)
+				throw new StaleConfigValueRevisionException(expectedRevision, existing.Revision);
+
+			return existing.SetValue(ProjectId, value, actorId, now);
 		}
-		
-		_values.Add(new ConfigValue(Id, environmentId, value, actorId, now));
+
+		if (expectedRevision != 0)
+			throw new StaleConfigValueRevisionException(expectedRevision, 0);
+
+		var current = new ConfigValue(Id, environmentId, 0, value, actorId, now);
+		_values.Add(current);
+		return current.SetInitialValue(ProjectId, value, actorId, now);
 	}
 }

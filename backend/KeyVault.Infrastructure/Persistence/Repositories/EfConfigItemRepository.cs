@@ -35,6 +35,11 @@ public class EfConfigItemRepository(AppDbContext db) : IConfigItemRepository
 		db.ConfigItems.Add(configItem);
 	}
 
+	public void AddRevision(ConfigValueRevision revision)
+	{
+		db.ConfigValueRevisions.Add(revision);
+	}
+
 	public void Remove(ConfigItem configItem)
 	{
 		db.ConfigItems.Remove(configItem);

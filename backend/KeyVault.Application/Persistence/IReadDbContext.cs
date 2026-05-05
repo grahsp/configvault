@@ -14,6 +14,7 @@ public interface IReadDbContext
 	IQueryable<Environment> Environments { get; }
 	IQueryable<ConfigItem> ConfigItems { get; }
 	IQueryable<ConfigValue> ConfigValues { get; }
+	IQueryable<ConfigValueRevision> ConfigValueRevisions { get; }
 	IQueryable<ProjectMember> ProjectMembers { get; }
 	IQueryable<ProjectInvitation> Invitations { get; }
 }

@@ -11,5 +11,6 @@ public interface IConfigItemRepository
 	Task<IReadOnlyList<ConfigItem>> GetByIdsAsync(Guid projectId, IEnumerable<Guid> configItemIds, CancellationToken ct);
 	Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct);
 	void Add(ConfigItem configItem);
+	void AddRevision(ConfigValueRevision revision);
 	void Remove(ConfigItem configItem);
 }

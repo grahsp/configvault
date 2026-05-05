@@ -30,6 +30,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	
 	public DbSet<ConfigValue> ConfigValues { get; set; }
 	IQueryable<ConfigValue> IReadDbContext.ConfigValues => ConfigValues;
+
+	public DbSet<ConfigValueRevision> ConfigValueRevisions { get; set; }
+	IQueryable<ConfigValueRevision> IReadDbContext.ConfigValueRevisions => ConfigValueRevisions;
 	
 	public DbSet<ProjectMember> ProjectMembers { get; set; }
 	IQueryable<ProjectMember> IReadDbContext.ProjectMembers => ProjectMembers;
