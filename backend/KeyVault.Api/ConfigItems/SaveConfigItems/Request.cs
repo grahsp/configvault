@@ -8,4 +8,5 @@ public sealed record Request(
 public sealed record ConfigItemUpdateRequest(
 	Guid ConfigItemId,
 	string? Key,
-	string? Value);
+	string? Value,
+	uint? ExpectedRevision);

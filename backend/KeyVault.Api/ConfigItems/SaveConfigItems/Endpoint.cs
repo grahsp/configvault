@@ -28,7 +28,12 @@ internal static class Endpoint
 			}
 
 			if (update.Value is not null)
-				operations.Add(new SetValue(update.ConfigItemId, update.Value));
+			{
+				if (update.ExpectedRevision is null)
+					throw new ValidationException("Expected revision is required when setting a value.");
+
+				operations.Add(new SetValue(update.ConfigItemId, update.Value, update.ExpectedRevision.Value));
+			}
 		}
 
 		foreach (var configItemId in request.DeleteConfigItemIds)

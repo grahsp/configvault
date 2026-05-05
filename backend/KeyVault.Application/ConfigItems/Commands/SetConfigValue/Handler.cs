@@ -23,7 +23,7 @@ public sealed class Handler(
 		              ?? throw new ProjectNotFoundException(command.ProjectId);
 		
 		var batch = new OperationBatch(
-			[new SetValue(command.ConfigItemId, command.Value)],
+			[new SetValue(command.ConfigItemId, command.Value, command.ExpectedRevision)],
 			command.EnvironmentName);
 
 		authorization.EnsureCanAccess(

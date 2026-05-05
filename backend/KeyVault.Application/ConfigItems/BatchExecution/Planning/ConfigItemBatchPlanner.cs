@@ -63,7 +63,7 @@ public sealed class ConfigItemBatchPlanner(
 				case SetValue set:
 				{
 					var mutation = GetOrCreate(mutations, set.ConfigItemId);
-					mutation.NewValue = set.Value;
+					mutation.NewValue = set;
 					break;
 				}
 
@@ -109,7 +109,7 @@ public sealed class ConfigItemBatchPlanner(
 
 		// 4. Set values
 		foreach (var m in reduction.Mutations.Values.Where(m => m is { Delete: false, NewValue: not null }))
-			result.Add(new SetValue(m.ItemId, m.NewValue!));
+			result.Add(m.NewValue!);
 
 		return result;
 	}

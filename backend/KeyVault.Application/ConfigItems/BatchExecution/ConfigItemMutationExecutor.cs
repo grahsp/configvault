@@ -5,6 +5,7 @@ using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.Persistence;
 using KeyVault.Domain.ConfigItems;
+using KeyVault.Domain.ConfigItems.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.ConfigItems.BatchExecution;
@@ -28,8 +29,15 @@ public sealed class ConfigItemMutationExecutor(
 		{
 			await uow.SaveChangesAsync(ct);
 		}
+		catch (DbUpdateConcurrencyException)
+		{
+			throw new ConcurrentConfigValueUpdateException();
+		}
 		catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
 		{
+			if (IsConfigValueUniqueConstraintViolation(ex))
+				throw new ConcurrentConfigValueUpdateException();
+
 			throw new ConfigItemAlreadyExistsException(FindCreatedKey(batch.Operations));
 		}
 	}
@@ -79,7 +87,7 @@ public sealed class ConfigItemMutationExecutor(
 		batch.Items[configItem.Id] = configItem;
 
 		if (create.InitialValue is not null)
-			SetValue(batch, configItem, create.InitialValue);
+			SetValue(batch, configItem, new SetValue(configItem.Id, create.InitialValue, 0));
 	}
 
 	private void HandleRename(PreparedBatch batch, RenameItem rename)
@@ -91,7 +99,7 @@ public sealed class ConfigItemMutationExecutor(
 	private void HandleSetValue(PreparedBatch batch, SetValue setValue)
 	{
 		var item = GetItem(batch, setValue.ConfigItemId);
-		SetValue(batch, item, setValue.Value);
+		SetValue(batch, item, setValue);
 	}
 
 	private void HandleDelete(PreparedBatch batch, DeleteItem delete)
@@ -117,13 +125,29 @@ public sealed class ConfigItemMutationExecutor(
 	private void SetValue(
 		PreparedBatch batch,
 		ConfigItem item,
-		string value)
+		SetValue setValue)
 	{
 		var environment = batch.Environment
 			?? throw new InvalidOperationException("Environment is required.");
 
-		var encrypted = encryption.EncryptSecret(value, batch.Project.CurrentDataKey.Value);
-		item.SetValue(environment.Id, encrypted, actor.Id, time.GetUtcNow());
+		if (item.TryGetValue(environment.Id, out var current))
+		{
+			if (current.Revision != setValue.ExpectedRevision)
+				throw new StaleConfigValueRevisionException(setValue.ExpectedRevision, current.Revision);
+
+			var currentPlaintext = encryption.DecryptSecret(current.Value, batch.Project.CurrentDataKey.Value);
+			if (currentPlaintext == setValue.Value)
+				return;
+		}
+
+		var encrypted = encryption.EncryptSecret(setValue.Value, batch.Project.CurrentDataKey.Value);
+		var revision = item.SetValue(
+			environment.Id,
+			encrypted,
+			actor.Id,
+			time.GetUtcNow(),
+			setValue.ExpectedRevision);
+		configurations.AddRevision(revision);
 	}
 	
 	private static ConfigKey FindCreatedKey(IEnumerable<Operation> operations)
@@ -132,4 +156,10 @@ public sealed class ConfigItemMutationExecutor(
 	private static bool IsUniqueConstraintViolation(DbUpdateException ex)
 		=> ex.InnerException?.GetType().FullName == "Npgsql.PostgresException" &&
 		   ex.InnerException.GetType().GetProperty("SqlState")?.GetValue(ex.InnerException)?.ToString() == "23505";
+
+	private static bool IsConfigValueUniqueConstraintViolation(DbUpdateException ex)
+	{
+		var constraintName = ex.InnerException?.GetType().GetProperty("ConstraintName")?.GetValue(ex.InnerException)?.ToString();
+		return constraintName is "PK_config_values" or "PK_config_value_revisions";
+	}
 }

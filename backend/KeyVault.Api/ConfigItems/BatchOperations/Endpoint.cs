@@ -34,7 +34,8 @@ internal static class BatchOperationsEndpoint
 			CreateConfigItemRequest create => MapCreate(create),
 			SetConfigItemValueRequest setValue => new SetValue(
 				setValue.ConfigItemId,
-				setValue.Value),
+				setValue.Value,
+				setValue.ExpectedRevision),
 			RenameConfigItemRequest rename => MapRename(rename),
 			DeleteConfigItemRequest delete => new DeleteItem(
 				delete.ConfigItemId),

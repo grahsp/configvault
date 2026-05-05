@@ -13,7 +13,7 @@ internal static class Endpoint
 		Request request,
 		CancellationToken ct)
 	{
-		var command = new Command(projectId, configItemId, environment, request.Value);
+		var command = new Command(projectId, configItemId, environment, request.Value, request.ExpectedRevision);
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();
