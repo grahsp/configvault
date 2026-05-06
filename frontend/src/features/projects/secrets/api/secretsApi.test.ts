@@ -7,6 +7,7 @@ import {
   getSecretValue,
   getSecrets,
   importSecrets,
+  restoreSecretValueRevision,
   saveSecrets,
   upsertSecretValue,
 } from './secretsApi.ts'
@@ -223,6 +224,32 @@ describe('secrets api', () => {
               expectedRevision: 7,
             },
           ],
+        }),
+      },
+    )
+  })
+
+  it('restores a secret value revision through the restore endpoint', async () => {
+    const client = createMockClient()
+    vi.mocked(client.request).mockResolvedValue(undefined)
+
+    await expect(
+      restoreSecretValueRevision(
+        client,
+        'project/with space',
+        'config/with space',
+        'prod/eu west',
+        2,
+        7,
+      ),
+    ).resolves.toBeUndefined()
+
+    expect(client.request).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value/revisions/2/restore?environment=prod%2Feu%20west',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          expectedRevision: 7,
         }),
       },
     )

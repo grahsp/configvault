@@ -72,6 +72,15 @@ function getImportCalls(fetchMock: ReturnType<typeof vi.fn>) {
   )
 }
 
+function getRestoreCalls(fetchMock: ReturnType<typeof vi.fn>) {
+  return fetchMock.mock.calls.filter(
+    ([input, init]) =>
+      input.toString().includes('/value/revisions/') &&
+      input.toString().includes('/restore?') &&
+      init?.method === 'POST',
+  )
+}
+
 async function openImportSecrets(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     await screen.findByRole('button', { name: 'Open secret actions' }),
@@ -194,8 +203,21 @@ describe('SecretsPage', () => {
     )
   })
 
-  it('opens secret history, loads revision details, and preserves unsaved edits', async () => {
+  it('opens secret history, reveals and re-masks revision values, and preserves unsaved edits', async () => {
     const user = userEvent.setup()
+    const scrollHeightSpy = vi
+      .spyOn(HTMLTextAreaElement.prototype, 'scrollHeight', 'get')
+      .mockImplementation(function scrollHeight(this: HTMLTextAreaElement) {
+        if (this.value === 'old-secret') {
+          return 80
+        }
+
+        if (this.value === 'current-secret') {
+          return 240
+        }
+
+        return 24
+      })
 
     const fetchMock = mockFetchSequence([
       {
@@ -259,10 +281,14 @@ describe('SecretsPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'API_KEY history' }),
     ).toBeInTheDocument()
-    expect(await screen.findByText('Revision 4')).toBeInTheDocument()
+    const historyDialog = screen.getByRole('dialog', { name: 'API_KEY history' })
+    expect(screen.queryByText('Revision 4')).not.toBeInTheDocument()
     expect(screen.getAllByText('Current')).not.toHaveLength(0)
     expect(screen.getByText('Casey Current')).toBeInTheDocument()
     expect(screen.getByText('Unknown user')).toBeInTheDocument()
+    expect(
+      within(historyDialog).getAllByDisplayValue('************'),
+    ).toHaveLength(2)
     expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.filter(([input]) =>
@@ -276,24 +302,37 @@ describe('SecretsPage', () => {
       screen.getByRole('button', { name: 'Reveal revision 2 value' }),
     )
 
-    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+    const oldRevisionValue = await screen.findByDisplayValue('old-secret')
+    expect(oldRevisionValue).toBeInTheDocument()
+    expect(oldRevisionValue).toHaveStyle({
+      height: '80px',
+      overflowY: 'hidden',
+    })
     expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
 
     await user.click(
       screen.getByRole('button', { name: 'Reveal revision 4 value' }),
     )
 
-    expect(await screen.findByDisplayValue('current-secret')).toBeInTheDocument()
+    const currentRevisionValue = await screen.findByDisplayValue('current-secret')
+    expect(currentRevisionValue).toBeInTheDocument()
+    expect(currentRevisionValue).toHaveStyle({
+      height: '192px',
+      overflowY: 'auto',
+    })
     expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
 
-    const revisionTwoCard = screen.getByText('Revision 2').closest('article')
+    const revisionTwoValue = screen.getByDisplayValue('old-secret')
+    const revisionTwoCard = revisionTwoValue.closest('article')
     expect(revisionTwoCard).not.toBeNull()
     await user.click(
       within(revisionTwoCard as HTMLElement).getByRole('button', {
-        name: 'Hide value',
+        name: 'Hide revision 2 value',
       }),
     )
-    expect(screen.queryByDisplayValue('old-secret')).not.toBeInTheDocument()
+    expect(
+      within(revisionTwoCard as HTMLElement).getByDisplayValue('************'),
+    ).toBeInTheDocument()
 
     await user.click(
       screen.getByRole('button', { name: 'Reveal revision 2 value' }),
@@ -311,6 +350,216 @@ describe('SecretsPage', () => {
 
     expect(screen.queryByRole('heading', { name: 'API_KEY history' })).not.toBeInTheDocument()
     expect(screen.getByDisplayValue('API_KEY_UPDATED')).toBeInTheDocument()
+
+    scrollHeightSpy.mockRestore()
+  })
+
+  it('restores a revision, refreshes data, shows a toast, and closes the modal', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 4,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 2,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions/2/restore',
+        method: 'POST',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+            revision: 5,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 5,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T16:00:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 4,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: false,
+          },
+          {
+            revision: 2,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'View history for API_KEY' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Restore revision 2' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Restore secret revision?' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Restore revision' }))
+
+    expect(await screen.findByText('API_KEY restored')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'API_KEY history' }),
+    ).not.toBeInTheDocument()
+
+    const restoreCalls = getRestoreCalls(fetchMock)
+    expect(restoreCalls).toHaveLength(1)
+    expect(restoreCalls[0]?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({
+        expectedRevision: 1,
+      }),
+    })
+  })
+
+  it('disables restore while the main secrets table has unsaved changes', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 1,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 0,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByRole('textbox', { name: 'Key' })
+    await user.clear(keyInput)
+    await user.type(keyInput, 'API_KEY_UPDATED')
+    await user.click(screen.getByRole('button', { name: 'View history for API_KEY' }))
+
+    const restoreButton = await screen.findByRole('button', {
+      name: 'Restore revision 0',
+    })
+    expect(restoreButton).toBeDisabled()
+    expect(
+      screen.getByText(
+        'Save or cancel the unsaved secret edits before restoring a revision.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Restore secret revision?' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps the modal open and shows the restore error when restore fails', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 1,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 0,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions/0/restore',
+        method: 'POST',
+        status: 409,
+        body: {
+          title: 'Restore failed',
+          detail: 'Revision conflict.',
+          status: 409,
+        },
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'View history for API_KEY' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Restore revision 0' }))
+    await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
+
+    expect(await screen.findByText('Revision conflict.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'API_KEY history' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Restore secret revision?' }),
+    ).toBeInTheDocument()
   })
 
   it('shows the secrets loading state while secrets load', async () => {
