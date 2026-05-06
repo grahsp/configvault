@@ -15,6 +15,8 @@ export type SecretDraftMap = Record<string, SecretDraft>
 
 export type RevealedSecretValues = Record<string, string>
 
+export type RevealedSecretValueRevisions = Record<string, number>
+
 export type VisibleRevealedSecretValues = Record<string, boolean>
 
 export type Updater<T> = T | ((current: T) => T)
@@ -29,6 +31,9 @@ export type PendingDeletionIdsUpdater = Updater<string[]>
 
 export type RevealedSecretValuesUpdater = Updater<RevealedSecretValues>
 
+export type RevealedSecretValueRevisionsUpdater =
+  Updater<RevealedSecretValueRevisions>
+
 export type VisibleRevealedSecretValuesUpdater =
   Updater<VisibleRevealedSecretValues>
 
@@ -42,6 +47,7 @@ export interface SecretsEditorStateResult {
   isImportModalOpen: boolean
   newSecrets: NewSecretDraft[]
   pendingDeletionIds: string[]
+  revealedValueRevisions: RevealedSecretValueRevisions
   revealedValues: RevealedSecretValues
   revealingId: string | null
   setDrafts: (updater: SecretDraftMapUpdater) => void
@@ -51,6 +57,9 @@ export interface SecretsEditorStateResult {
   setIsImportModalOpen: (value: boolean) => void
   setNewSecrets: (updater: NewSecretsUpdater) => void
   setPendingDeletionIds: (updater: PendingDeletionIdsUpdater) => void
+  setRevealedValueRevisions: (
+    updater: RevealedSecretValueRevisionsUpdater,
+  ) => void
   setRevealedValues: (updater: RevealedSecretValuesUpdater) => void
   setRevealingId: (updater: RevealingIdUpdater) => void
   setVisibleRevealedValues: (
@@ -71,8 +80,12 @@ export interface SecretsEditSessionController {
 
 export interface SecretsRevealController {
   drafts: SecretDraftMap
+  revealedValueRevisions: RevealedSecretValueRevisions
   revealedValues: RevealedSecretValues
   setDrafts: (updater: SecretDraftMapUpdater) => void
+  setRevealedValueRevisions: (
+    updater: RevealedSecretValueRevisionsUpdater,
+  ) => void
   setRevealedValues: (updater: RevealedSecretValuesUpdater) => void
   setRevealingId: (updater: RevealingIdUpdater) => void
   setVisibleRevealedValues: (
@@ -85,7 +98,11 @@ export interface SecretsSaveController {
   drafts: SecretDraftMap
   newSecrets: NewSecretDraft[]
   pendingDeletionIds: string[]
+  revealedValueRevisions: RevealedSecretValueRevisions
   setHighlightedValidationIds: (updater: ValidationIdsUpdater) => void
+  setRevealedValueRevisions: (
+    updater: RevealedSecretValueRevisionsUpdater,
+  ) => void
   setRevealedValues: (updater: RevealedSecretValuesUpdater) => void
   setVisibleRevealedValues: (
     updater: VisibleRevealedSecretValuesUpdater,

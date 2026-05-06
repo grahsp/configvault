@@ -30,6 +30,7 @@ export function useSecretsSave({
       drafts: state.drafts,
       newSecrets: state.newSecrets,
       pendingDeletionIds: state.pendingDeletionIds,
+      revealedValueRevisions: state.revealedValueRevisions,
     })
 
     if (invalidSecretIds.length > 0) {
@@ -48,6 +49,9 @@ export function useSecretsSave({
       const affectedValueIds = getAffectedValueIds(operations)
 
       state.setRevealedValues((current) =>
+        omitRevealedValues(current, affectedValueIds),
+      )
+      state.setRevealedValueRevisions((current) =>
         omitRevealedValues(current, affectedValueIds),
       )
       state.setVisibleRevealedValues((current) =>

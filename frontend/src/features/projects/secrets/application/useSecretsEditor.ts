@@ -44,6 +44,7 @@ export function useSecretsEditor({
     isImportModalOpen,
     newSecrets,
     pendingDeletionIds,
+    revealedValueRevisions,
     revealedValues,
     revealingId,
     setDrafts,
@@ -53,6 +54,7 @@ export function useSecretsEditor({
     setIsImportModalOpen,
     setNewSecrets,
     setPendingDeletionIds,
+    setRevealedValueRevisions,
     setRevealedValues,
     setRevealingId,
     setVisibleRevealedValues,
@@ -106,8 +108,10 @@ export function useSecretsEditor({
 
   const revealState: SecretsRevealController = {
     drafts,
+    revealedValueRevisions,
     revealedValues,
     setDrafts,
+    setRevealedValueRevisions,
     setRevealedValues,
     setRevealingId,
     setVisibleRevealedValues,
@@ -118,7 +122,9 @@ export function useSecretsEditor({
     drafts,
     newSecrets,
     pendingDeletionIds,
+    revealedValueRevisions,
     setHighlightedValidationIds,
+    setRevealedValueRevisions,
     setRevealedValues,
     setVisibleRevealedValues,
   }

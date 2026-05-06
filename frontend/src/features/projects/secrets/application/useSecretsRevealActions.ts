@@ -37,6 +37,10 @@ export function useSecretsRevealActions({
       const secretValue = await mutations.revealSecretValue.mutateAsync({
         secretId: secret.id,
       })
+      state.setRevealedValueRevisions((current) => ({
+        ...current,
+        [secret.id]: secretValue.revision,
+      }))
       state.setRevealedValues((current) => ({
         ...current,
         [secret.id]: secretValue.value,
@@ -82,6 +86,10 @@ export function useSecretsRevealActions({
       const secretValue = await mutations.revealSecretValue.mutateAsync({
         secretId: secret.id,
       })
+      state.setRevealedValueRevisions((current) => ({
+        ...current,
+        [secret.id]: secretValue.revision,
+      }))
       state.setRevealedValues((current) => ({
         ...current,
         [secret.id]: secretValue.value,

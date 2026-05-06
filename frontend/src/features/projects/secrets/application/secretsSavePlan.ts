@@ -9,11 +9,13 @@ export function buildSaveOperations({
   drafts,
   newSecrets,
   pendingDeletionIds,
+  revealedValueRevisions,
 }: {
   secrets: Secret[]
   drafts: Record<string, SecretDraft>
   newSecrets: NewSecretDraft[]
   pendingDeletionIds: string[]
+  revealedValueRevisions: Record<string, number>
 }) {
   const tableSecrets = [...secrets, ...newSecrets.map(toLocalSecret)]
   const invalidSecretIds = Object.entries(
@@ -61,6 +63,7 @@ export function buildSaveOperations({
         type: 'set-value',
         secretId: secret.id,
         value: nextValue,
+        expectedRevision: revealedValueRevisions[secret.id] ?? secret.revision,
       })
     }
   }
@@ -98,7 +101,7 @@ export function getAffectedValueIds(operations: SecretBatchOperation[]) {
   return [...secretIdsWithUpdatedValues, ...deletedSecretIds]
 }
 
-export function omitRevealedValues<T extends string | boolean>(
+export function omitRevealedValues<T extends string | boolean | number>(
   values: Record<string, T>,
   secretIds: string[],
 ) {

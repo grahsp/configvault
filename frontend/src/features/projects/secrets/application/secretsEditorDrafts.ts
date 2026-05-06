@@ -29,5 +29,6 @@ export function toLocalSecret(secret: {
     id: secret.id,
     key: secret.key,
     hasValue: false,
+    revision: 0,
   }
 }

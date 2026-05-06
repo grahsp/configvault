@@ -8,6 +8,8 @@ import type {
   SecretDraftMapUpdater,
   NewSecretsUpdater,
   PendingDeletionIdsUpdater,
+  RevealedSecretValueRevisions,
+  RevealedSecretValueRevisionsUpdater,
   Updater,
   ValidationIdsUpdater,
   VisibleRevealedSecretValues,
@@ -34,6 +36,7 @@ interface ModalState {
 }
 
 interface RevealState {
+  revealedValueRevisions: RevealedSecretValueRevisions
   revealedValues: RevealedSecretValues
   revealingId: string | null
   visibleRevealedValues: VisibleRevealedSecretValues
@@ -88,6 +91,10 @@ type ModalAction = {
 
 type RevealAction =
   | ({
+      type: 'set-revealed-value-revisions'
+      updater: Updater<RevealedSecretValueRevisions>
+    } & EnvironmentAction)
+  | ({
       type: 'set-revealed-values'
       updater: Updater<RevealedSecretValues>
     } & EnvironmentAction)
@@ -133,6 +140,7 @@ export function useSecretsEditorState(
     isImportModalOpen: currentState.isImportModalOpen,
     newSecrets: currentState.newSecrets,
     pendingDeletionIds: currentState.pendingDeletionIds,
+    revealedValueRevisions: currentState.revealedValueRevisions,
     revealedValues: currentState.revealedValues,
     revealingId: currentState.revealingId,
     setDrafts: (updater: SecretDraftMapUpdater) => {
@@ -159,6 +167,11 @@ export function useSecretsEditorState(
     },
     setPendingDeletionIds: (updater: PendingDeletionIdsUpdater) => {
       dispatch({ type: 'set-pending-deletion-ids', environmentName, updater })
+    },
+    setRevealedValueRevisions: (
+      updater: RevealedSecretValueRevisionsUpdater,
+    ) => {
+      dispatch({ type: 'set-revealed-value-revisions', environmentName, updater })
     },
     setRevealedValues: (updater: RevealedSecretValuesUpdater) => {
       dispatch({ type: 'set-revealed-values', environmentName, updater })
@@ -210,6 +223,7 @@ function createInitialState(environmentName: string): SecretsEditorState {
     isImportModalOpen: false,
     newSecrets: [],
     pendingDeletionIds: [],
+    revealedValueRevisions: {},
     revealedValues: {},
     revealingId: null,
     visibleRevealedValues: {},
@@ -244,6 +258,7 @@ function isDraftAction(action: SecretsEditorAction): action is DraftAction {
 
 function isRevealAction(action: SecretsEditorAction): action is RevealAction {
   return (
+    action.type === 'set-revealed-value-revisions' ||
     action.type === 'set-revealed-values' ||
     action.type === 'set-visible-revealed-values' ||
     action.type === 'set-revealing-id'
@@ -281,6 +296,8 @@ function reduceRevealState(
   action: RevealAction,
 ) {
   switch (action.type) {
+    case 'set-revealed-value-revisions':
+      return updateStateValue(state, 'revealedValueRevisions', action.updater)
     case 'set-revealed-values':
       return updateStateValue(state, 'revealedValues', action.updater)
     case 'set-visible-revealed-values':

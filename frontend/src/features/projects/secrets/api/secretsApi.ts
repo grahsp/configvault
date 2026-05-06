@@ -22,6 +22,7 @@ export interface SetSecretValueOperation {
   type: 'set-value'
   secretId: string
   value: string
+  expectedRevision: number
 }
 
 export interface DeleteSecretOperation {
@@ -190,12 +191,14 @@ export function upsertSecretValue(
   secretId: string,
   environmentName: string,
   value: string,
+  expectedRevision: number,
 ) {
   return saveSecrets(client, projectId, environmentName, [
     {
       type: 'set-value',
       secretId,
       value,
+      expectedRevision,
     },
   ])
 }
