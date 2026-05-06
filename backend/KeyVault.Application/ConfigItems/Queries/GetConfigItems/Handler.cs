@@ -1,10 +1,7 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Actors;
-using KeyVault.Application.ConfigItems.Exceptions;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Persistence;
-using KeyVault.Domain.Identity;
-using KeyVault.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.ConfigItems.Queries.GetConfigItems;
@@ -31,7 +28,11 @@ public class Handler(IActorContext actor, IReadDbContext db)
 			.Select(i => new ConfigItemSummary(
 				i.Id,
 				i.Key.Value,
-				i.Values.Any(value => value.EnvironmentId == environmentId)
+				i.Values.Any(value => value.EnvironmentId == environmentId),
+				i.Values
+					.Where(value => value.EnvironmentId == environmentId)
+					.Select(value => value.Revision)
+					.SingleOrDefault()
 			))
 			.ToListAsync(ct);
 	}
