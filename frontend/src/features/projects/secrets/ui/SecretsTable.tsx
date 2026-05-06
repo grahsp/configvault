@@ -9,6 +9,7 @@ interface SecretsTableProps {
   onCancelEdit: () => void
   onDraftKeyChange: (secret: Secret, nextDraftKey: string) => void
   onDraftValueChange: (secret: Secret, nextDraftValue: string) => void
+  onOpenHistory: (secret: Secret) => void
   onReveal: (secret: Secret) => Promise<void>
   onSaveEdit: () => Promise<void>
   onStartValueEdit: (secret: Secret) => Promise<void> | void
@@ -21,6 +22,7 @@ export function SecretsTable({
   onCancelEdit,
   onDraftKeyChange,
   onDraftValueChange,
+  onOpenHistory,
   onReveal,
   onSaveEdit,
   onStartValueEdit,
@@ -58,6 +60,7 @@ export function SecretsTable({
               onDraftValueChange={(nextDraftValue) =>
                 onDraftValueChange(row.secret, nextDraftValue)
               }
+              onOpenHistory={onOpenHistory}
               onReveal={onReveal}
               onSaveEdit={() => void onSaveEdit()}
               onStartValueEdit={onStartValueEdit}

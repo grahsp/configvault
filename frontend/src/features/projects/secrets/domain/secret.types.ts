@@ -7,3 +7,14 @@ export interface Secret {
 export interface SecretValue {
   value: string
 }
+
+export interface SecretValueRevisionSummary {
+  revision: number
+  modifiedByDisplayName: string
+  modifiedAt: string
+  isCurrent: boolean
+}
+
+export interface SecretValueRevision extends SecretValueRevisionSummary {
+  value: string
+}

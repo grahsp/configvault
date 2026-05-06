@@ -37,6 +37,7 @@ export type RevealingIdUpdater = Updater<string | null>
 export interface SecretsEditorStateResult {
   drafts: SecretDraftMap
   focusedSecretId: string | null
+  historySecret: Secret | null
   highlightedValidationIds: string[]
   isImportModalOpen: boolean
   newSecrets: NewSecretDraft[]
@@ -45,6 +46,7 @@ export interface SecretsEditorStateResult {
   revealingId: string | null
   setDrafts: (updater: SecretDraftMapUpdater) => void
   setFocusedSecretId: (value: string | null) => void
+  setHistorySecret: (value: Secret | null) => void
   setHighlightedValidationIds: (updater: ValidationIdsUpdater) => void
   setIsImportModalOpen: (value: boolean) => void
   setNewSecrets: (updater: NewSecretsUpdater) => void
@@ -60,6 +62,7 @@ export interface SecretsEditorStateResult {
 export interface SecretsEditSessionController {
   setDrafts: (updater: SecretDraftMapUpdater) => void
   setFocusedSecretId: (value: string | null) => void
+  setHistorySecret: (value: Secret | null) => void
   setHighlightedValidationIds: (updater: ValidationIdsUpdater) => void
   setIsImportModalOpen: (value: boolean) => void
   setNewSecrets: (updater: NewSecretsUpdater) => void

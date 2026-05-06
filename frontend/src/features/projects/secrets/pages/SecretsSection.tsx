@@ -1,6 +1,7 @@
 import { useSecretsEditor } from '../application'
 import {
   ImportSecretsModal,
+  SecretHistoryModal,
   SecretsTableFooterActions,
   SecretsTableHeaderActions,
 } from '../ui'
@@ -54,6 +55,7 @@ export function SecretsSection({
         onDraftKeyChange={editor.onDraftKeyChange}
         onDraftValueChange={editor.onDraftValueChange}
         onOpenAddSecret={editor.onOpenAddSecret}
+        onOpenHistory={editor.onOpenHistory}
         onOpenImportModal={editor.onOpenImportModal}
         onReveal={editor.onReveal}
         onRetry={editor.onRetry}
@@ -79,6 +81,15 @@ export function SecretsSection({
           isPending={editor.isImporting}
           onCancel={editor.onCloseImportModal}
           onSubmit={editor.onImport}
+        />
+      ) : null}
+
+      {editor.historySecret ? (
+        <SecretHistoryModal
+          environmentName={editor.environmentName}
+          onClose={editor.onCloseHistory}
+          projectId={projectId}
+          secret={editor.historySecret}
         />
       ) : null}
     </section>

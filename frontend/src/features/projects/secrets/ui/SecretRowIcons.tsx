@@ -120,3 +120,29 @@ export function UndoIcon() {
     </svg>
   )
 }
+
+export function HistoryIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.iconGlyph}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M4.8 7.6V3.9m0 0H8m-3.2 0a8.6 8.6 0 1 1-1.8 9.9"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M12 7.8v4.5l2.9 1.9"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+    </svg>
+  )
+}

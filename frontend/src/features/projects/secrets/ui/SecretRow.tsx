@@ -18,6 +18,7 @@ interface SecretRowProps {
   onDraftKeyChange: (key: string) => void
   onDraftValueChange: (value: string) => void
   onCancelEdit: () => void
+  onOpenHistory: (secret: Secret) => void
   onReveal: (secret: Secret) => void
   onSaveEdit: () => void
   onStartValueEdit: (secret: Secret) => Promise<void> | void
@@ -38,6 +39,7 @@ export function SecretRow({
   onDeleteToggle,
   onDraftKeyChange,
   onDraftValueChange,
+  onOpenHistory,
   onReveal,
   onSaveEdit,
   onStartValueEdit,
@@ -125,6 +127,7 @@ export function SecretRow({
           isSaving={isSaving}
           isValueRevealed={isValueRevealed}
           onDeleteToggle={onDeleteToggle}
+          onOpenHistory={onOpenHistory}
           onReveal={onReveal}
           secret={secret}
         />

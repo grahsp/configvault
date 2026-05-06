@@ -1,6 +1,12 @@
 import { cx } from '../../../../shared/utils/cx.ts'
 import type { Secret } from '../domain'
-import { EyeIcon, EyeOffIcon, TrashIcon, UndoIcon } from './SecretRowIcons.tsx'
+import {
+  EyeIcon,
+  EyeOffIcon,
+  HistoryIcon,
+  TrashIcon,
+  UndoIcon,
+} from './SecretRowIcons.tsx'
 import styles from './SecretsTable.module.css'
 
 interface SecretRowActionsProps {
@@ -10,6 +16,7 @@ interface SecretRowActionsProps {
   isSaving: boolean
   isValueRevealed: boolean
   onDeleteToggle: (secret: Secret) => void
+  onOpenHistory: (secret: Secret) => void
   onReveal: (secret: Secret) => void
 }
 
@@ -20,10 +27,26 @@ export function SecretRowActions({
   isSaving,
   isValueRevealed,
   onDeleteToggle,
+  onOpenHistory,
   onReveal,
 }: SecretRowActionsProps) {
   return (
     <div className={styles.rowActions}>
+      {secret.hasValue ? (
+        <button
+          className={cx(
+            styles.iconAction,
+            styles.iconActionHistory,
+            isMarkedForDeletion && styles.iconActionHistoryMuted,
+          )}
+          disabled={isSaving || isMarkedForDeletion}
+          onClick={() => onOpenHistory(secret)}
+          type="button"
+        >
+          <span className={styles.visuallyHidden}>View history for {secret.key}</span>
+          <HistoryIcon />
+        </button>
+      ) : null}
       {secret.hasValue ? (
         <button
           className={cx(

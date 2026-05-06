@@ -18,6 +18,7 @@ export interface SecretsContentProps {
   onDraftKeyChange: (secret: Secret, nextDraftKey: string) => void
   onDraftValueChange: (secret: Secret, nextDraftValue: string) => void
   onOpenAddSecret: () => void
+  onOpenHistory: (secret: Secret) => void
   onOpenImportModal: () => void
   onReveal: (secret: Secret) => Promise<void>
   onRetry: () => void
@@ -35,6 +36,7 @@ export function SecretsContent({
   onDraftKeyChange,
   onDraftValueChange,
   onOpenAddSecret,
+  onOpenHistory,
   onOpenImportModal,
   onReveal,
   onRetry,
@@ -73,6 +75,7 @@ export function SecretsContent({
       onCancelEdit={onCancelEdit}
       onDraftKeyChange={onDraftKeyChange}
       onDraftValueChange={onDraftValueChange}
+      onOpenHistory={onOpenHistory}
       onReveal={onReveal}
       onSaveEdit={onSaveEdit}
       onStartValueEdit={onStartValueEdit}

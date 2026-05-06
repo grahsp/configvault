@@ -1,5 +1,10 @@
 import type { ApiClient } from '../../../../api/apiClient.ts'
-import type { Secret, SecretValue } from '../domain'
+import type {
+  Secret,
+  SecretValue,
+  SecretValueRevision,
+  SecretValueRevisionSummary,
+} from '../domain'
 
 export interface CreateSecretOperation {
   type: 'create'
@@ -62,6 +67,27 @@ function buildSecretValuePath(
   return `${buildSecretsPath(projectId)}/${encodeURIComponent(
     secretId,
   )}/value?${buildEnvironmentSearch(environmentName)}`
+}
+
+function buildSecretValueRevisionsPath(
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+) {
+  return `${buildSecretsPath(projectId)}/${encodeURIComponent(
+    secretId,
+  )}/value/revisions?${buildEnvironmentSearch(environmentName)}`
+}
+
+function buildSecretValueRevisionPath(
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+  revision: number,
+) {
+  return `${buildSecretsPath(projectId)}/${encodeURIComponent(
+    secretId,
+  )}/value/revisions/${revision}?${buildEnvironmentSearch(environmentName)}`
 }
 
 export function getSecrets(
@@ -127,6 +153,34 @@ export function getSecretValue(
 ) {
   return client.request<SecretValue>(
     buildSecretValuePath(projectId, secretId, environmentName),
+  )
+}
+
+export function getSecretValueRevisions(
+  client: ApiClient,
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+) {
+  return client.request<SecretValueRevisionSummary[]>(
+    buildSecretValueRevisionsPath(projectId, secretId, environmentName),
+  )
+}
+
+export function getSecretValueRevision(
+  client: ApiClient,
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+  revision: number,
+) {
+  return client.request<SecretValueRevision>(
+    buildSecretValueRevisionPath(
+      projectId,
+      secretId,
+      environmentName,
+      revision,
+    ),
   )
 }
 

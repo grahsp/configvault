@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react'
+import type { Secret } from '../domain'
 import type {
   NewSecretDraft,
   RevealedSecretValues,
@@ -28,6 +29,7 @@ interface DraftState {
 }
 
 interface ModalState {
+  historySecret: Secret | null
   isImportModalOpen: boolean
 }
 
@@ -72,10 +74,17 @@ type DraftAction =
     } & EnvironmentAction)
 
 type ModalAction = {
-  type: 'set-is-import-modal-open'
   environmentName: string
-  value: boolean
-}
+} & (
+  | {
+      type: 'set-is-import-modal-open'
+      value: boolean
+    }
+  | {
+      type: 'set-history-secret'
+      value: Secret | null
+    }
+)
 
 type RevealAction =
   | ({
@@ -119,6 +128,7 @@ export function useSecretsEditorState(
   return {
     drafts: currentState.drafts,
     focusedSecretId: currentState.focusedSecretId,
+    historySecret: currentState.historySecret,
     highlightedValidationIds: currentState.highlightedValidationIds,
     isImportModalOpen: currentState.isImportModalOpen,
     newSecrets: currentState.newSecrets,
@@ -130,6 +140,9 @@ export function useSecretsEditorState(
     },
     setFocusedSecretId: (value: string | null) => {
       dispatch({ type: 'set-focused-secret-id', environmentName, value })
+    },
+    setHistorySecret: (value: Secret | null) => {
+      dispatch({ type: 'set-history-secret', environmentName, value })
     },
     setHighlightedValidationIds: (updater: ValidationIdsUpdater) => {
       dispatch({
@@ -192,6 +205,7 @@ function createInitialState(environmentName: string): SecretsEditorState {
     drafts: {},
     environmentName,
     focusedSecretId: null,
+    historySecret: null,
     highlightedValidationIds: [],
     isImportModalOpen: false,
     newSecrets: [],
@@ -280,7 +294,12 @@ function reduceModalState(
   state: SecretsEditorState,
   action: ModalAction,
 ) {
-  return setStateValue(state, 'isImportModalOpen', action.value)
+  switch (action.type) {
+    case 'set-history-secret':
+      return setStateValue(state, 'historySecret', action.value)
+    case 'set-is-import-modal-open':
+      return setStateValue(state, 'isImportModalOpen', action.value)
+  }
 }
 
 function setStateValue<K extends keyof SecretsEditorState>(
