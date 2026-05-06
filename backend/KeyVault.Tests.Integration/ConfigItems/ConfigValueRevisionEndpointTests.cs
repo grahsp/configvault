@@ -108,6 +108,34 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 	}
 
 	[Fact]
+	public async Task SecretsList_ShouldIncludeCurrentRevisionForSelectedEnvironment()
+	{
+		await using var host = fixture.CreateDefaultHost();
+		await TestFixture.ResetAsync(host);
+		var client = host.CreateJsonClient("revision-owner");
+		var projectId = await CreateProjectAsync(client);
+		var withValueId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
+		await CreateConfigItemAsync(client, host, projectId, "DATABASE_URL");
+
+		var setValue = await client.PutAsJsonAsync(
+			$"/projects/{projectId}/secrets/{withValueId}/value?environment=production",
+			new { value = "secret-v1", expectedRevision = 0 });
+		setValue.EnsureSuccessStatusCode();
+
+		var response = await client.GetAsync(
+			$"/projects/{projectId}/secrets?environment=production");
+		response.EnsureSuccessStatusCode();
+
+		using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+		var secrets = payload.RootElement.EnumerateArray().ToArray();
+		Assert.Equal(2, secrets.Length);
+		Assert.Equal(1u, secrets[0].GetProperty("revision").GetUInt32());
+		Assert.True(secrets[0].GetProperty("hasValue").GetBoolean());
+		Assert.Equal(0u, secrets[1].GetProperty("revision").GetUInt32());
+		Assert.False(secrets[1].GetProperty("hasValue").GetBoolean());
+	}
+
+	[Fact]
 	public async Task RevisionDetail_ShouldReturnUnknownUser_WhenModifierCannotBeResolved()
 	{
 		await using var host = fixture.CreateDefaultHost();
