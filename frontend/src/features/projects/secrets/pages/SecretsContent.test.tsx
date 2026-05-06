@@ -26,6 +26,7 @@ function createProps(
     onDraftKeyChange: vi.fn(),
     onDraftValueChange: vi.fn(),
     onOpenAddSecret: vi.fn(),
+    onOpenHistory: vi.fn(),
     onOpenImportModal: vi.fn(),
     onReveal: vi.fn().mockResolvedValue(undefined),
     onRetry: vi.fn(),
@@ -92,5 +93,45 @@ describe('SecretsContent', () => {
     expect(screen.queryByText('Failed to load secrets.')).not.toBeInTheDocument()
     expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+  })
+
+  it('shows a history action only for secrets that have a saved value', () => {
+    render(
+      <SecretsContent
+        {...createProps({
+          rows: [
+            {
+              draftKey: 'API_KEY',
+              draftValue: null,
+              isMarkedForDeletion: false,
+              isRevealing: false,
+              isValueRevealed: false,
+              secret: createSecret(),
+              shouldFocus: false,
+            },
+            {
+              draftKey: 'EMPTY_KEY',
+              draftValue: null,
+              isMarkedForDeletion: false,
+              isRevealing: false,
+              isValueRevealed: false,
+              secret: createSecret({
+                hasValue: false,
+                id: 'secret-2',
+                key: 'EMPTY_KEY',
+              }),
+              shouldFocus: false,
+            },
+          ],
+        })}
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'View history for API_KEY' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'View history for EMPTY_KEY' }),
+    ).not.toBeInTheDocument()
   })
 })

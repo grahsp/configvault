@@ -111,6 +111,7 @@ const apiKeySecret = {
 
 const publicKeySecret = {
   ...apiKeySecret,
+  id: 'config-3',
   key: 'PUBLIC_KEY',
 }
 
@@ -190,6 +191,125 @@ describe('SecretsPage', () => {
         headers: expect.any(Headers),
       }),
     )
+  })
+
+  it('opens secret history, loads revision details, and preserves unsaved edits', async () => {
+    const user = userEvent.setup()
+
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret, publicKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 4,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 2,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions/2',
+        body: {
+          revision: 2,
+          modifiedByDisplayName: 'Unknown user',
+          modifiedAt: '2025-02-02T09:15:00Z',
+          isCurrent: false,
+          value: 'old-secret',
+        },
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions/4',
+        body: {
+          revision: 4,
+          modifiedByDisplayName: 'Casey Current',
+          modifiedAt: '2025-02-03T15:30:00Z',
+          isCurrent: true,
+          value: 'current-secret',
+        },
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const keyInput = await screen.findByDisplayValue('API_KEY')
+    await user.clear(keyInput)
+    await user.type(keyInput, 'API_KEY_UPDATED')
+
+    await user.click(
+      screen.getByRole('button', { name: 'View history for API_KEY' }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'API_KEY history' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('Revision 4')).toBeInTheDocument()
+    expect(screen.getAllByText('Current')).not.toHaveLength(0)
+    expect(screen.getByText('Casey Current')).toBeInTheDocument()
+    expect(screen.getByText('Unknown user')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        input
+          .toString()
+          .includes('/projects/project-1/secrets/config-1/value/revisions/4'),
+      ),
+    ).toHaveLength(0)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Reveal revision 2 value' }),
+    )
+
+    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Reveal revision 4 value' }),
+    )
+
+    expect(await screen.findByDisplayValue('current-secret')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+
+    const revisionTwoCard = screen.getByText('Revision 2').closest('article')
+    expect(revisionTwoCard).not.toBeNull()
+    await user.click(
+      within(revisionTwoCard as HTMLElement).getByRole('button', {
+        name: 'Hide value',
+      }),
+    )
+    expect(screen.queryByDisplayValue('old-secret')).not.toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Reveal revision 2 value' }),
+    )
+    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+
+    const revisionTwoCalls = fetchMock.mock.calls.filter(([input]) =>
+      input
+        .toString()
+        .includes('/projects/project-1/secrets/config-1/value/revisions/2'),
+    )
+    expect(revisionTwoCalls).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(screen.queryByRole('heading', { name: 'API_KEY history' })).not.toBeInTheDocument()
+    expect(screen.getByDisplayValue('API_KEY_UPDATED')).toBeInTheDocument()
   })
 
   it('shows the secrets loading state while secrets load', async () => {
@@ -460,7 +580,7 @@ describe('SecretsPage', () => {
     ).toBeInTheDocument()
 
     const apiKeyRow = within(table).getByRole('row', {
-      name: /Key API_KEY Value\*{12} Reveal .*Delete API_KEY/,
+      name: /Key API_KEY Value\*{12} View history for API_KEY Reveal API_KEY Delete API_KEY/,
     })
     const databaseRow = within(table).getByRole('row', {
       name: /Key DATABASE_URL Value Delete DATABASE_URL/,

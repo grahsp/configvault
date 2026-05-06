@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import type { ApiClient } from '../../../../api/apiClient.ts'
 import {
   exportSecrets,
+  getSecretValueRevision,
+  getSecretValueRevisions,
   getSecretValue,
   getSecrets,
   importSecrets,
@@ -88,6 +90,58 @@ describe('secrets api', () => {
 
     expect(client.request).toHaveBeenCalledWith(
       '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value?environment=prod%2Feu%20west',
+    )
+  })
+
+  it('loads secret revision summaries with encoded path and environment values', async () => {
+    const client = createMockClient()
+    const revisions = [
+      {
+        revision: 3,
+        modifiedByDisplayName: 'User 123',
+        modifiedAt: '2025-02-01T10:00:00Z',
+        isCurrent: true,
+      },
+    ]
+    vi.mocked(client.request).mockResolvedValue(revisions)
+
+    await expect(
+      getSecretValueRevisions(
+        client,
+        'project/with space',
+        'config/with space',
+        'prod/eu west',
+      ),
+    ).resolves.toEqual(revisions)
+
+    expect(client.request).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value/revisions?environment=prod%2Feu%20west',
+    )
+  })
+
+  it('loads a specific secret revision with encoded path and environment values', async () => {
+    const client = createMockClient()
+    const revision = {
+      revision: 2,
+      modifiedByDisplayName: 'User 123',
+      modifiedAt: '2025-02-01T10:00:00Z',
+      isCurrent: false,
+      value: 'secret-value-v2',
+    }
+    vi.mocked(client.request).mockResolvedValue(revision)
+
+    await expect(
+      getSecretValueRevision(
+        client,
+        'project/with space',
+        'config/with space',
+        'prod/eu west',
+        2,
+      ),
+    ).resolves.toEqual(revision)
+
+    expect(client.request).toHaveBeenCalledWith(
+      '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value/revisions/2?environment=prod%2Feu%20west',
     )
   })
 
