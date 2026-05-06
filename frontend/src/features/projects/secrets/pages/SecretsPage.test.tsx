@@ -447,7 +447,104 @@ describe('SecretsPage', () => {
     expect(restoreCalls[0]?.[1]).toMatchObject({
       method: 'POST',
       body: JSON.stringify({
-        expectedRevision: 1,
+        expectedRevision: 4,
+      }),
+    })
+  })
+
+  it('uses the current revision from history when the table revision is stale during restore', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+            revision: 0,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 2,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 0,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions/0/restore',
+        method: 'POST',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+            revision: 3,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 3,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T16:00:00Z',
+            isCurrent: true,
+          },
+          {
+            revision: 2,
+            modifiedByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: false,
+          },
+          {
+            revision: 0,
+            modifiedByDisplayName: 'Unknown user',
+            modifiedAt: '2025-02-02T09:15:00Z',
+            isCurrent: false,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'View history for API_KEY' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Restore revision 0' }))
+    await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
+
+    expect(await screen.findByText('API_KEY restored')).toBeInTheDocument()
+
+    const restoreCalls = getRestoreCalls(fetchMock)
+    expect(restoreCalls).toHaveLength(1)
+    expect(restoreCalls[0]?.[1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({
+        expectedRevision: 2,
       }),
     })
   })

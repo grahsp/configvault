@@ -60,6 +60,9 @@ export function useSecretHistory({
       getSecretValueRevisions(client, projectId, secretId!, environmentName),
     enabled: Boolean(isOpen && projectId && environmentName && secretId),
   })
+  const currentRevision =
+    revisionsQuery.data?.find((revision) => revision.isCurrent)?.revision ??
+    secretRevision
 
   const restoreRevisionMutation = useMutation<void, Error, number>({
     mutationFn: (revision) =>
@@ -69,7 +72,7 @@ export function useSecretHistory({
         secretId!,
         environmentName,
         revision,
-        secretRevision,
+        currentRevision,
       ),
     onSuccess: async () => {
       await Promise.all([
