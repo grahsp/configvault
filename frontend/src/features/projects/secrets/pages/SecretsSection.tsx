@@ -87,6 +87,7 @@ export function SecretsSection({
       {editor.historySecret ? (
         <SecretHistoryModal
           environmentName={editor.environmentName}
+          hasUnsavedChanges={editor.hasUnsavedChanges}
           onClose={editor.onCloseHistory}
           projectId={projectId}
           secret={editor.historySecret}

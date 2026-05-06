@@ -91,6 +91,17 @@ function buildSecretValueRevisionPath(
   )}/value/revisions/${revision}?${buildEnvironmentSearch(environmentName)}`
 }
 
+function buildRestoreSecretValueRevisionPath(
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+  revision: number,
+) {
+  return `${buildSecretsPath(projectId)}/${encodeURIComponent(
+    secretId,
+  )}/value/revisions/${revision}/restore?${buildEnvironmentSearch(environmentName)}`
+}
+
 export function getSecrets(
   client: ApiClient,
   projectId: string,
@@ -201,4 +212,28 @@ export function upsertSecretValue(
       expectedRevision,
     },
   ])
+}
+
+export function restoreSecretValueRevision(
+  client: ApiClient,
+  projectId: string,
+  secretId: string,
+  environmentName: string,
+  revision: number,
+  expectedRevision: number,
+) {
+  return client.request<void>(
+    buildRestoreSecretValueRevisionPath(
+      projectId,
+      secretId,
+      environmentName,
+      revision,
+    ),
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        expectedRevision,
+      }),
+    },
+  )
 }

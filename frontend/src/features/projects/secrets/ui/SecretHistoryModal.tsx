@@ -1,11 +1,18 @@
-import { Button, Modal, StatePanel } from '../../../../shared/ui'
+import { useLayoutEffect, useRef } from 'react'
+import { Button, ConfirmationDialog, Modal, StatePanel } from '../../../../shared/ui'
+import { cx } from '../../../../shared/utils/cx.ts'
 import { formatCreatedDate, getErrorMessage } from '../../domain/project.utils.ts'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
+import { EyeIcon, EyeOffIcon, UndoIcon } from './SecretRowIcons.tsx'
 import styles from './SecretHistoryModal.module.css'
+
+const revealedValueMaxHeightPx = 192
+const maskedRevisionValue = '************'
 
 interface SecretHistoryModalProps {
   environmentName: string
+  hasUnsavedChanges: boolean
   onClose: () => void
   projectId: string
   secret: Secret
@@ -13,53 +20,86 @@ interface SecretHistoryModalProps {
 
 export function SecretHistoryModal({
   environmentName,
+  hasUnsavedChanges,
   onClose,
   projectId,
   secret,
 }: SecretHistoryModalProps) {
   const {
+    closeRestoreConfirmation,
+    confirmRestore,
     errorsByRevision,
     loadingRevisions,
+    openRestoreConfirmation,
+    pendingRestoreRevision,
     revealedRevisions,
     revealedValuesByRevision,
     revisionsQuery,
+    restoreDisabledReason,
+    restoreError,
+    restorePending,
     toggleRevision,
   } = useSecretHistory({
     environmentName,
+    hasUnsavedChanges,
     isOpen: true,
+    onClose,
     projectId,
+    secretKey: secret.key,
+    secretRevision: secret.revision,
     secretId: secret.id,
   })
 
   return (
-    <Modal
-      actions={
-        <Button onClick={onClose} type="button" variant="secondary">
-          Close
-        </Button>
-      }
-      description={`Revision history for ${secret.key} in ${environmentName}.`}
-      size="md"
-      title={`${secret.key} history`}
-    >
-      <HistoryList
-        errorMessage={
-          revisionsQuery.isError
-            ? getErrorMessage(
-                revisionsQuery.error,
-                'Something went wrong while loading history.',
-              )
-            : undefined
+    <>
+      <Modal
+        actions={
+          <Button onClick={onClose} type="button" variant="secondary">
+            Close
+          </Button>
         }
-        errorsByRevision={errorsByRevision}
-        isLoading={revisionsQuery.isLoading}
-        loadingRevisions={loadingRevisions}
-        onToggleRevision={toggleRevision}
-        revealedRevisions={revealedRevisions}
-        revealedValuesByRevision={revealedValuesByRevision}
-        revisions={revisionsQuery.data ?? []}
-      />
-    </Modal>
+        description={`Revision history for ${secret.key} in ${environmentName}.`}
+        size="md"
+        title={`${secret.key} history`}
+      >
+        <HistoryList
+          errorMessage={
+            revisionsQuery.isError
+              ? getErrorMessage(
+                  revisionsQuery.error,
+                  'Something went wrong while loading history.',
+                )
+              : undefined
+          }
+          errorsByRevision={errorsByRevision}
+          isLoading={revisionsQuery.isLoading}
+          loadingRevisions={loadingRevisions}
+          onOpenRestoreConfirmation={openRestoreConfirmation}
+          onToggleRevision={toggleRevision}
+          restoreDisabledReason={restoreDisabledReason}
+          revealedRevisions={revealedRevisions}
+          revealedValuesByRevision={revealedValuesByRevision}
+          revisions={revisionsQuery.data ?? []}
+        />
+      </Modal>
+
+      {pendingRestoreRevision !== null ? (
+        <ConfirmationDialog
+          confirmLabel="Restore revision"
+          errorMessage={restoreError}
+          isPending={restorePending}
+          onCancel={closeRestoreConfirmation}
+          onConfirm={() => void confirmRestore()}
+          pendingConfirmLabel="Restoring..."
+          title="Restore secret revision?"
+        >
+          <p>
+            Restore revision {pendingRestoreRevision} as the current value for{' '}
+            {secret.key} in {environmentName}?
+          </p>
+        </ConfirmationDialog>
+      ) : null}
+    </>
   )
 }
 
@@ -68,7 +108,9 @@ interface HistoryListProps {
   errorsByRevision: Record<number, string | undefined>
   isLoading: boolean
   loadingRevisions: Record<number, boolean>
+  onOpenRestoreConfirmation: (revision: number) => void
   onToggleRevision: (revision: number) => void | Promise<void>
+  restoreDisabledReason?: string
   revealedRevisions: number[]
   revealedValuesByRevision: Record<number, string>
   revisions: Array<{
@@ -79,12 +121,51 @@ interface HistoryListProps {
   }>
 }
 
+interface RevealedRevisionValueProps {
+  ariaLabel: string
+  value: string
+}
+
+function RevealedRevisionValue({
+  ariaLabel,
+  value,
+}: RevealedRevisionValueProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current
+
+    if (!textarea) {
+      return
+    }
+
+    textarea.style.height = 'auto'
+    const scrollHeight = textarea.scrollHeight
+    textarea.style.height = `${Math.min(scrollHeight, revealedValueMaxHeightPx)}px`
+    textarea.style.overflowY =
+      scrollHeight > revealedValueMaxHeightPx ? 'auto' : 'hidden'
+  }, [value])
+
+  return (
+    <textarea
+      aria-label={ariaLabel}
+      className={styles.revealedValue}
+      readOnly
+      ref={textareaRef}
+      rows={1}
+      value={value}
+    />
+  )
+}
+
 function HistoryList({
   errorMessage,
   errorsByRevision,
   isLoading,
   loadingRevisions,
+  onOpenRestoreConfirmation,
   onToggleRevision,
+  restoreDisabledReason,
   revealedRevisions,
   revealedValuesByRevision,
   revisions,
@@ -115,69 +196,86 @@ function HistoryList({
 
   return (
     <div className={styles.historyList}>
+      {restoreDisabledReason ? (
+        <p className={styles.restoreNotice}>{restoreDisabledReason}</p>
+      ) : null}
+
       {revisions.map((revision) => {
         const isRevealed = revealedRevisions.includes(revision.revision)
-        const value = revealedValuesByRevision[revision.revision]
+        const value = isRevealed
+          ? revealedValuesByRevision[revision.revision]
+          : maskedRevisionValue
         const isLoadingRevision = loadingRevisions[revision.revision] === true
         const error = errorsByRevision[revision.revision]
+        const restoreDisabled =
+          revision.isCurrent || Boolean(restoreDisabledReason)
+        const restoreTitle = revision.isCurrent
+          ? 'This revision is already current.'
+          : restoreDisabledReason
 
         return (
-          <article className={styles.revisionCard} key={revision.revision}>
-            <header className={styles.revisionHeader}>
-              <div className={styles.revisionHeading}>
-                <h3 className={styles.revisionTitle}>Revision {revision.revision}</h3>
-                <p className={styles.revisionMeta}>
-                  {formatCreatedDate(revision.modifiedAt)}
-                </p>
-                <p className={styles.revisionMeta}>
-                  {revision.modifiedByDisplayName}
-                </p>
-              </div>
-              {revision.isCurrent ? (
-                <span className={styles.currentBadge}>Current</span>
-              ) : null}
-            </header>
-
-            <div className={styles.valueSection}>
-              <span className={styles.valueLabel}>Value</span>
-
-              {isRevealed ? (
-                <>
-                  <textarea
-                    aria-label={`Revision ${revision.revision} value`}
-                    className={styles.revealedValue}
-                    readOnly
-                    value={value}
-                  />
-                  <button
-                    className={styles.valueAction}
-                    onClick={() => void onToggleRevision(revision.revision)}
-                    type="button"
-                  >
-                    Hide value
-                  </button>
-                </>
-              ) : (
+          <article className={styles.revisionRow} key={revision.revision}>
+            <div className={styles.fieldRow}>
+              <RevealedRevisionValue
+                ariaLabel={`Revision ${revision.revision} value`}
+                value={value}
+              />
+              <div className={styles.rowActions}>
                 <button
-                  aria-label={`Reveal revision ${revision.revision} value`}
-                  className={styles.maskedValueButton}
+                  aria-label={
+                    isRevealed
+                      ? `Hide revision ${revision.revision} value`
+                      : `Reveal revision ${revision.revision} value`
+                  }
+                  className={styles.iconButton}
                   disabled={isLoadingRevision}
                   onClick={() => void onToggleRevision(revision.revision)}
                   type="button"
                 >
-                  <span className={styles.maskedValueText}>************</span>
-                  <span className={styles.maskedValueHint}>
-                    {isLoadingRevision ? 'Loading value...' : 'Reveal value'}
-                  </span>
+                  {isRevealed ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
-              )}
-
-              {error ? (
-                <p className={styles.valueError} role="alert">
-                  {error}
-                </p>
-              ) : null}
+                <button
+                  aria-label={`Restore revision ${revision.revision}`}
+                  className={styles.iconButton}
+                  disabled={restoreDisabled}
+                  onClick={() => onOpenRestoreConfirmation(revision.revision)}
+                  title={restoreTitle}
+                  type="button"
+                >
+                  <UndoIcon />
+                </button>
+              </div>
             </div>
+
+            <p className={styles.revisionMetaLine}>
+              <span>{revision.modifiedByDisplayName}</span>
+              <span aria-hidden="true">•</span>
+              <span>{formatCreatedDate(revision.modifiedAt)}</span>
+              {revision.isCurrent ? (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span className={cx(styles.currentBadge, styles.currentBadgeInline)}>
+                    Current
+                  </span>
+                </>
+              ) : null}
+            </p>
+
+            {isLoadingRevision && !isRevealed ? (
+              <p className={styles.valueHint} role="status">
+                Loading value...
+              </p>
+            ) : null}
+
+            {error ? (
+              <p className={styles.valueError} role="alert">
+                {error}
+              </p>
+            ) : null}
+
+            {isRevealed && value.length === 0 ? (
+              <p className={styles.maskedHint}>This revision has an empty value.</p>
+            ) : null}
           </article>
         )
       })}

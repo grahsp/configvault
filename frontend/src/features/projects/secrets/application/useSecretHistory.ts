@@ -1,27 +1,39 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useToast } from '../../../../shared/components/toast/useToast.ts'
 import { getErrorMessage } from '../../domain/project.utils.ts'
 import {
   getSecretValueRevision,
   getSecretValueRevisions,
+  restoreSecretValueRevision,
 } from '../api'
 import { secretsQueryKeys } from './secretsQueryKeys.ts'
 
 interface UseSecretHistoryOptions {
   environmentName: string
+  hasUnsavedChanges: boolean
   isOpen: boolean
+  onClose: () => void
   projectId: string
+  secretKey: string
+  secretRevision: number
   secretId: string | null
 }
 
 export function useSecretHistory({
   environmentName,
+  hasUnsavedChanges,
   isOpen,
+  onClose,
   projectId,
+  secretKey,
+  secretRevision,
   secretId,
 }: UseSecretHistoryOptions) {
   const client = useAuthenticatedApiClient()
+  const queryClient = useQueryClient()
+  const { addToast } = useToast()
   const [revealedRevisions, setRevealedRevisions] = useState<number[]>([])
   const [revealedValuesByRevision, setRevealedValuesByRevision] = useState<
     Record<number, string>
@@ -32,6 +44,13 @@ export function useSecretHistory({
   const [errorsByRevision, setErrorsByRevision] = useState<
     Record<number, string | undefined>
   >({})
+  const [pendingRestoreRevision, setPendingRestoreRevision] = useState<
+    number | null
+  >(null)
+
+  const restoreDisabledReason = hasUnsavedChanges
+    ? 'Save or cancel the unsaved secret edits before restoring a revision.'
+    : undefined
 
   const revisionsQuery = useQuery({
     queryKey: secretId
@@ -42,12 +61,55 @@ export function useSecretHistory({
     enabled: Boolean(isOpen && projectId && environmentName && secretId),
   })
 
+  const restoreRevisionMutation = useMutation<void, Error, number>({
+    mutationFn: (revision) =>
+      restoreSecretValueRevision(
+        client,
+        projectId,
+        secretId!,
+        environmentName,
+        revision,
+        secretRevision,
+      ),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: secretsQueryKeys.list(projectId, environmentName),
+        }),
+        secretId
+          ? queryClient.invalidateQueries({
+              queryKey: secretsQueryKeys.revisions(
+                projectId,
+                environmentName,
+                secretId,
+              ),
+            })
+          : Promise.resolve(),
+      ])
+      addToast({
+        message: `${secretKey} restored`,
+        type: 'success',
+      })
+      setPendingRestoreRevision(null)
+      onClose()
+    },
+  })
+  const resetRestoreRevisionMutation = restoreRevisionMutation.reset
+
   useEffect(() => {
     setRevealedRevisions([])
     setRevealedValuesByRevision({})
     setLoadingRevisions({})
     setErrorsByRevision({})
-  }, [environmentName, isOpen, projectId, secretId])
+    setPendingRestoreRevision(null)
+    resetRestoreRevisionMutation()
+  }, [
+    environmentName,
+    isOpen,
+    projectId,
+    resetRestoreRevisionMutation,
+    secretId,
+  ])
 
   const toggleRevision = async (revision: number) => {
     if (!secretId) {
@@ -122,12 +184,50 @@ export function useSecretHistory({
     }
   }
 
+  const openRestoreConfirmation = (revision: number) => {
+    if (restoreDisabledReason) {
+      return
+    }
+
+    resetRestoreRevisionMutation()
+    setPendingRestoreRevision(revision)
+  }
+
+  const closeRestoreConfirmation = () => {
+    if (restoreRevisionMutation.isPending) {
+      return
+    }
+
+    resetRestoreRevisionMutation()
+    setPendingRestoreRevision(null)
+  }
+
+  const confirmRestore = () => {
+    if (pendingRestoreRevision === null || restoreDisabledReason) {
+      return
+    }
+
+    restoreRevisionMutation.mutate(pendingRestoreRevision)
+  }
+
   return {
+    closeRestoreConfirmation,
+    confirmRestore,
     errorsByRevision,
     loadingRevisions,
+    openRestoreConfirmation,
+    pendingRestoreRevision,
     revealedRevisions,
     revealedValuesByRevision,
     revisionsQuery,
+    restoreDisabledReason,
+    restoreError: restoreRevisionMutation.isError
+      ? getErrorMessage(
+          restoreRevisionMutation.error,
+          'Something went wrong while restoring this revision.',
+        )
+      : undefined,
+    restorePending: restoreRevisionMutation.isPending,
     toggleRevision,
   }
 }
