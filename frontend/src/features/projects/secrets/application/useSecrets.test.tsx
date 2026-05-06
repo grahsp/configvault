@@ -62,11 +62,13 @@ describe('secrets application hooks', () => {
       id: 'config-1',
       key: 'API_KEY',
       hasValue: true,
+      revision: 4,
     },
     {
       id: 'config-2',
       key: 'DATABASE_URL',
       hasValue: false,
+      revision: 0,
     },
   ]
 
@@ -129,6 +131,7 @@ describe('secrets application hooks', () => {
         id: 'config-3',
         key: 'STRIPE_KEY',
         hasValue: true,
+        revision: 2,
       },
     ]
     apiMocks.getSecrets.mockResolvedValue(stagingSecrets)
@@ -145,7 +148,7 @@ describe('secrets application hooks', () => {
 
   it('reveals a secret value for the selected environment', async () => {
     const queryClient = createTestQueryClient()
-    apiMocks.getSecretValue.mockResolvedValue({ value: 'secret-value' })
+    apiMocks.getSecretValue.mockResolvedValue({ value: 'secret-value', revision: 4 })
 
     const { result } = renderHook(
       () => useSecretsMutations(projectId, environmentName),
@@ -162,7 +165,7 @@ describe('secrets application hooks', () => {
       })
     })
 
-    expect(revealedValue).toEqual({ value: 'secret-value' })
+    expect(revealedValue).toEqual({ value: 'secret-value', revision: 4 })
     expect(apiMocks.getSecretValue).toHaveBeenCalledWith(
       expect.any(Object),
       projectId,
@@ -198,10 +201,14 @@ describe('secrets application hooks', () => {
     })
   })
 
-  it('saves secret operations and invalidates the list query', async () => {
+  it('saves secret operations, updates cached revisions, and invalidates the list query', async () => {
     const queryClient = createTestQueryClient()
     apiMocks.saveSecrets.mockResolvedValue(undefined)
     const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
+    queryClient.setQueryData(
+      secretsQueryKeys.list(projectId, environmentName),
+      existingSecrets,
+    )
 
     const { result } = renderHook(
       () => useSecretsMutations(projectId, environmentName),
@@ -210,7 +217,15 @@ describe('secrets application hooks', () => {
       },
     )
 
-    const operations = [{ type: 'create' as const, key: 'NEW_KEY' }]
+    const operations = [
+      {
+        type: 'set-value' as const,
+        secretId: 'config-1',
+        value: 'updated-secret',
+        expectedRevision: 4,
+      },
+      { type: 'create' as const, key: 'NEW_KEY' },
+    ]
 
     await act(async () => {
       await result.current.saveSecrets.mutateAsync({ operations })
@@ -222,6 +237,11 @@ describe('secrets application hooks', () => {
       environmentName,
       operations,
     )
+    expect(getCachedSecrets(queryClient, projectId, environmentName)).toContainEqual({
+      ...existingSecrets[0],
+      hasValue: true,
+      revision: 5,
+    })
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: secretsQueryKeys.list(projectId, environmentName),
     })
@@ -244,6 +264,7 @@ describe('secrets application hooks', () => {
 
     await act(async () => {
       await result.current.upsertSecretValue.mutateAsync({
+        expectedRevision: 0,
         secretId: 'config-2',
         value: 'new-secret-value',
       })
@@ -252,6 +273,7 @@ describe('secrets application hooks', () => {
     expect(getCachedSecrets(queryClient, projectId, environmentName)).toContainEqual({
       ...existingSecrets[1],
       hasValue: true,
+      revision: 1,
     })
     expect(apiMocks.saveSecrets).toHaveBeenCalledWith(
       expect.any(Object),
@@ -260,6 +282,7 @@ describe('secrets application hooks', () => {
       [
         {
           type: 'set-value',
+          expectedRevision: 0,
           secretId: 'config-2',
           value: 'new-secret-value',
         },

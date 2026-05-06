@@ -107,6 +107,7 @@ const apiKeySecret = {
   id: 'config-1',
   key: 'API_KEY',
   hasValue: true,
+  revision: 1,
 }
 
 const publicKeySecret = {
@@ -480,6 +481,7 @@ describe('SecretsPage', () => {
             id: 'config-2',
             key: 'DATABASE_URL',
             hasValue: true,
+            revision: 1,
           },
         ],
       },
@@ -556,11 +558,13 @@ describe('SecretsPage', () => {
             id: 'config-1',
             key: 'API_KEY',
             hasValue: true,
+            revision: 1,
           },
           {
             id: 'config-2',
             key: 'DATABASE_URL',
             hasValue: false,
+            revision: 0,
           },
         ],
       },
@@ -669,6 +673,7 @@ describe('SecretsPage', () => {
             id: 'config-1',
             key: 'API_KEY',
             hasValue: false,
+            revision: 0,
           },
         ],
       },
@@ -900,7 +905,7 @@ describe('SecretsPage', () => {
       },
       {
         path: '/projects/project-1/secrets/config-1/value',
-        body: { value: 'secret-value' },
+        body: { value: 'secret-value', revision: 1 },
       },
     ])
 
@@ -916,6 +921,97 @@ describe('SecretsPage', () => {
     await user.click(screen.getAllByRole('textbox', { name: 'Value' })[0]!)
     expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
+  })
+
+  it('uses the revealed current revision for a follow-up value update', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: false,
+            revision: 0,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/operations',
+        method: 'POST',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+            revision: 0,
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value',
+        body: { value: 'first-secret', revision: 1 },
+      },
+      {
+        path: '/projects/project-1/secrets/operations',
+        method: 'POST',
+        status: 204,
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'API_KEY',
+            hasValue: true,
+            revision: 2,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const initialValueInput = (await screen.findAllByRole('textbox', { name: 'Value' }))[0]
+    await user.type(initialValueInput!, 'first-secret')
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+    expect(await screen.findByText('Secret value saved')).toBeInTheDocument()
+
+    const updatedValueInput = screen.getAllByRole('textbox', { name: 'Value' })[0]
+    await user.click(updatedValueInput!)
+    const editableValueInput = await screen.findByDisplayValue('first-secret')
+    await user.clear(editableValueInput)
+    await user.type(editableValueInput, 'second-secret')
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+    const bulkSaveCalls = getBulkSaveCalls(fetchMock)
+    expect(bulkSaveCalls).toHaveLength(2)
+    expect(bulkSaveCalls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          environment: 'production',
+          operations: [
+            {
+              type: 'set-value',
+              secretId: 'config-1',
+              value: 'second-secret',
+              expectedRevision: 1,
+            },
+          ],
+        }),
+      }),
+    )
   })
 
   it('toggles a revealed secret value without fetching twice', async () => {
@@ -934,12 +1030,13 @@ describe('SecretsPage', () => {
             id: 'config-2',
             key: 'DATABASE_URL',
             hasValue: true,
+            revision: 1,
           },
         ],
       },
       {
         path: '/projects/project-1/secrets/config-1/value',
-        body: { value: 'secret-value' },
+        body: { value: 'secret-value', revision: 1 },
       },
     ])
 

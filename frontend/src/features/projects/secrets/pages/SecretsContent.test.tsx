@@ -8,6 +8,7 @@ function createSecret(overrides?: Partial<Secret>): Secret {
     hasValue: true,
     id: 'secret-1',
     key: 'API_KEY',
+    revision: 1,
     ...overrides,
   }
 }

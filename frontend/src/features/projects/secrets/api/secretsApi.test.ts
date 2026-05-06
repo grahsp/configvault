@@ -26,6 +26,7 @@ describe('secrets api', () => {
         id: 'config-1',
         key: 'API_KEY',
         hasValue: true,
+        revision: 3,
       },
     ]
     vi.mocked(client.request).mockResolvedValue(secrets)
@@ -51,7 +52,12 @@ describe('secrets api', () => {
         [
           { type: 'create', key: 'NEW_KEY', initialValue: 'secret-value' },
           { type: 'rename', secretId: 'config-1', key: 'API_KEY' },
-          { type: 'set-value', secretId: 'config-1', value: 'secret-value' },
+          {
+            type: 'set-value',
+            secretId: 'config-1',
+            value: 'secret-value',
+            expectedRevision: 3,
+          },
           { type: 'delete', secretId: 'config-2' },
         ],
       ),
@@ -66,7 +72,12 @@ describe('secrets api', () => {
           operations: [
             { type: 'create', key: 'NEW_KEY', initialValue: 'secret-value' },
             { type: 'rename', secretId: 'config-1', key: 'API_KEY' },
-            { type: 'set-value', secretId: 'config-1', value: 'secret-value' },
+            {
+              type: 'set-value',
+              secretId: 'config-1',
+              value: 'secret-value',
+              expectedRevision: 3,
+            },
             { type: 'delete', secretId: 'config-2' },
           ],
         }),
@@ -194,6 +205,7 @@ describe('secrets api', () => {
         'config/with space',
         'prod/eu west',
         'secret-value',
+        7,
       ),
     ).resolves.toBeUndefined()
 
@@ -208,6 +220,7 @@ describe('secrets api', () => {
               type: 'set-value',
               secretId: 'config/with space',
               value: 'secret-value',
+              expectedRevision: 7,
             },
           ],
         }),
