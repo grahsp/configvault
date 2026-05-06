@@ -49,8 +49,10 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 			var revisions = payload.RootElement.EnumerateArray().ToArray();
 			Assert.Equal(2, revisions.Length);
 			Assert.Equal(2u, revisions[0].GetProperty("revision").GetUInt32());
+			Assert.Equal("user-revisi", revisions[0].GetProperty("modifiedByDisplayName").GetString());
 			Assert.True(revisions[0].GetProperty("isCurrent").GetBoolean());
 			Assert.Equal(1u, revisions[1].GetProperty("revision").GetUInt32());
+			Assert.Equal("user-revisi", revisions[1].GetProperty("modifiedByDisplayName").GetString());
 			Assert.False(revisions[1].GetProperty("isCurrent").GetBoolean());
 		}
 
@@ -62,6 +64,7 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 		{
 			Assert.Equal("secret-v1", payload.RootElement.GetProperty("value").GetString());
 			Assert.Equal(1u, payload.RootElement.GetProperty("revision").GetUInt32());
+			Assert.Equal("user-revisi", payload.RootElement.GetProperty("modifiedByDisplayName").GetString());
 			Assert.False(payload.RootElement.GetProperty("isCurrent").GetBoolean());
 		}
 
@@ -79,6 +82,61 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 			Assert.Equal("secret-v1", payload.RootElement.GetProperty("value").GetString());
 			Assert.Equal(3u, payload.RootElement.GetProperty("revision").GetUInt32());
 		}
+	}
+
+	[Fact]
+	public async Task RevisionHistory_ShouldReturnResolvedModifierDisplayName()
+	{
+		await using var host = fixture.CreateDefaultHost();
+		await TestFixture.ResetAsync(host);
+		var client = host.CreateJsonClient("revision-owner");
+		var projectId = await CreateProjectAsync(client);
+		var configItemId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
+
+		var setValue = await client.PutAsJsonAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value?environment=production",
+			new { value = "secret-v1", expectedRevision = 0 });
+		setValue.EnsureSuccessStatusCode();
+
+		var history = await client.GetAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value/revisions?environment=production");
+		history.EnsureSuccessStatusCode();
+
+		using var payload = JsonDocument.Parse(await history.Content.ReadAsStringAsync());
+		var revision = payload.RootElement.EnumerateArray().Single();
+		Assert.Equal("user-revisi", revision.GetProperty("modifiedByDisplayName").GetString());
+	}
+
+	[Fact]
+	public async Task RevisionDetail_ShouldReturnUnknownUser_WhenModifierCannotBeResolved()
+	{
+		await using var host = fixture.CreateDefaultHost();
+		await TestFixture.ResetAsync(host);
+		var client = host.CreateJsonClient("revision-owner");
+		var projectId = await CreateProjectAsync(client);
+		var configItemId = await CreateConfigItemAsync(client, host, projectId, "API_KEY");
+
+		var setValue = await client.PutAsJsonAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value?environment=production",
+			new { value = "secret-v1", expectedRevision = 0 });
+		setValue.EnsureSuccessStatusCode();
+
+		await host.WithScopeAsync(async services =>
+		{
+			var db = services.GetRequiredService<AppDbContext>();
+			await db.Database.ExecuteSqlInterpolatedAsync($"""
+				UPDATE config_value_revisions
+				SET "ModifiedBy" = {"user:https://localhost:missing-user"}
+				WHERE "ConfigItemId" = {configItemId} AND "Revision" = {1L}
+				""");
+		});
+
+		var revisionDetail = await client.GetAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value/revisions/1?environment=production");
+		revisionDetail.EnsureSuccessStatusCode();
+
+		using var payload = JsonDocument.Parse(await revisionDetail.Content.ReadAsStringAsync());
+		Assert.Equal("Unknown user", payload.RootElement.GetProperty("modifiedByDisplayName").GetString());
 	}
 
 	[Fact]
@@ -153,10 +211,14 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 		return await host.WithScopeAsync(async services =>
 		{
 			var db = services.GetRequiredService<AppDbContext>();
-			return await db.ConfigItems
-				.Where(configItem => configItem.ProjectId == projectId && configItem.Key.Value == key)
-				Select(configItem => configItem.Id)
-				SingleAsync();
+			var configItems = await db.ConfigItems
+				.Where(configItem => configItem.ProjectId == projectId)
+				.ToListAsync();
+
+			return configItems
+				.Where(configItem => configItem.Key.Value == key)
+				.Select(configItem => configItem.Id)
+				.Single();
 		});
 	}
 }
