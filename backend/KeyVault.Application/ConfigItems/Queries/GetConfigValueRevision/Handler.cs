@@ -3,6 +3,7 @@ using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.Exceptions;
+using KeyVault.Application.ConfigItems.Queries;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
@@ -46,11 +47,16 @@ public sealed class Handler(
 		if (revision is null)
 			return null;
 
+		var modifierDisplayNames = await ModifierDisplayNameResolver.ResolveAsync(
+			db,
+			[revision.ModifiedBy.Value],
+			ct);
+
 		var decrypted = encryption.DecryptSecret(revision.Value, project.CurrentDataKey.Value);
 		return new ConfigValueRevisionView(
 			decrypted,
 			revision.Revision,
-			revision.ModifiedBy.Value,
+			ModifierDisplayNameResolver.GetOrUnknown(modifierDisplayNames, revision.ModifiedBy.Value),
 			revision.ModifiedAt,
 			currentRevision.HasValue && revision.Revision == currentRevision.Value);
 	}

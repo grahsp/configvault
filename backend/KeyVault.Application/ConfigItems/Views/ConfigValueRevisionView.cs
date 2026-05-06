@@ -3,6 +3,6 @@ namespace KeyVault.Application.ConfigItems.Views;
 public sealed record ConfigValueRevisionView(
 	string Value,
 	uint Revision,
-	string ModifiedBy,
+	string ModifiedByDisplayName,
 	DateTimeOffset ModifiedAt,
 	bool IsCurrent);

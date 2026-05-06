@@ -2,6 +2,7 @@ using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems.Exceptions;
+using KeyVault.Application.ConfigItems.Queries;
 using KeyVault.Application.ConfigItems.Views;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
@@ -33,18 +34,33 @@ public sealed class Handler(
 			.Select(v => (uint?)v.Revision)
 			.SingleOrDefaultAsync(ct);
 
-		var revisions = await db.ConfigValueRevisions
+		var revisionRows = await db.ConfigValueRevisions
 			.Where(r =>
 				r.ProjectId == query.ProjectId &&
 				r.ConfigItemId == query.ConfigItemId &&
 				r.EnvironmentId == environment.Id)
 			.OrderByDescending(r => r.Revision)
+			.Select(r => new
+			{
+				r.Revision,
+				ModifiedBy = r.ModifiedBy.Value,
+				r.ModifiedAt,
+				IsCurrent = currentRevision.HasValue && r.Revision == currentRevision.Value
+			})
+			.ToListAsync(ct);
+
+		var modifierDisplayNames = await ModifierDisplayNameResolver.ResolveAsync(
+			db,
+			revisionRows.Select(revision => revision.ModifiedBy),
+			ct);
+
+		var revisions = revisionRows
 			.Select(r => new ConfigValueRevisionSummaryView(
 				r.Revision,
-				r.ModifiedBy.Value,
+				ModifierDisplayNameResolver.GetOrUnknown(modifierDisplayNames, r.ModifiedBy),
 				r.ModifiedAt,
-				currentRevision.HasValue && r.Revision == currentRevision.Value))
-			.ToListAsync(ct);
+				r.IsCurrent))
+			.ToList();
 
 		if (revisions.Count == 0)
 		{
