@@ -284,6 +284,12 @@ describe('SecretsPage', () => {
       await screen.findByRole('heading', { name: 'API_KEY history' }),
     ).toBeInTheDocument()
     const historyDialog = screen.getByRole('dialog', { name: 'API_KEY history' })
+    expect(
+      within(historyDialog).queryByRole('button', { name: 'Close' }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(historyDialog).getByRole('button', { name: 'Close API_KEY history' }),
+    ).toHaveTextContent('x')
     expect(screen.queryByText('Revision 4')).not.toBeInTheDocument()
     expect(screen.getAllByText('Current')).not.toHaveLength(0)
     expect(screen.getByText('Casey Current')).toBeInTheDocument()
@@ -360,12 +366,97 @@ describe('SecretsPage', () => {
     )
     expect(revisionTwoCalls).toHaveLength(1)
 
-    await user.click(screen.getByRole('button', { name: 'Close' }))
+    await user.click(
+      within(historyDialog).getByRole('button', { name: 'Close API_KEY history' }),
+    )
 
     expect(screen.queryByRole('heading', { name: 'API_KEY history' })).not.toBeInTheDocument()
     expect(screen.getByDisplayValue('API_KEY_UPDATED')).toBeInTheDocument()
 
     scrollHeightSpy.mockRestore()
+  })
+
+  it('closes secret history when clicking the backdrop', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 1,
+            createdByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'View history for API_KEY' }),
+    )
+
+    const historyDialog = await screen.findByRole('dialog', {
+      name: 'API_KEY history',
+    })
+
+    await user.click(historyDialog.parentElement as HTMLElement)
+
+    expect(
+      screen.queryByRole('heading', { name: 'API_KEY history' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('closes secret history on Escape', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [apiKeySecret],
+      },
+      {
+        path: '/projects/project-1/secrets/config-1/value/revisions',
+        body: [
+          {
+            revision: 1,
+            createdByDisplayName: 'Casey Current',
+            modifiedAt: '2025-02-03T15:30:00Z',
+            isCurrent: true,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'View history for API_KEY' }),
+    )
+    await screen.findByRole('dialog', { name: 'API_KEY history' })
+
+    await user.keyboard('{Escape}')
+
+    expect(
+      screen.queryByRole('heading', { name: 'API_KEY history' }),
+    ).not.toBeInTheDocument()
   })
 
   it('restores a revision, refreshes data, shows a toast, and closes the modal', async () => {
@@ -448,6 +539,8 @@ describe('SecretsPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Restore secret revision?' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'API_KEY history' })).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(2)
 
     await user.click(screen.getByRole('button', { name: 'Restore revision' }))
 

@@ -1,5 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
-import { Button, ConfirmationDialog, Modal, StatePanel } from '../../../../shared/ui'
+import {
+  Button,
+  ConfirmationDialog,
+  SideWindow,
+  StatePanel,
+} from '../../../../shared/ui'
 import { cx } from '../../../../shared/utils/cx.ts'
 import { formatCreatedDate, getErrorMessage } from '../../domain/project.utils.ts'
 import { useSecretHistory } from '../application'
@@ -52,14 +57,20 @@ export function SecretHistoryModal({
 
   return (
     <>
-      <Modal
-        actions={
-          <Button onClick={onClose} type="button" variant="secondary">
-            Close
+      <SideWindow
+        description={`Revision history for ${secret.key} in ${environmentName}.`}
+        headerAction={
+          <Button
+            aria-label={`Close ${secret.key} history`}
+            className={styles.headerCloseButton}
+            onClick={onClose}
+            type="button"
+            variant="secondary"
+          >
+            x
           </Button>
         }
-        description={`Revision history for ${secret.key} in ${environmentName}.`}
-        size="md"
+        onClose={onClose}
         title={`${secret.key} history`}
       >
         <HistoryList
@@ -81,7 +92,7 @@ export function SecretHistoryModal({
           revealedValuesByRevision={revealedValuesByRevision}
           revisions={revisionsQuery.data ?? []}
         />
-      </Modal>
+      </SideWindow>
 
       {pendingRestoreRevision !== null ? (
         <ConfirmationDialog
