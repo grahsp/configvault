@@ -49,10 +49,10 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 			var revisions = payload.RootElement.EnumerateArray().ToArray();
 			Assert.Equal(2, revisions.Length);
 			Assert.Equal(2u, revisions[0].GetProperty("revision").GetUInt32());
-			Assert.Equal("user-revisi", revisions[0].GetProperty("modifiedByDisplayName").GetString());
+			Assert.Equal("user-revisi", revisions[0].GetProperty("createdByDisplayName").GetString());
 			Assert.True(revisions[0].GetProperty("isCurrent").GetBoolean());
 			Assert.Equal(1u, revisions[1].GetProperty("revision").GetUInt32());
-			Assert.Equal("user-revisi", revisions[1].GetProperty("modifiedByDisplayName").GetString());
+			Assert.Equal("user-revisi", revisions[1].GetProperty("createdByDisplayName").GetString());
 			Assert.False(revisions[1].GetProperty("isCurrent").GetBoolean());
 		}
 
@@ -64,7 +64,7 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 		{
 			Assert.Equal("secret-v1", payload.RootElement.GetProperty("value").GetString());
 			Assert.Equal(1u, payload.RootElement.GetProperty("revision").GetUInt32());
-			Assert.Equal("user-revisi", payload.RootElement.GetProperty("modifiedByDisplayName").GetString());
+			Assert.Equal("user-revisi", payload.RootElement.GetProperty("createdByDisplayName").GetString());
 			Assert.False(payload.RootElement.GetProperty("isCurrent").GetBoolean());
 		}
 
@@ -104,7 +104,7 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 
 		using var payload = JsonDocument.Parse(await history.Content.ReadAsStringAsync());
 		var revision = payload.RootElement.EnumerateArray().Single();
-		Assert.Equal("user-revisi", revision.GetProperty("modifiedByDisplayName").GetString());
+		Assert.Equal("user-revisi", revision.GetProperty("createdByDisplayName").GetString());
 	}
 
 	[Fact]
@@ -136,7 +136,7 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 	}
 
 	[Fact]
-	public async Task RevisionDetail_ShouldReturnUnknownUser_WhenModifierCannotBeResolved()
+	public async Task RevisionEndpoints_ShouldReturnUnknownUser_WhenModifierCannotBeResolved()
 	{
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
@@ -159,12 +159,22 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 				""");
 		});
 
+		var history = await client.GetAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value/revisions?environment=production");
+		history.EnsureSuccessStatusCode();
+
+		using (var historyPayload = JsonDocument.Parse(await history.Content.ReadAsStringAsync()))
+		{
+			var revision = historyPayload.RootElement.EnumerateArray().Single();
+			Assert.Equal("Unknown user", revision.GetProperty("createdByDisplayName").GetString());
+		}
+
 		var revisionDetail = await client.GetAsync(
 			$"/projects/{projectId}/secrets/{configItemId}/value/revisions/1?environment=production");
 		revisionDetail.EnsureSuccessStatusCode();
 
 		using var payload = JsonDocument.Parse(await revisionDetail.Content.ReadAsStringAsync());
-		Assert.Equal("Unknown user", payload.RootElement.GetProperty("modifiedByDisplayName").GetString());
+		Assert.Equal("Unknown user", payload.RootElement.GetProperty("createdByDisplayName").GetString());
 	}
 
 	[Fact]
