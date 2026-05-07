@@ -7,6 +7,7 @@ import { ConfirmationDialog } from './ConfirmationDialog'
 import { KebabMenuButton } from './KebabMenuButton'
 import kebabMenuButtonStyles from './KebabMenuButton.module.css'
 import { Modal } from './Modal'
+import { SideWindow } from './SideWindow'
 import { SplitButton } from './SplitButton'
 import splitButtonStyles from './SplitButton.module.css'
 import { StatePanel } from './StatePanel'
@@ -58,6 +59,34 @@ describe('shared ui primitives', () => {
     expect(within(dialog).getByText('Body copy')).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+  })
+
+  it('renders side window semantics, header action, and close interactions', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+
+    render(
+      <SideWindow
+        description={<p>Review the latest revisions.</p>}
+        headerAction={<button type="button">x</button>}
+        onClose={onClose}
+        title="Secret history"
+      >
+        <p>Revision list</p>
+      </SideWindow>,
+    )
+
+    const dialog = screen.getByRole('dialog', { name: 'Secret history' })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(within(dialog).getByText('Review the latest revisions.')).toBeInTheDocument()
+    expect(within(dialog).getByText('Revision list')).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'x' })).toBeInTheDocument()
+
+    await user.click(dialog.parentElement as HTMLElement)
+    expect(onClose).toHaveBeenCalledTimes(1)
+
+    await user.keyboard('{Escape}')
+    expect(onClose).toHaveBeenCalledTimes(2)
   })
 
   it('renders split button actions and menu semantics', async () => {
