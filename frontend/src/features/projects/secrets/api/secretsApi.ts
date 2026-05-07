@@ -6,6 +6,19 @@ import type {
   SecretValueRevisionSummary,
 } from '../domain'
 
+interface SecretValueRevisionSummaryResponse {
+  revision: number
+  createdByDisplayName?: string
+  modifiedByDisplayName?: string
+  modifiedBy?: string
+  modifiedAt: string
+  isCurrent: boolean
+}
+
+interface SecretValueRevisionResponse extends SecretValueRevisionSummaryResponse {
+  value: string
+}
+
 export interface CreateSecretOperation {
   type: 'create'
   key: string
@@ -102,6 +115,39 @@ function buildRestoreSecretValueRevisionPath(
   )}/value/revisions/${revision}/restore?${buildEnvironmentSearch(environmentName)}`
 }
 
+function resolveRevisionDisplayName(
+  revision: Pick<
+    SecretValueRevisionSummaryResponse,
+    'createdByDisplayName' | 'modifiedByDisplayName'
+  >,
+) {
+  return revision.createdByDisplayName?.trim()
+    ? revision.createdByDisplayName
+    : revision.modifiedByDisplayName?.trim()
+      ? revision.modifiedByDisplayName
+      : 'Unknown user'
+}
+
+function normalizeSecretValueRevisionSummary(
+  revision: SecretValueRevisionSummaryResponse,
+): SecretValueRevisionSummary {
+  return {
+    revision: revision.revision,
+    createdByDisplayName: resolveRevisionDisplayName(revision),
+    modifiedAt: revision.modifiedAt,
+    isCurrent: revision.isCurrent,
+  }
+}
+
+function normalizeSecretValueRevision(
+  revision: SecretValueRevisionResponse,
+): SecretValueRevision {
+  return {
+    ...normalizeSecretValueRevisionSummary(revision),
+    value: revision.value,
+  }
+}
+
 export function getSecrets(
   client: ApiClient,
   projectId: string,
@@ -174,9 +220,11 @@ export function getSecretValueRevisions(
   secretId: string,
   environmentName: string,
 ) {
-  return client.request<SecretValueRevisionSummary[]>(
-    buildSecretValueRevisionsPath(projectId, secretId, environmentName),
-  )
+  return client
+    .request<SecretValueRevisionSummaryResponse[]>(
+      buildSecretValueRevisionsPath(projectId, secretId, environmentName),
+    )
+    .then((revisions) => revisions.map(normalizeSecretValueRevisionSummary))
 }
 
 export function getSecretValueRevision(
@@ -186,14 +234,16 @@ export function getSecretValueRevision(
   environmentName: string,
   revision: number,
 ) {
-  return client.request<SecretValueRevision>(
-    buildSecretValueRevisionPath(
-      projectId,
-      secretId,
-      environmentName,
-      revision,
-    ),
-  )
+  return client
+    .request<SecretValueRevisionResponse>(
+      buildSecretValueRevisionPath(
+        projectId,
+        secretId,
+        environmentName,
+        revision,
+      ),
+    )
+    .then(normalizeSecretValueRevision)
 }
 
 export function upsertSecretValue(

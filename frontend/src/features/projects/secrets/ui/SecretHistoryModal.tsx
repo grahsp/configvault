@@ -116,7 +116,7 @@ interface HistoryListProps {
   revisions: Array<{
     isCurrent: boolean
     modifiedAt: string
-    modifiedByDisplayName: string
+    createdByDisplayName: string
     revision: number
   }>
 }
@@ -248,16 +248,14 @@ function HistoryList({
             </div>
 
             <p className={styles.revisionMetaLine}>
-              <span>{revision.modifiedByDisplayName}</span>
-              <span aria-hidden="true">•</span>
+              <span className={styles.revisionCreator}>
+                {revision.createdByDisplayName}
+              </span>
               <span>{formatCreatedDate(revision.modifiedAt)}</span>
               {revision.isCurrent ? (
-                <>
-                  <span aria-hidden="true">•</span>
-                  <span className={cx(styles.currentBadge, styles.currentBadgeInline)}>
-                    Current
-                  </span>
-                </>
+                <span className={cx(styles.currentBadge, styles.currentBadgeInline)}>
+                  Current
+                </span>
               ) : null}
             </p>
 

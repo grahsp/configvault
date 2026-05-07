@@ -12,7 +12,7 @@ export interface SecretValue {
 
 export interface SecretValueRevisionSummary {
   revision: number
-  modifiedByDisplayName: string
+  createdByDisplayName: string
   modifiedAt: string
   isCurrent: boolean
 }
