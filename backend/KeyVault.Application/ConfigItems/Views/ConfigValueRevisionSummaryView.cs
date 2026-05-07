@@ -2,6 +2,6 @@ namespace KeyVault.Application.ConfigItems.Views;
 
 public sealed record ConfigValueRevisionSummaryView(
 	uint Revision,
-	string ModifiedByDisplayName,
+	string CreatedByDisplayName,
 	DateTimeOffset ModifiedAt,
 	bool IsCurrent);
