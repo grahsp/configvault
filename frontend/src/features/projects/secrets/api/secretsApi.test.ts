@@ -110,7 +110,7 @@ describe('secrets api', () => {
     const revisions = [
       {
         revision: 3,
-        modifiedByDisplayName: 'User 123',
+        createdByDisplayName: 'User 123',
         modifiedAt: '2025-02-01T10:00:00Z',
         isCurrent: true,
       },
@@ -131,11 +131,51 @@ describe('secrets api', () => {
     )
   })
 
+  it('normalizes legacy revision summary payloads without exposing actor ids', async () => {
+    const client = createMockClient()
+    vi.mocked(client.request).mockResolvedValue([
+      {
+        revision: 3,
+        modifiedByDisplayName: 'User 123',
+        modifiedAt: '2025-02-01T10:00:00Z',
+        isCurrent: true,
+      },
+      {
+        revision: 2,
+        modifiedBy: 'user:https://tenant/:auth0|123',
+        modifiedAt: '2025-02-01T09:00:00Z',
+        isCurrent: false,
+      },
+    ])
+
+    await expect(
+      getSecretValueRevisions(
+        client,
+        'project/with space',
+        'config/with space',
+        'prod/eu west',
+      ),
+    ).resolves.toEqual([
+      {
+        revision: 3,
+        createdByDisplayName: 'User 123',
+        modifiedAt: '2025-02-01T10:00:00Z',
+        isCurrent: true,
+      },
+      {
+        revision: 2,
+        createdByDisplayName: 'Unknown user',
+        modifiedAt: '2025-02-01T09:00:00Z',
+        isCurrent: false,
+      },
+    ])
+  })
+
   it('loads a specific secret revision with encoded path and environment values', async () => {
     const client = createMockClient()
     const revision = {
       revision: 2,
-      modifiedByDisplayName: 'User 123',
+      createdByDisplayName: 'User 123',
       modifiedAt: '2025-02-01T10:00:00Z',
       isCurrent: false,
       value: 'secret-value-v2',
@@ -155,6 +195,33 @@ describe('secrets api', () => {
     expect(client.request).toHaveBeenCalledWith(
       '/projects/project%2Fwith%20space/secrets/config%2Fwith%20space/value/revisions/2?environment=prod%2Feu%20west',
     )
+  })
+
+  it('normalizes legacy revision detail payloads without exposing actor ids', async () => {
+    const client = createMockClient()
+    vi.mocked(client.request).mockResolvedValue({
+      revision: 2,
+      modifiedBy: 'user:https://tenant/:auth0|123',
+      modifiedAt: '2025-02-01T10:00:00Z',
+      isCurrent: false,
+      value: 'secret-value-v2',
+    })
+
+    await expect(
+      getSecretValueRevision(
+        client,
+        'project/with space',
+        'config/with space',
+        'prod/eu west',
+        2,
+      ),
+    ).resolves.toEqual({
+      revision: 2,
+      createdByDisplayName: 'Unknown user',
+      modifiedAt: '2025-02-01T10:00:00Z',
+      isCurrent: false,
+      value: 'secret-value-v2',
+    })
   })
 
   it('exports secrets with encoded project and environment values', async () => {

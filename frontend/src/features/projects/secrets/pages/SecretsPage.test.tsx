@@ -1,10 +1,12 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { formatCreatedDate } from '../../domain/project.utils.ts'
 import {
   mockFetchSequence,
   renderProjectDetail,
 } from '../../pages/ProjectDetailPage/ProjectDetailPage.testUtils.tsx'
+import historyModalStyles from '../ui/SecretHistoryModal.module.css'
 
 const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
@@ -234,13 +236,13 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 4,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: true,
           },
           {
             revision: 2,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -250,7 +252,7 @@ describe('SecretsPage', () => {
         path: '/projects/project-1/secrets/config-1/value/revisions/2',
         body: {
           revision: 2,
-          modifiedByDisplayName: 'Unknown user',
+          createdByDisplayName: 'Unknown user',
           modifiedAt: '2025-02-02T09:15:00Z',
           isCurrent: false,
           value: 'old-secret',
@@ -260,7 +262,7 @@ describe('SecretsPage', () => {
         path: '/projects/project-1/secrets/config-1/value/revisions/4',
         body: {
           revision: 4,
-          modifiedByDisplayName: 'Casey Current',
+          createdByDisplayName: 'Casey Current',
           modifiedAt: '2025-02-03T15:30:00Z',
           isCurrent: true,
           value: 'current-secret',
@@ -286,6 +288,18 @@ describe('SecretsPage', () => {
     expect(screen.getAllByText('Current')).not.toHaveLength(0)
     expect(screen.getByText('Casey Current')).toBeInTheDocument()
     expect(screen.getByText('Unknown user')).toBeInTheDocument()
+    expect(screen.queryByText('•')).not.toBeInTheDocument()
+    const currentMetadata = screen
+      .getByText('Casey Current')
+      .closest(`.${historyModalStyles.revisionMetaLine}`)
+    expect(currentMetadata).not.toBeNull()
+    expect(currentMetadata).toHaveClass(historyModalStyles.revisionMetaLine)
+    expect(currentMetadata).toHaveTextContent(
+      `Casey Current${formatCreatedDate('2025-02-03T15:30:00Z')}Current`,
+    )
+    expect(screen.getByText('Casey Current')).toHaveClass(
+      historyModalStyles.revisionCreator,
+    )
     expect(
       within(historyDialog).getAllByDisplayValue('************'),
     ).toHaveLength(2)
@@ -371,13 +385,13 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 4,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: true,
           },
           {
             revision: 2,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -404,19 +418,19 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 5,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T16:00:00Z',
             isCurrent: true,
           },
           {
             revision: 4,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: false,
           },
           {
             revision: 2,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -476,13 +490,13 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 2,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: true,
           },
           {
             revision: 0,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -509,19 +523,19 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 3,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T16:00:00Z',
             isCurrent: true,
           },
           {
             revision: 2,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: false,
           },
           {
             revision: 0,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -567,13 +581,13 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 1,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: true,
           },
           {
             revision: 0,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
@@ -620,13 +634,13 @@ describe('SecretsPage', () => {
         body: [
           {
             revision: 1,
-            modifiedByDisplayName: 'Casey Current',
+            createdByDisplayName: 'Casey Current',
             modifiedAt: '2025-02-03T15:30:00Z',
             isCurrent: true,
           },
           {
             revision: 0,
-            modifiedByDisplayName: 'Unknown user',
+            createdByDisplayName: 'Unknown user',
             modifiedAt: '2025-02-02T09:15:00Z',
             isCurrent: false,
           },
