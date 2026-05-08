@@ -201,7 +201,7 @@ describe('secrets application hooks', () => {
     })
   })
 
-  it('saves secret operations, updates cached revisions, and invalidates the list query', async () => {
+  it('saves secret operations and invalidates the list query without mutating cache', async () => {
     const queryClient = createTestQueryClient()
     apiMocks.saveSecrets.mockResolvedValue(undefined)
     const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
@@ -237,19 +237,18 @@ describe('secrets application hooks', () => {
       environmentName,
       operations,
     )
-    expect(getCachedSecrets(queryClient, projectId, environmentName)).toContainEqual({
-      ...existingSecrets[0],
-      hasValue: true,
-      revision: 5,
-    })
+    expect(getCachedSecrets(queryClient, projectId, environmentName)).toEqual(
+      existingSecrets,
+    )
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: secretsQueryKeys.list(projectId, environmentName),
     })
   })
 
-  it('sets hasValue locally after upserting a secret value', async () => {
+  it('upserts a secret value and invalidates the list query without mutating cache', async () => {
     const queryClient = createTestQueryClient()
     apiMocks.saveSecrets.mockResolvedValue(undefined)
+    const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
     queryClient.setQueryData(
       secretsQueryKeys.list(projectId, environmentName),
       existingSecrets,
@@ -270,11 +269,9 @@ describe('secrets application hooks', () => {
       })
     })
 
-    expect(getCachedSecrets(queryClient, projectId, environmentName)).toContainEqual({
-      ...existingSecrets[1],
-      hasValue: true,
-      revision: 1,
-    })
+    expect(getCachedSecrets(queryClient, projectId, environmentName)).toEqual(
+      existingSecrets,
+    )
     expect(apiMocks.saveSecrets).toHaveBeenCalledWith(
       expect.any(Object),
       projectId,
@@ -288,5 +285,8 @@ describe('secrets application hooks', () => {
         },
       ],
     )
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: secretsQueryKeys.list(projectId, environmentName),
+    })
   })
 })
