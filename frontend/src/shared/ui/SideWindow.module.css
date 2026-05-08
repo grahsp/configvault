@@ -33,6 +33,10 @@
   gap: var(--space-4);
 }
 
+.headerCompact {
+  align-items: center;
+}
+
 .headerContent {
   display: grid;
   gap: var(--space-4);

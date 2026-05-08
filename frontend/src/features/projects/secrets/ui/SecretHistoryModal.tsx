@@ -58,10 +58,9 @@ export function SecretHistoryModal({
   return (
     <>
       <SideWindow
-        description={`Revision history for ${secret.key} in ${environmentName}.`}
         headerAction={
           <Button
-            aria-label={`Close ${secret.key} history`}
+            aria-label={`Close ${secret.key}`}
             className={styles.headerCloseButton}
             onClick={onClose}
             type="button"
@@ -71,7 +70,7 @@ export function SecretHistoryModal({
           </Button>
         }
         onClose={onClose}
-        title={`${secret.key} history`}
+        title={secret.key}
       >
         <HistoryList
           errorMessage={

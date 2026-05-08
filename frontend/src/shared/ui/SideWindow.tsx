@@ -53,7 +53,12 @@ export function SideWindow({
         role="dialog"
         {...props}
       >
-        <div className={styles.header}>
+        <div
+          className={cx(
+            styles.header,
+            !description ? styles.headerCompact : undefined,
+          )}
+        >
           <div className={styles.headerContent}>
             <h2 className={styles.title} id={titleId}>
               {title}

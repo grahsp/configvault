@@ -281,14 +281,14 @@ describe('SecretsPage', () => {
     )
 
     expect(
-      await screen.findByRole('heading', { name: 'API_KEY history' }),
+      await screen.findByRole('heading', { name: 'API_KEY' }),
     ).toBeInTheDocument()
-    const historyDialog = screen.getByRole('dialog', { name: 'API_KEY history' })
+    const historyDialog = screen.getByRole('dialog', { name: 'API_KEY' })
     expect(
       within(historyDialog).queryByRole('button', { name: 'Close' }),
     ).not.toBeInTheDocument()
     expect(
-      within(historyDialog).getByRole('button', { name: 'Close API_KEY history' }),
+      within(historyDialog).getByRole('button', { name: 'Close API_KEY' }),
     ).toHaveTextContent('x')
     expect(screen.queryByText('Revision 4')).not.toBeInTheDocument()
     expect(screen.getAllByText('Current')).not.toHaveLength(0)
@@ -367,10 +367,10 @@ describe('SecretsPage', () => {
     expect(revisionTwoCalls).toHaveLength(1)
 
     await user.click(
-      within(historyDialog).getByRole('button', { name: 'Close API_KEY history' }),
+      within(historyDialog).getByRole('button', { name: 'Close API_KEY' }),
     )
 
-    expect(screen.queryByRole('heading', { name: 'API_KEY history' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'API_KEY' })).not.toBeInTheDocument()
     expect(screen.getByDisplayValue('API_KEY_UPDATED')).toBeInTheDocument()
 
     scrollHeightSpy.mockRestore()
@@ -409,13 +409,13 @@ describe('SecretsPage', () => {
     )
 
     const historyDialog = await screen.findByRole('dialog', {
-      name: 'API_KEY history',
+      name: 'API_KEY',
     })
 
     await user.click(historyDialog.parentElement as HTMLElement)
 
     expect(
-      screen.queryByRole('heading', { name: 'API_KEY history' }),
+      screen.queryByRole('heading', { name: 'API_KEY' }),
     ).not.toBeInTheDocument()
   })
 
@@ -450,12 +450,12 @@ describe('SecretsPage', () => {
     await user.click(
       await screen.findByRole('button', { name: 'View history for API_KEY' }),
     )
-    await screen.findByRole('dialog', { name: 'API_KEY history' })
+    await screen.findByRole('dialog', { name: 'API_KEY' })
 
     await user.keyboard('{Escape}')
 
     expect(
-      screen.queryByRole('heading', { name: 'API_KEY history' }),
+      screen.queryByRole('heading', { name: 'API_KEY' }),
     ).not.toBeInTheDocument()
   })
 
@@ -539,14 +539,14 @@ describe('SecretsPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Restore secret revision?' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'API_KEY history' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'API_KEY' })).toBeInTheDocument()
     expect(screen.getAllByRole('dialog')).toHaveLength(2)
 
     await user.click(screen.getByRole('button', { name: 'Restore revision' }))
 
     expect(await screen.findByText('API_KEY restored')).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'API_KEY history' }),
+      screen.queryByRole('heading', { name: 'API_KEY' }),
     ).not.toBeInTheDocument()
 
     const restoreCalls = getRestoreCalls(fetchMock)
@@ -760,7 +760,7 @@ describe('SecretsPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
 
     expect(await screen.findByText('Revision conflict.')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'API_KEY history' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'API_KEY' })).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Restore secret revision?' }),
     ).toBeInTheDocument()
