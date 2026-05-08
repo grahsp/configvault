@@ -141,13 +141,12 @@ public sealed class ConfigItemMutationExecutor(
 		}
 
 		var encrypted = encryption.EncryptSecret(setValue.Value, batch.Project.CurrentDataKey.Value);
-		var revision = item.SetValue(
+		item.SetValue(
 			environment.Id,
 			encrypted,
 			actor.Id,
 			time.GetUtcNow(),
 			setValue.ExpectedRevision);
-		configurations.AddRevision(revision);
 	}
 	
 	private static ConfigKey FindCreatedKey(IEnumerable<Operation> operations)

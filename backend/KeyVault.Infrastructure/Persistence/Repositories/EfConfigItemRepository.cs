@@ -9,11 +9,13 @@ public class EfConfigItemRepository(AppDbContext db) : IConfigItemRepository
 	public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
 		=> db.ConfigItems
 			.Include(x => x.Values)
+			.ThenInclude(x => x.Revisions)
 			.SingleOrDefaultAsync(x => x.Id == id, ct);
 	
 	public Task<ConfigItem?> GetByIdAndProjectAsync(Guid projectId, Guid configItemId, CancellationToken ct)
 		=> db.ConfigItems
 			.Include(x => x.Values)
+			.ThenInclude(x => x.Revisions)
 			.SingleOrDefaultAsync(x =>
 					x.Id == configItemId &&
 					x.ProjectId == projectId,
@@ -24,6 +26,7 @@ public class EfConfigItemRepository(AppDbContext db) : IConfigItemRepository
 		return await db.ConfigItems
 			.Where(x => x.ProjectId == projectId && configItemIds.Contains(x.Id))
 			.Include(x => x.Values)
+			.ThenInclude(x => x.Revisions)
 			.ToListAsync(ct);
 	}
 
@@ -33,11 +36,6 @@ public class EfConfigItemRepository(AppDbContext db) : IConfigItemRepository
 	public void Add(ConfigItem configItem)
 	{
 		db.ConfigItems.Add(configItem);
-	}
-
-	public void AddRevision(ConfigValueRevision revision)
-	{
-		db.ConfigValueRevisions.Add(revision);
 	}
 
 	public void Remove(ConfigItem configItem)

@@ -16,6 +16,9 @@ public sealed class ConfigValue
 
 	public ActorId LastModifiedBy { get; private set; } = null!;
 	public DateTimeOffset LastModifiedAt { get; private set; }
+
+	private readonly List<ConfigValueRevision> _revisions = [];
+	public IReadOnlyList<ConfigValueRevision> Revisions => _revisions;
 	
 	private ConfigValue() {}
 
@@ -38,7 +41,7 @@ public sealed class ConfigValue
 		LastModifiedAt = now;
 	}
 
-	public ConfigValueRevision SetInitialValue(
+	public void SetInitialValue(
 		Guid projectId,
 		EncryptedValue value,
 		ActorId actorId,
@@ -50,11 +53,10 @@ public sealed class ConfigValue
 		Value = value;
 		LastModifiedBy = actorId;
 		LastModifiedAt = now;
-
-		return new ConfigValueRevision(projectId, ConfigItemId, EnvironmentId, Revision, value, actorId, now);
+		_revisions.Add(new ConfigValueRevision(projectId, ConfigItemId, EnvironmentId, Revision, value, actorId, now));
 	}
 
-	public ConfigValueRevision SetValue(
+	public void SetValue(
 		Guid projectId,
 		EncryptedValue value,
 		ActorId actorId,
@@ -66,7 +68,6 @@ public sealed class ConfigValue
 		Value = value;
 		LastModifiedBy = actorId;
 		LastModifiedAt = now;
-
-		return new ConfigValueRevision(projectId, ConfigItemId, EnvironmentId, Revision, value, actorId, now);
+		_revisions.Add(new ConfigValueRevision(projectId, ConfigItemId, EnvironmentId, Revision, value, actorId, now));
 	}
 }

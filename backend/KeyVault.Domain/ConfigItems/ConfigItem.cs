@@ -41,7 +41,7 @@ public sealed class ConfigItem
 		return value != null;
 	}
 
-	public ConfigValueRevision SetValue(
+	public void SetValue(
 		Guid environmentId,
 		EncryptedValue value,
 		ActorId actorId,
@@ -55,7 +55,8 @@ public sealed class ConfigItem
 			if (existing.Revision != expectedRevision)
 				throw new StaleConfigValueRevisionException(expectedRevision, existing.Revision);
 
-			return existing.SetValue(ProjectId, value, actorId, now);
+			existing.SetValue(ProjectId, value, actorId, now);
+			return;
 		}
 
 		if (expectedRevision != 0)
@@ -63,6 +64,6 @@ public sealed class ConfigItem
 
 		var current = new ConfigValue(Id, environmentId, 0, value, actorId, now);
 		_values.Add(current);
-		return current.SetInitialValue(ProjectId, value, actorId, now);
+		current.SetInitialValue(ProjectId, value, actorId, now);
 	}
 }

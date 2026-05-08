@@ -23,6 +23,14 @@ public class ConfigValueConfiguration : IEntityTypeConfiguration<ConfigValue>
 			.HasForeignKey(x => x.EnvironmentId)
 			.OnDelete(DeleteBehavior.Cascade);
 
+		builder.Navigation(x => x.Revisions)
+			.UsePropertyAccessMode(PropertyAccessMode.Field);
+
+		builder.HasMany(x => x.Revisions)
+			.WithOne(x => x.ConfigValue)
+			.HasForeignKey(x => new { x.ConfigItemId, x.EnvironmentId })
+			.OnDelete(DeleteBehavior.Cascade);
+
 		builder.Property(x => x.Value)
 			.IsRequired()
 			.HasColumnType("bytea")

@@ -6,6 +6,7 @@ public sealed class ConfigValueRevision
 {
 	public Guid ProjectId { get; private init; }
 	public Guid ConfigItemId { get; private init; }
+	public ConfigValue ConfigValue { get; private init; } = null!;
 	public Guid EnvironmentId { get; private init; }
 	public uint Revision { get; private init; }
 

@@ -7,10 +7,8 @@ using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.ConfigItems.Exceptions;
-using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Application.Projects.Exceptions;
-using Microsoft.EntityFrameworkCore;
 
 namespace KeyVault.Application.ConfigItems.Commands.RestoreConfigValueRevision;
 
@@ -18,7 +16,6 @@ public sealed class Handler(
 	IProjectRepository projects,
 	IConfigItemRepository configurations,
 	IProjectAuthorizationService authorization,
-	IReadDbContext db,
 	IEnvelopeEncryptionService encryption,
 	IConfigItemBatchPlanner planner,
 	IConfigItemMutationExecutor executor)
@@ -39,13 +36,10 @@ public sealed class Handler(
 		var configItem = await configurations.GetByIdAndProjectAsync(command.ProjectId, command.ConfigItemId, ct)
 			?? throw new ConfigItemNotFoundException(command.ConfigItemId);
 
-		var revision = await db.ConfigValueRevisions
-			.Where(r =>
-				r.ProjectId == command.ProjectId &&
-				r.ConfigItemId == command.ConfigItemId &&
-				r.EnvironmentId == environment.Id &&
-				r.Revision == command.Revision)
-			.SingleOrDefaultAsync(ct)
+		var revision = configItem.Values
+			.SingleOrDefault(value => value.EnvironmentId == environment.Id)?
+			.Revisions
+			.SingleOrDefault(revision => revision.Revision == command.Revision)
 			?? throw new ConfigValueRevisionNotFoundException(command.ConfigItemId, command.Revision);
 
 		var restoredValue = encryption.DecryptSecret(revision.Value, project.CurrentDataKey.Value);
