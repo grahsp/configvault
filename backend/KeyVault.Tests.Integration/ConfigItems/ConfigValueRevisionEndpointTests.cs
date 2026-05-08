@@ -199,7 +199,7 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 	}
 
 	[Fact]
-	public async Task DeleteConfigItem_ShouldPreserveRevisionHistory()
+	public async Task DeleteConfigItem_ShouldCascadeToRevisionHistory()
 	{
 		await using var host = fixture.CreateDefaultHost();
 		await TestFixture.ResetAsync(host);
@@ -215,12 +215,20 @@ public sealed class ConfigValueRevisionEndpointTests(TestFixture fixture) : ICla
 		var delete = await client.DeleteAsync($"/projects/{projectId}/secrets/{configItemId}");
 		delete.EnsureSuccessStatusCode();
 
+		var history = await client.GetAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value/revisions?environment=production");
+		Assert.Equal(HttpStatusCode.NotFound, history.StatusCode);
+
+		var revision = await client.GetAsync(
+			$"/projects/{projectId}/secrets/{configItemId}/value/revisions/1?environment=production");
+		Assert.Equal(HttpStatusCode.NotFound, revision.StatusCode);
+
 		await host.WithScopeAsync(async services =>
 		{
 			var db = services.GetRequiredService<AppDbContext>();
 
 			Assert.False(await db.ConfigValues.AnyAsync(v => v.ConfigItemId == configItemId));
-			Assert.True(await db.ConfigValueRevisions.AnyAsync(r => r.ProjectId == projectId && r.ConfigItemId == configItemId));
+			Assert.False(await db.ConfigValueRevisions.AnyAsync(r => r.ProjectId == projectId && r.ConfigItemId == configItemId));
 		});
 	}
 

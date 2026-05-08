@@ -37,6 +37,9 @@ public sealed class ConfigValueEncryptionHandlerTests
 		var value = Assert.Single(fixture.Configuration.Values);
 		Assert.Equal(fixture.Encryption.EncryptedSecret.Payload.ToArray(), value.Value.Payload.ToArray());
 		Assert.Equal(1u, value.Revision);
+		var revision = Assert.Single(value.Revisions);
+		Assert.Equal(1u, revision.Revision);
+		Assert.Equal(fixture.Encryption.EncryptedSecret.Payload.ToArray(), revision.Value.Payload.ToArray());
 		Assert.Equal("secret", fixture.Encryption.EncryptedPlaintext);
 		Assert.Equal(fixture.Project.CurrentDataKey.Value.Payload.ToArray(), fixture.Encryption.EncryptionWrappedKey!.Payload.ToArray());
 		Assert.True(fixture.Uow.SaveChangesCalled);
@@ -59,6 +62,7 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		var value = Assert.Single(fixture.Configuration.Values);
 		Assert.Equal(1u, value.Revision);
+		Assert.Single(value.Revisions);
 		Assert.Null(fixture.Encryption.EncryptedPlaintext);
 		Assert.True(fixture.Uow.SaveChangesCalled);
 	}
@@ -168,7 +172,6 @@ public sealed class ConfigValueEncryptionHandlerTests
 	private sealed class FakeConfigItemRepository : IConfigItemRepository
 	{
 		public ConfigItem? Configuration { get; set; }
-		public List<ConfigValueRevision> Revisions { get; } = [];
 
 		public Task<ConfigItem?> GetByIdAsync(Guid id, CancellationToken ct)
 			=> Task.FromResult(Configuration?.Id == id ? Configuration : null);
@@ -195,7 +198,6 @@ public sealed class ConfigValueEncryptionHandlerTests
 
 		public Task<bool> ExistsAsync(Guid projectId, ConfigKey key, CancellationToken ct) => throw new NotImplementedException();
 		public void Add(ConfigItem configItem) => throw new NotImplementedException();
-		public void AddRevision(ConfigValueRevision revision) => Revisions.Add(revision);
 		public void Remove(ConfigItem configItem) => throw new NotImplementedException();
 	}
 
