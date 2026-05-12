@@ -1,5 +1,5 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
-import { AppLayout } from './AppLayout'
+import { AppLayout } from './layouts/AppLayout'
 import { LandingLayout } from './LandingLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { InvitationPage } from '../features/projects/invitations/pages'
