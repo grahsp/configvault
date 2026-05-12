@@ -13,12 +13,12 @@ import { HomePage } from './pages/HomePage'
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <HomePage />,
+  },
+  {
+    path: '/',
     element: <AppLayout />,
     children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
       {
         path: 'invitations/:token',
         element: <InvitationPage />,

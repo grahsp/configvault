@@ -93,18 +93,52 @@
 }
 
 .buttonPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5-5);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
   background: var(--color-inverse);
   color: var(--color-surface-contrast);
   box-shadow: var(--shadow-glass-strong);
 }
 
 .buttonSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5-5);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
   border-color: var(--color-border-soft);
   background: var(--color-surface-glass);
   color: var(--color-inverse);
 }
 
-.button:disabled {
+.buttonPrimary:hover,
+.buttonSecondary:hover {
+  transform: translateY(-1px);
+}
+
+.buttonPrimary:disabled,
+.buttonSecondary:disabled {
   cursor: not-allowed;
   opacity: 0.7;
   transform: none;
@@ -138,7 +172,8 @@
     justify-content: stretch;
   }
 
-  .actions .button {
+  .actions .buttonPrimary,
+  .actions .buttonSecondary {
     width: 100%;
   }
 

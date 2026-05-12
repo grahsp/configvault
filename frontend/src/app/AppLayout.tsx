@@ -1,6 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../shared/hooks/useAuth'
-import { cx } from '../shared/utils/cx'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {
@@ -24,31 +23,19 @@ export function AppLayout() {
           <nav className={styles.actions} aria-label="Account">
             {!isLoading && isAuthenticated ? (
               <>
-                <Link className={cx(styles.button, styles.buttonSecondary)} to="/profile">
+                <Link className={styles.buttonSecondary} to="/profile">
                   Profile
                 </Link>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
-                  onClick={logout}
-                  type="button"
-                >
+                <button className={styles.buttonPrimary} onClick={logout} type="button">
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button
-                  className={cx(styles.button, styles.buttonSecondary)}
-                  onClick={() => login()}
-                  type="button"
-                >
+                <button className={styles.buttonSecondary} onClick={() => login()} type="button">
                   Log in
                 </button>
-                <button
-                  className={cx(styles.button, styles.buttonPrimary)}
-                  onClick={() => signup()}
-                  type="button"
-                >
+                <button className={styles.buttonPrimary} onClick={() => signup()} type="button">
                   Register
                 </button>
               </>
