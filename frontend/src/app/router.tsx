@@ -9,7 +9,7 @@ import { GeneralPage } from '../features/projects'
 import { ProjectDetailPage } from '../features/projects'
 import { ProjectsPage } from '../features/projects'
 import { ProfilePage } from '../features/users'
-import { HomePage } from './pages/HomePage'
+import { LandingPage } from './pages/LandingPage'
 
 export const router = createBrowserRouter([
   {
@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <LandingPage />,
       },
     ],
   },

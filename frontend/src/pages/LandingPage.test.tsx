@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { HomePage } from './HomePage'
+import { LandingPage } from './LandingPage'
 
 const useAuthMock = vi.hoisted(() => vi.fn())
 
@@ -9,7 +9,7 @@ vi.mock('../../shared/hooks/useAuth', () => ({
   useAuth: () => useAuthMock(),
 }))
 
-describe('HomePage', () => {
+describe('LandingPage', () => {
   afterEach(() => {
     useAuthMock.mockReset()
   })
@@ -28,7 +28,7 @@ describe('HomePage', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <HomePage />
+        <LandingPage />
       </MemoryRouter>,
     )
 
@@ -59,7 +59,7 @@ describe('HomePage', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <HomePage />
+        <LandingPage />
       </MemoryRouter>,
     )
 
@@ -81,7 +81,7 @@ describe('HomePage', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <HomePage />
+        <LandingPage />
       </MemoryRouter>,
     )
 
