@@ -1,0 +1,54 @@
+.shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--space-6);
+  background:
+    radial-gradient(circle at top, rgba(79, 111, 167, 0.26), transparent 28%),
+    linear-gradient(180deg, #020617 0%, #020817 38%, #0f172a 100%);
+}
+
+.inlineShell {
+  min-height: 50vh;
+  padding: var(--space-10) var(--space-6);
+  background: transparent;
+}
+
+.status {
+  display: grid;
+  place-items: center;
+}
+
+.spinner {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 3px solid rgba(148, 163, 184, 0.22);
+  border-top-color: rgba(125, 211, 252, 0.95);
+  border-radius: 9999px;
+  animation: spin 700ms linear infinite;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .inlineShell {
+    min-height: 40vh;
+    padding: var(--space-8) var(--space-4);
+  }
+}

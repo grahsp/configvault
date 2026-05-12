@@ -7,6 +7,7 @@ import { ConfirmationDialog } from './ConfirmationDialog'
 import { KebabMenuButton } from './KebabMenuButton'
 import kebabMenuButtonStyles from './KebabMenuButton.module.css'
 import { Modal } from './Modal'
+import { PageLoader } from './PageLoader'
 import { SideWindow } from './SideWindow'
 import { SplitButton } from './SplitButton'
 import splitButtonStyles from './SplitButton.module.css'
@@ -186,6 +187,13 @@ describe('shared ui primitives', () => {
     expect(alert).toHaveClass(statePanelStyles.error)
     expect(within(alert).getByText('Load failed')).toBeInTheDocument()
     expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+  })
+
+  it('renders a full-page spinner loader', () => {
+    render(<PageLoader />)
+
+    const status = screen.getByRole('status')
+    expect(status).toHaveTextContent('Loading...')
   })
 
   it('keeps confirmation dialog confirm/cancel flows and pending state', async () => {

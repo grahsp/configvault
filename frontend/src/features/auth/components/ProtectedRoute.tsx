@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { Navigate } from 'react-router-dom'
+import { PageLoader } from '../../../shared/ui'
 import { useCurrentUser } from '../../users'
 
 export function ProtectedRoute({ children }: PropsWithChildren) {
@@ -8,7 +9,7 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
   const { isLoading: isCurrentUserLoading, error } = useCurrentUser()
 
   if (isLoading) {
-    return <p>Loading...</p>
+    return <PageLoader fullScreen={false} />
   }
 
   if (!isAuthenticated) {
@@ -16,7 +17,7 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
   }
 
   if (isCurrentUserLoading) {
-    return <p>Loading user data...</p>
+    return <PageLoader fullScreen={false} />
   }
 
   if (error) {
