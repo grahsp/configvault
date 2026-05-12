@@ -1,6 +1,6 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './layouts/AppLayout'
-import { LandingLayout } from './LandingLayout'
+import { LandingLayout } from './layouts/LandingLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { InvitationPage } from '../features/projects/invitations/pages'
 import { SecretsPage } from '../features/projects/secrets'
