@@ -48,7 +48,7 @@ describe('HomePage', () => {
     expect(screen.queryByText(/future dashboard preview/i)).not.toBeInTheDocument()
   })
 
-  it('renders authenticated CTAs instead of redirecting authenticated users', () => {
+  it('redirects authenticated users to projects', () => {
     useAuthMock.mockReturnValue({
       error: undefined,
       isAuthenticated: true,
@@ -66,7 +66,32 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('link', { name: /start for free/i })).toHaveAttribute('href', '/projects')
-    expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/profile')
+    expect(screen.getByText(/projects destination/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: /one place for all your app secrets/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders the shared page loader while auth is loading', () => {
+    useAuthMock.mockReturnValue({
+      error: undefined,
+      isAuthenticated: false,
+      isLoading: true,
+      login: vi.fn(),
+      signup: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(/loading/i)
+    expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: /one place for all your app secrets/i }),
+    ).not.toBeInTheDocument()
   })
 })
