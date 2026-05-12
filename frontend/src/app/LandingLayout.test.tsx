@@ -85,4 +85,27 @@ describe('LandingLayout', () => {
     expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
     expect(screen.queryByText(/landing content/i)).not.toBeInTheDocument()
   })
+
+  it('renders the auth error above the outlet content', () => {
+    useAuthMock.mockReturnValue({
+      error: new Error('Auth unavailable'),
+      isAuthenticated: false,
+      isLoading: false,
+      login: vi.fn(),
+      signup: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route element={<LandingLayout />} path="/">
+            <Route element={<p>Landing content</p>} index />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/auth unavailable/i)
+    expect(screen.getByText(/landing content/i)).toBeInTheDocument()
+  })
 })
