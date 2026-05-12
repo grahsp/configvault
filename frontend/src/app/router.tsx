@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
+import { LandingLayout } from './LandingLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { InvitationPage } from '../features/projects/invitations/pages'
 import { SecretsPage } from '../features/projects/secrets'
@@ -13,7 +14,13 @@ import { HomePage } from './pages/HomePage'
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <LandingLayout />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+    ],
   },
   {
     path: '/',

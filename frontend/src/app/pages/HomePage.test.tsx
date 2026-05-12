@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from './HomePage'
 
@@ -48,7 +48,7 @@ describe('HomePage', () => {
     expect(screen.queryByText(/future dashboard preview/i)).not.toBeInTheDocument()
   })
 
-  it('redirects authenticated users to projects', () => {
+  it('shows authenticated landing actions when a signed-in user reaches the page content', () => {
     useAuthMock.mockReturnValue({
       error: undefined,
       isAuthenticated: true,
@@ -59,20 +59,18 @@ describe('HomePage', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/projects" element={<p>Projects destination</p>} />
-        </Routes>
+        <HomePage />
       </MemoryRouter>,
     )
 
-    expect(screen.getByText(/projects destination/i)).toBeInTheDocument()
-    expect(
-      screen.queryByRole('heading', { name: /one place for all your app secrets/i }),
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /start for free/i })).toHaveAttribute(
+      'href',
+      '/projects',
+    )
+    expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/profile')
   })
 
-  it('renders the shared page loader while auth is loading', () => {
+  it('renders the landing page content while auth is loading', () => {
     useAuthMock.mockReturnValue({
       error: undefined,
       isAuthenticated: false,
@@ -87,11 +85,9 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('status')).toHaveTextContent(/loading/i)
-    expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: /one place for all your app secrets/i }),
-    ).not.toBeInTheDocument()
+      screen.getByRole('heading', { name: /one place for all your app secrets/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /start for free/i })).toBeInTheDocument()
   })
 })
