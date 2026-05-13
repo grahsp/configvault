@@ -5,7 +5,7 @@ import { LandingLayout } from './LandingLayout'
 
 const useAuthMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../../shared/hooks/useAuth', () => ({
+vi.mock('../shared/hooks/useAuth', () => ({
   useAuth: () => useAuthMock(),
 }))
 

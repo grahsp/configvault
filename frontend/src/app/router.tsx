@@ -1,6 +1,6 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
-import { AppLayout } from './layouts/AppLayout'
-import { LandingLayout } from './layouts/LandingLayout'
+import { AppLayout } from '../layouts/AppLayout'
+import { LandingLayout } from '../layouts/LandingLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { InvitationPage } from '../features/projects/invitations/pages'
 import { SecretsPage } from '../features/projects/secrets'
@@ -9,7 +9,7 @@ import { GeneralPage } from '../features/projects'
 import { ProjectDetailPage } from '../features/projects'
 import { ProjectsPage } from '../features/projects'
 import { ProfilePage } from '../features/users'
-import { LandingPage } from './pages/LandingPage'
+import { LandingPage } from '../pages/LandingPage'
 
 export const router = createBrowserRouter([
   {

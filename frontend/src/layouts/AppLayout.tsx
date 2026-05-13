@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import { useAuth } from '../../shared/hooks/useAuth'
+import { useAuth } from '../shared/hooks/useAuth'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {

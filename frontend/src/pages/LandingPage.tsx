@@ -1,6 +1,6 @@
 import { ArrowRight, EyeOff, GitBranch, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../shared/hooks/useAuth'
+import { useAuth } from '../shared/hooks/useAuth'
 
 export function LandingPage() {
   const { isAuthenticated, login, signup } = useAuth()
