@@ -21,15 +21,15 @@ export function AppNavbar() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/92 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-10">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4 sm:gap-6 lg:gap-10">
           <Link
             className="text-xl font-extrabold uppercase tracking-[0.08em] text-slate-950"
             to={isAuthenticated ? '/projects' : '/'}
           >
             KeyVault
           </Link>
-          <nav aria-label="Primary" className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <nav aria-label="Primary" className="flex items-center gap-2 sm:gap-3">
             <NavLink
               className={({ isActive }) =>
                 `inline-flex items-center border-b-2 pb-1 text-base transition-colors ${
@@ -45,7 +45,7 @@ export function AppNavbar() {
           </nav>
         </div>
 
-        <nav aria-label="Account" className="flex flex-wrap items-center gap-3">
+        <nav aria-label="Account" className="flex items-center gap-2 sm:gap-3">
           {isIdentityLoading ? (
             <div
               aria-hidden="true"
