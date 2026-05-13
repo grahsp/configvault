@@ -34,9 +34,9 @@ describe('LandingLayout', () => {
     )
 
     expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /get started/i })).toBeInTheDocument()
     expect(screen.getByText(/landing content/i)).toBeInTheDocument()
   })
 
@@ -82,7 +82,7 @@ describe('LandingLayout', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent(/loading/i)
     expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
     expect(screen.queryByText(/landing content/i)).not.toBeInTheDocument()
   })
 

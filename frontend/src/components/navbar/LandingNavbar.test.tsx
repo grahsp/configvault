@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { LandingNavbar } from './LandingNavbar'
 
 describe('LandingNavbar', () => {
-  it('renders the landing navigation links', () => {
+  it('renders the landing brand without the projects link', () => {
     render(
       <MemoryRouter>
         <LandingNavbar onLogin={vi.fn()} onSignup={vi.fn()} />
@@ -13,10 +13,7 @@ describe('LandingNavbar', () => {
     )
 
     expect(screen.getByRole('link', { name: 'KeyVault' })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute(
-      'href',
-      '/projects',
-    )
+    expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
   })
 
   it('calls the auth handlers from the account actions', async () => {
@@ -31,7 +28,7 @@ describe('LandingNavbar', () => {
     )
 
     await user.click(screen.getByRole('button', { name: /log in/i }))
-    await user.click(screen.getByRole('button', { name: /register/i }))
+    await user.click(screen.getByRole('button', { name: /get started/i }))
 
     expect(onLogin).toHaveBeenCalledTimes(1)
     expect(onSignup).toHaveBeenCalledTimes(1)
