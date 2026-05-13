@@ -6,7 +6,7 @@ export function normalizeProjectName(projectName: string) {
 
 export function getProjectNameValidationError(projectName: string) {
   if (!normalizeProjectName(projectName)) {
-    return 'Enter a project name.'
+    return 'Project name is required.'
   }
 
   if (projectName.length > PROJECT_NAME_MAX_LENGTH) {
