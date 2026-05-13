@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../shared/hooks/useAuth'
 
 export function LandingPage() {
-  const { isAuthenticated, login, signup } = useAuth()
+  const { isAuthenticated, signup } = useAuth()
 
   const featureCards = [
     {
@@ -29,7 +29,6 @@ export function LandingPage() {
   const buttonBaseClass =
     'inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
   const primaryButtonClass = `${buttonBaseClass} bg-sky-400 text-slate-950 shadow-[0_16px_40px_rgba(56,189,248,0.28)] hover:-translate-y-0.5 hover:bg-sky-300`
-  const secondaryButtonClass = `${buttonBaseClass} border border-white/15 bg-white/5 text-slate-100 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10`
 
   return (
     <>
@@ -47,25 +46,15 @@ export function LandingPage() {
           <div className="space-y-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               {isAuthenticated ? (
-                <>
-                  <Link className={primaryButtonClass} to="/projects">
-                    Start for Free
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link className={secondaryButtonClass} to="/profile">
-                    Log in
-                  </Link>
-                </>
+                <Link className={primaryButtonClass} to="/projects">
+                  Get started for free
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               ) : (
-                <>
-                  <button className={primaryButtonClass} onClick={() => signup()} type="button">
-                    Start for Free
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                  <button className={secondaryButtonClass} onClick={() => login()} type="button">
-                    Log in
-                  </button>
-                </>
+                <button className={primaryButtonClass} onClick={() => signup()} type="button">
+                  Get started for free
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               )}
             </div>
             <p className="text-sm text-slate-400">

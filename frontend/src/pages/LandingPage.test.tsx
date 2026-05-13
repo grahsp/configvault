@@ -15,14 +15,13 @@ describe('LandingPage', () => {
   })
 
   it('renders the developer landing page for unauthenticated users', () => {
-    const login = vi.fn()
     const signup = vi.fn()
 
     useAuthMock.mockReturnValue({
       error: undefined,
       isAuthenticated: false,
       isLoading: false,
-      login,
+      login: vi.fn(),
       signup,
     })
 
@@ -39,9 +38,10 @@ describe('LandingPage', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
-        name: /start for free/i,
+        name: /get started for free/i,
       }),
     ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /log in/i })).not.toBeInTheDocument()
     expect(
       screen.getByText(/no setup required • encrypted at rest • project-scoped access/i),
     ).toBeInTheDocument()
@@ -63,11 +63,11 @@ describe('LandingPage', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('link', { name: /start for free/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /get started for free/i })).toHaveAttribute(
       'href',
       '/projects',
     )
-    expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/profile')
+    expect(screen.queryByRole('link', { name: /log in/i })).not.toBeInTheDocument()
   })
 
   it('renders the landing page content while auth is loading', () => {
@@ -88,6 +88,6 @@ describe('LandingPage', () => {
     expect(
       screen.getByRole('heading', { name: /one place for all your app secrets/i }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /start for free/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /get started for free/i })).toBeInTheDocument()
   })
 })
