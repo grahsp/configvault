@@ -1,6 +1,14 @@
 import { ApiError } from '../../../api/errors/apiError'
 import type { ProjectListItem } from './project.types'
 
+export type ProjectSortField = 'name' | 'createdAt'
+export type ProjectSortDirection = 'asc' | 'desc'
+
+interface ProjectSortOptions {
+  direction: ProjectSortDirection
+  field: ProjectSortField
+}
+
 export function formatCreatedDate(createdAt?: string) {
   if (!createdAt) {
     return 'date unavailable'
@@ -51,17 +59,53 @@ export function isAuthError(error: unknown) {
 }
 
 export function sortProjectsByCreatedDate(projects: ProjectListItem[]) {
-  return [...projects].sort((firstProject, secondProject) => {
-    const firstCreatedAt = firstProject.createdAt
-      ? new Date(firstProject.createdAt).getTime()
-      : 0
-    const secondCreatedAt = secondProject.createdAt
-      ? new Date(secondProject.createdAt).getTime()
-      : 0
-
-    return (
-      (Number.isNaN(secondCreatedAt) ? 0 : secondCreatedAt) -
-      (Number.isNaN(firstCreatedAt) ? 0 : firstCreatedAt)
-    )
+  return sortProjects(projects, {
+    direction: 'desc',
+    field: 'createdAt',
   })
+}
+
+export function sortProjects(
+  projects: ProjectListItem[],
+  { direction, field }: ProjectSortOptions,
+) {
+  return [...projects].sort((firstProject, secondProject) => {
+    if (field === 'name') {
+      const firstName = firstProject.name.trim().toLocaleLowerCase()
+      const secondName = secondProject.name.trim().toLocaleLowerCase()
+
+      return direction === 'asc'
+        ? firstName.localeCompare(secondName)
+        : secondName.localeCompare(firstName)
+    }
+
+    const firstCreatedAt = getValidDateTimestamp(firstProject.createdAt)
+    const secondCreatedAt = getValidDateTimestamp(secondProject.createdAt)
+
+    if (firstCreatedAt === null && secondCreatedAt === null) {
+      return 0
+    }
+
+    if (firstCreatedAt === null) {
+      return 1
+    }
+
+    if (secondCreatedAt === null) {
+      return -1
+    }
+
+    return direction === 'asc'
+      ? firstCreatedAt - secondCreatedAt
+      : secondCreatedAt - firstCreatedAt
+  })
+}
+
+function getValidDateTimestamp(value?: string) {
+  if (!value) {
+    return null
+  }
+
+  const timestamp = new Date(value).getTime()
+
+  return Number.isNaN(timestamp) ? null : timestamp
 }

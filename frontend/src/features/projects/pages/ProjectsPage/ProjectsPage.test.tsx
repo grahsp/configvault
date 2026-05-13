@@ -76,6 +76,21 @@ describe('ProjectsPage', () => {
     expect(cta).toHaveClass('text-primary-foreground')
   })
 
+  it('renders the sort trigger with the default creation date descending selection', async () => {
+    mockFetchSequence([{ path: '/projects', body: [] }])
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    const sortTrigger = await screen.findByRole('button', {
+      name: /project sort: newest to oldest/i,
+    })
+
+    expect(sortTrigger).toHaveAttribute('data-variant', 'outline')
+    expect(sortTrigger).toHaveClass('border-border')
+    expect(sortTrigger).toHaveClass('bg-background')
+    expect(sortTrigger).not.toHaveClass('sm:w-72')
+  })
+
   it('shows an error state when projects cannot load', async () => {
     mockFetchSequence([
       {

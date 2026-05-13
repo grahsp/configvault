@@ -35,7 +35,128 @@ function jsonResponse(body: unknown, status = 200) {
   })
 }
 
+function getProjectHrefs() {
+  return screen
+    .getAllByRole('link')
+    .map((link) => link.getAttribute('href'))
+}
+
 describe('ProjectsPage actions', () => {
+  it('changes sorting from the sort menu', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects',
+        body: [
+          {
+            id: 'gamma-project',
+            name: 'Gamma',
+            createdAt: '2025-01-03T10:00:00Z',
+          },
+          {
+            id: 'alpha-project',
+            name: 'Alpha',
+            createdAt: '2025-01-01T10:00:00Z',
+          },
+          {
+            id: 'beta-project',
+            name: 'Beta',
+            createdAt: '2025-01-02T10:00:00Z',
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await screen.findByRole('list', { name: 'Projects' })
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/gamma-project',
+      '/projects/beta-project',
+      '/projects/alpha-project',
+    ])
+
+    await user.click(
+      screen.getByRole('button', { name: /project sort: newest to oldest/i }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Ascending (A-Z)' }))
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/alpha-project',
+      '/projects/beta-project',
+      '/projects/gamma-project',
+    ])
+
+    await user.click(screen.getByRole('button', { name: /project sort: ascending \(a-z\)/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Descending (Z-A)' }))
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/gamma-project',
+      '/projects/beta-project',
+      '/projects/alpha-project',
+    ])
+
+    await user.click(
+      screen.getByRole('button', { name: /project sort: descending \(z-a\)/i }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Oldest to Newest' }))
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/alpha-project',
+      '/projects/beta-project',
+      '/projects/gamma-project',
+    ])
+
+    await user.click(screen.getByRole('button', { name: /project sort: oldest to newest/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Newest to Oldest' }))
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/gamma-project',
+      '/projects/beta-project',
+      '/projects/alpha-project',
+    ])
+  })
+
+  it('keeps undated projects after dated ones when sorting by creation date', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects',
+        body: [
+          {
+            id: 'undated-project',
+            name: 'Undated',
+          },
+          {
+            id: 'dated-project',
+            name: 'Dated',
+            createdAt: '2025-01-01T10:00:00Z',
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await screen.findByRole('list', { name: 'Projects' })
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/dated-project',
+      '/projects/undated-project',
+    ])
+
+    await user.click(
+      screen.getByRole('button', { name: /project sort: newest to oldest/i }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Oldest to Newest' }))
+
+    expect(getProjectHrefs()).toEqual([
+      '/projects/dated-project',
+      '/projects/undated-project',
+    ])
+  })
+
   it('validates the create modal, submits, and navigates to the new project', async () => {
     const fetchMock = mockFetchSequence([
       { path: '/projects', body: [] },

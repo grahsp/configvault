@@ -4,7 +4,9 @@ import { useCreateProject, useProjects } from '../../application'
 import {
   getProjectNameValidationError,
   normalizeProjectName,
-  sortProjectsByCreatedDate,
+  sortProjects,
+  type ProjectSortDirection,
+  type ProjectSortField,
 } from '../../domain'
 
 export function useProjectsPageState() {
@@ -12,13 +14,19 @@ export function useProjectsPageState() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
+  const [sortField, setSortField] = useState<ProjectSortField>('createdAt')
+  const [sortDirection, setSortDirection] = useState<ProjectSortDirection>('desc')
 
   const projectsQuery = useProjects()
   const createProjectMutation = useCreateProject()
 
   const sortedProjects = useMemo(
-    () => sortProjectsByCreatedDate(projectsQuery.data ?? []),
-    [projectsQuery.data],
+    () =>
+      sortProjects(projectsQuery.data ?? [], {
+        direction: sortDirection,
+        field: sortField,
+      }),
+    [projectsQuery.data, sortDirection, sortField],
   )
 
   function openCreateModal() {
@@ -77,6 +85,12 @@ export function useProjectsPageState() {
     projects: {
       query: projectsQuery,
       sortedProjects,
+      sort: {
+        direction: sortDirection,
+        field: sortField,
+        setDirection: setSortDirection,
+        setField: setSortField,
+      },
     },
   }
 }
