@@ -1,23 +1,13 @@
 import { Outlet } from 'react-router-dom'
 import { AppNavbar } from '../components/navbar/AppNavbar'
-import { useAuth } from '../shared/hooks/useAuth'
-import styles from './AppLayout.module.css'
 
 export function AppLayout() {
-  const { isAuthenticated, isLoading, login, logout, signup } = useAuth()
-
   return (
-    <div className={styles.shell}>
-      <AppNavbar
-        isAuthenticated={isAuthenticated}
-        isLoading={isLoading}
-        login={login}
-        logout={logout}
-        signup={signup}
-      />
+    <div className="min-h-screen bg-[linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+      <AppNavbar />
 
-      <div className={styles.content}>
-        <div className={styles.contentInner}>
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl">
           <Outlet />
         </div>
       </div>
