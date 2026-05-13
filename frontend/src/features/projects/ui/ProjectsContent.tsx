@@ -5,23 +5,19 @@ import { ProjectList } from './ProjectList'
 
 interface ProjectsContentProps {
   error: unknown
-  isDeletePending: boolean
   isError: boolean
   isPending: boolean
   onCreateProject: () => void
   onRetry: () => void
-  onSelectProjectForDelete: (projectId: string) => void
   projects: ProjectListItem[]
 }
 
 export function ProjectsContent({
   error,
-  isDeletePending,
   isError,
   isPending,
   onCreateProject,
   onRetry,
-  onSelectProjectForDelete,
   projects,
 }: ProjectsContentProps) {
   if (isPending) {
@@ -60,11 +56,5 @@ export function ProjectsContent({
     return <ProjectEmptyState onCreateProject={onCreateProject} />
   }
 
-  return (
-    <ProjectList
-      isDeletePending={isDeletePending}
-      onSelectProjectForDelete={onSelectProjectForDelete}
-      projects={projects}
-    />
-  )
+  return <ProjectList projects={projects} />
 }

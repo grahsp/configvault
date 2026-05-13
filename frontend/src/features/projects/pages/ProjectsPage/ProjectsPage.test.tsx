@@ -61,6 +61,7 @@ describe('ProjectsPage', () => {
     expect(projectLinks[0]).toHaveTextContent('Newest project')
     expect(projectLinks[0]).toHaveAttribute('href', '/projects/new-project')
     expect(projectLinks[1]).toHaveTextContent('Older project')
+    expect(within(projects).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
   })
 
   it('shows an error state when projects cannot load', async () => {

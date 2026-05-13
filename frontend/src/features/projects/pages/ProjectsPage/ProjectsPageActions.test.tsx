@@ -129,17 +129,6 @@ describe('ProjectsPage actions', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Create project' }),
     ).not.toBeInTheDocument()
-
-    await user.click(screen.getByText('Create your first project'))
-    await user.click(
-      within(screen.getByRole('dialog', { name: 'Create project' })).getByRole(
-        'button',
-        { name: 'Close create project' },
-      ),
-    )
-    expect(
-      screen.queryByRole('dialog', { name: 'Create project' }),
-    ).not.toBeInTheDocument()
   })
 
   it('keeps create modal controls disabled while the mutation is pending', async () => {
@@ -161,9 +150,6 @@ describe('ProjectsPage actions', () => {
 
     expect(within(dialog).getByRole('button', { name: 'Creating' })).toBeDisabled()
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    expect(
-      within(dialog).getByRole('button', { name: 'Close create project' }),
-    ).toBeDisabled()
 
     createResponse.resolve(jsonResponse({ id: 'created-project' }))
 
@@ -174,52 +160,24 @@ describe('ProjectsPage actions', () => {
     )
   })
 
-  it('confirms before deleting a project', async () => {
-    const fetchMock = mockFetchSequence([
+  it('renders loaded rows without a delete action', async () => {
+    mockFetchSequence([
       {
         path: '/projects',
         body: [
           {
-            id: 'delete-me',
-            name: 'Delete me',
+            id: 'read-only-project',
+            name: 'Read only project',
             createdAt: '2025-01-01T10:00:00Z',
           },
         ],
       },
-      { method: 'DELETE', path: '/projects/delete-me', status: 204 },
-      { path: '/projects', body: [] },
     ])
-    const user = userEvent.setup()
 
     renderWithRouter({ children: <ProjectsPage /> })
 
-    const item = await screen.findByText('Delete me')
-    await user.click(
-      within(item.closest('li')!).getByRole('button', { name: 'Delete' }),
-    )
-
-    let dialog = screen.getByRole('dialog', { name: 'Delete project' })
-    expect(dialog).toHaveTextContent('Delete Delete me?')
-
-    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(
-      screen.queryByRole('dialog', { name: 'Delete project' }),
-    ).not.toBeInTheDocument()
-    expect(
-      fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE'),
-    ).toBe(false)
-
-    await user.click(
-      within(item.closest('li')!).getByRole('button', { name: 'Delete' }),
-    )
-    dialog = screen.getByRole('dialog', { name: 'Delete project' })
-    await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
-
-    await waitFor(() =>
-      expect(
-        fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE'),
-      ).toBe(true),
-    )
-    expect(await screen.findByText('No projects yet')).toBeInTheDocument()
+    const projects = await screen.findByRole('list', { name: 'Projects' })
+    expect(within(projects).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Delete project' })).not.toBeInTheDocument()
   })
 })

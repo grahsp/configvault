@@ -1,27 +1,18 @@
 import type { ProjectListItem as ProjectListItemModel } from '../domain'
 import { ProjectListRow } from './ProjectListRow'
-import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectListProps {
-  isDeletePending: boolean
-  onSelectProjectForDelete: (projectId: string) => void
   projects: ProjectListItemModel[]
 }
 
-export function ProjectList({
-  isDeletePending,
-  onSelectProjectForDelete,
-  projects,
-}: ProjectListProps) {
+export function ProjectList({ projects }: ProjectListProps) {
   return (
-    <ul className={styles.projectList} aria-label="Projects">
+    <ul
+      aria-label="Projects"
+      className="m-0 flex list-none flex-col gap-3 p-0"
+    >
       {projects.map((project) => (
-        <ProjectListRow
-          isDeletePending={isDeletePending}
-          key={project.id}
-          onSelectProjectForDelete={onSelectProjectForDelete}
-          project={project}
-        />
+        <ProjectListRow key={project.id} project={project} />
       ))}
     </ul>
   )

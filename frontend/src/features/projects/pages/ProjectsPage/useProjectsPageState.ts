@@ -1,10 +1,6 @@
 import { type FormEvent, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  useCreateProject,
-  useDeleteProject,
-  useProjects,
-} from '../../application'
+import { useCreateProject, useProjects } from '../../application'
 import {
   getProjectNameValidationError,
   normalizeProjectName,
@@ -16,21 +12,13 @@ export function useProjectsPageState() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
-  const [projectIdPendingDelete, setProjectIdPendingDelete] = useState<
-    string | null
-  >(null)
 
   const projectsQuery = useProjects()
   const createProjectMutation = useCreateProject()
-  const deleteProjectMutation = useDeleteProject()
 
   const sortedProjects = useMemo(
     () => sortProjectsByCreatedDate(projectsQuery.data ?? []),
     [projectsQuery.data],
-  )
-
-  const projectPendingDelete = sortedProjects.find(
-    (project) => project.id === projectIdPendingDelete,
   )
 
   function openCreateModal() {
@@ -74,26 +62,6 @@ export function useProjectsPageState() {
     )
   }
 
-  function openDeleteDialog(projectId: string) {
-    deleteProjectMutation.reset()
-    setProjectIdPendingDelete(projectId)
-  }
-
-  function closeDeleteDialog() {
-    deleteProjectMutation.reset()
-    setProjectIdPendingDelete(null)
-  }
-
-  function confirmDeleteProject() {
-    if (!projectIdPendingDelete) {
-      return
-    }
-
-    deleteProjectMutation.mutate(projectIdPendingDelete, {
-      onSuccess: () => setProjectIdPendingDelete(null),
-    })
-  }
-
   return {
     createProject: {
       isOpen: isCreateModalOpen,
@@ -105,13 +73,6 @@ export function useProjectsPageState() {
       open: openCreateModal,
       projectDescription,
       projectName,
-    },
-    deleteProject: {
-      mutation: deleteProjectMutation,
-      onCancel: closeDeleteDialog,
-      onConfirm: confirmDeleteProject,
-      onSelect: openDeleteDialog,
-      pendingProject: projectPendingDelete,
     },
     projects: {
       query: projectsQuery,

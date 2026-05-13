@@ -1,36 +1,26 @@
 import { Link } from 'react-router-dom'
-import { Button } from '../../../shared/ui'
 import { formatCreatedDate, type ProjectListItem } from '../domain'
-import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectListRowProps {
-  isDeletePending: boolean
-  onSelectProjectForDelete: (projectId: string) => void
   project: ProjectListItem
 }
 
-export function ProjectListRow({
-  isDeletePending,
-  onSelectProjectForDelete,
-  project,
-}: ProjectListRowProps) {
+export function ProjectListRow({ project }: ProjectListRowProps) {
   return (
-    <li className={styles.projectListItem}>
-      <Link className={styles.projectListLink} to={`/projects/${project.id}`}>
-        <span className={styles.projectListName}>{project.name}</span>
-        <span className={styles.projectListMeta}>
-          Created {formatCreatedDate(project.createdAt)}
+    <li>
+      <Link
+        className="group block px-3 py-[1.125rem] text-inherit no-underline transition-colors hover:bg-[color:var(--color-surface-glass-subtle)] focus-visible:bg-[color:var(--color-surface-glass-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:px-4 sm:py-5"
+        to={`/projects/${project.id}`}
+      >
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="text-[var(--font-size-title-md)] font-extrabold text-[color:var(--color-inverse)] transition-colors [overflow-wrap:anywhere] group-hover:text-primary group-focus-visible:text-primary">
+            {project.name}
+          </span>
+          <span className="text-[var(--font-size-body-md)] text-[color:var(--color-text-disabled)]">
+            Created {formatCreatedDate(project.createdAt)}
+          </span>
         </span>
       </Link>
-      <Button
-        className={styles.projectListDelete}
-        disabled={isDeletePending}
-        onClick={() => onSelectProjectForDelete(project.id)}
-        type="button"
-        variant="danger"
-      >
-        Delete
-      </Button>
     </li>
   )
 }
