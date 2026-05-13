@@ -1,6 +1,14 @@
 import type { FormEvent } from 'react'
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { ApiError } from '../../../api/errors/apiError'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from '../../../components/ui/field'
+import { Input } from '../../../components/ui/input'
+import { Textarea } from '../../../components/ui/textarea'
 import { Button, Modal } from '../../../shared/ui'
 import type {
   CreateProjectRequest,
@@ -11,7 +19,6 @@ import {
   PROJECT_NAME_MAX_LENGTH,
 } from '../domain'
 import { getErrorMessage, getValidationMessage } from '../domain'
-import styles from '../pages/ProjectsPage/ProjectsPage.module.css'
 
 interface ProjectCreateModalProps {
   mutation: UseMutationResult<
@@ -42,6 +49,13 @@ export function ProjectCreateModal({
     'name',
     'project.name',
   ])
+  const genericErrorMessage =
+    mutation.isError && !serverProjectNameError
+      ? getErrorMessage(
+          mutation.error,
+          'Something went wrong while creating the project.',
+        )
+      : undefined
   const visibleProjectNameError =
     serverProjectNameError ??
     (projectName ? projectNameValidationError : undefined)
@@ -68,71 +82,67 @@ export function ProjectCreateModal({
           </Button>
         </>
       }
-      headerAction={
-        <Button
-          aria-label="Close create project"
-          disabled={mutation.isPending}
-          onClick={onClose}
-          type="button"
-          variant="secondary"
-        >
-          Close
-        </Button>
-      }
       title="Create project"
     >
-      <form className={styles.projectForm} id={formId} onSubmit={onSubmit}>
-        <label className={styles.projectFormField}>
-          Project name
-          <input
-            autoFocus
-            aria-describedby={
-              visibleProjectNameError ? 'project-name-error' : undefined
-            }
-            aria-invalid={Boolean(visibleProjectNameError)}
-            disabled={mutation.isPending}
-            maxLength={PROJECT_NAME_MAX_LENGTH}
-            onChange={(event) => onProjectNameChange(event.target.value)}
-            placeholder="Production secrets"
-            required
-            type="text"
-            value={projectName}
-          />
-        </label>
+      <form className="flex flex-col gap-4" id={formId} onSubmit={onSubmit}>
+        <FieldGroup>
+          <Field>
+            <FieldLabel
+              className="text-[color:var(--color-text-body-strong)]"
+              htmlFor="project-name"
+            >
+              Project name
+            </FieldLabel>
+            <Input
+              autoFocus
+              id="project-name"
+              aria-describedby={
+                visibleProjectNameError ? 'project-name-error' : undefined
+              }
+              aria-invalid={Boolean(visibleProjectNameError)}
+              disabled={mutation.isPending}
+              maxLength={PROJECT_NAME_MAX_LENGTH}
+              onChange={(event) => onProjectNameChange(event.target.value)}
+              placeholder="Production secrets"
+              required
+              type="text"
+              value={projectName}
+            />
+            {visibleProjectNameError ? (
+              <FieldDescription
+                className="text-destructive"
+                id="project-name-error"
+                role="alert"
+              >
+                {visibleProjectNameError}
+              </FieldDescription>
+            ) : null}
+          </Field>
 
-        <label className={styles.projectFormField}>
-          Description
-          <textarea
-            disabled={mutation.isPending}
-            maxLength={400}
-            onChange={(event) =>
-              onProjectDescriptionChange(event.target.value)
-            }
-            placeholder="Optional context for this project"
-            rows={4}
-            value={projectDescription}
-          />
-        </label>
+          <Field>
+            <FieldLabel
+              className="text-[color:var(--color-text-body-strong)]"
+              htmlFor="project-description"
+            >
+              Description
+            </FieldLabel>
+            <Textarea
+              disabled={mutation.isPending}
+              id="project-description"
+              maxLength={400}
+              onChange={(event) =>
+                onProjectDescriptionChange(event.target.value)
+              }
+              placeholder="Optional context for this project"
+              rows={4}
+              value={projectDescription}
+            />
+          </Field>
+        </FieldGroup>
 
-        {mutation.isError ? (
-          <p
-            className={styles.projectFormError}
-            id={visibleProjectNameError ? 'project-name-error' : undefined}
-            role="alert"
-          >
-            {serverProjectNameError ??
-              getErrorMessage(
-                mutation.error,
-                'Something went wrong while loading projects.',
-              )}
-          </p>
-        ) : projectNameValidationError && projectName ? (
-          <p
-            className={styles.projectFormError}
-            id="project-name-error"
-            role="alert"
-          >
-            {projectNameValidationError}
+        {genericErrorMessage ? (
+          <p className="m-0 text-sm leading-6 text-destructive" role="alert">
+            {genericErrorMessage}
           </p>
         ) : null}
       </form>
