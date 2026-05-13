@@ -21,7 +21,7 @@ export function AppNavbar() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/92 px-4 backdrop-blur sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 py-3">
+      <div className="mx-auto flex w-full max-w-[68rem] items-center justify-between gap-3 py-3">
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-10">
           <Link
             className="text-xl font-extrabold uppercase tracking-[0.08em] text-slate-950"
