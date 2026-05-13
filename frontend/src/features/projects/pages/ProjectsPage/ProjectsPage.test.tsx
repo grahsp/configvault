@@ -64,6 +64,18 @@ describe('ProjectsPage', () => {
     expect(within(projects).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
   })
 
+  it('renders the header CTA with shadcn primary classes', async () => {
+    mockFetchSequence([{ path: '/projects', body: [] }])
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    const cta = await screen.findByRole('button', { name: '+ New Project' })
+
+    expect(cta).toHaveAttribute('data-variant', 'default')
+    expect(cta).toHaveClass('bg-primary')
+    expect(cta).toHaveClass('text-primary-foreground')
+  })
+
   it('shows an error state when projects cannot load', async () => {
     mockFetchSequence([
       {

@@ -1,4 +1,4 @@
-import { Button } from '../../../../shared/ui'
+import { Button } from '../../../../components/ui/button'
 import { ProjectCreateModal, ProjectsContent } from '../../ui'
 import { useProjectsPageState } from './useProjectsPageState'
 
@@ -6,27 +6,25 @@ export function ProjectsPage() {
   const { createProject, projects } = useProjectsPageState()
 
   return (
-    <main className="flex flex-col gap-6 pb-8 pt-3 sm:gap-7 sm:pb-10 sm:pt-0">
+    <main className="flex flex-col gap-8 pb-8 pt-3 sm:gap-10 sm:pb-10 sm:pt-0">
       <section
         aria-labelledby="projects-title"
         className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
       >
-        <div className="max-w-[46rem]">
+        <div>
           <h1
             className="m-0 text-[clamp(2.15rem,5vw,2.95rem)] font-extrabold leading-[0.92] tracking-[-0.02em]"
             id="projects-title"
           >
             Projects
           </h1>
-          <p className="mt-5 max-w-[38rem] text-[1rem] leading-[1.65] text-[color:var(--color-text-body-strong)]">
-            Organize vaults, environments, and access flows from one shared workspace.
-          </p>
         </div>
         <Button
-          className="min-h-[42px] w-full shrink-0 md:w-auto"
+          className="min-h-[42px] w-full shrink-0 rounded-[var(--radius-md-lg)] md:w-auto"
           onClick={createProject.open}
+          size="lg"
           type="button"
-          variant="primary"
+          variant="default"
         >
           + New Project
         </Button>
@@ -34,7 +32,7 @@ export function ProjectsPage() {
 
       <section
         aria-label="Projects workspace"
-        className="flex-1 pt-3 sm:pt-4"
+        className="flex-1"
       >
         <ProjectsContent
           error={projects.query.error}

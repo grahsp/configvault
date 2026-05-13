@@ -131,6 +131,27 @@ describe('ProjectsPage actions', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('renders create modal actions with shadcn semantic button classes', async () => {
+    mockFetchSequence([{ path: '/projects', body: [] }])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await user.click(await screen.findByText('Create your first project'))
+
+    const dialog = screen.getByRole('dialog', { name: 'Create project' })
+    const cancelButton = within(dialog).getByRole('button', { name: 'Cancel' })
+    const createButton = within(dialog).getByRole('button', { name: 'Create' })
+
+    expect(cancelButton).toHaveAttribute('data-variant', 'outline')
+    expect(cancelButton).toHaveClass('border-border')
+    expect(cancelButton).toHaveClass('bg-background')
+
+    expect(createButton).toHaveAttribute('data-variant', 'default')
+    expect(createButton).toHaveClass('bg-primary')
+    expect(createButton).toHaveClass('text-primary-foreground')
+  })
+
   it('keeps create modal controls disabled while the mutation is pending', async () => {
     const createResponse = createDeferredResponse()
     const user = userEvent.setup()

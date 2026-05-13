@@ -7,9 +7,10 @@ import {
   FieldGroup,
   FieldLabel,
 } from '../../../components/ui/field'
+import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Textarea } from '../../../components/ui/textarea'
-import { Button, Modal } from '../../../shared/ui'
+import { Modal } from '../../../shared/ui'
 import type {
   CreateProjectRequest,
   CreateProjectResponse,
@@ -65,18 +66,22 @@ export function ProjectCreateModal({
       actions={
         <>
           <Button
+            className="rounded-[var(--radius-md-lg)]"
             disabled={mutation.isPending}
             onClick={onClose}
+            size="lg"
             type="button"
-            variant="secondary"
+            variant="outline"
           >
             Cancel
           </Button>
           <Button
+            className="rounded-[var(--radius-md-lg)]"
             disabled={mutation.isPending || Boolean(projectNameValidationError)}
             form={formId}
+            size="lg"
             type="submit"
-            variant="primary"
+            variant="default"
           >
             {mutation.isPending ? 'Creating' : 'Create'}
           </Button>

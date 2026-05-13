@@ -9,7 +9,7 @@ export function ProjectList({ projects }: ProjectListProps) {
   return (
     <ul
       aria-label="Projects"
-      className="m-0 flex list-none flex-col gap-3 p-0"
+      className="m-0 flex list-none flex-col gap-2.5 p-0 sm:gap-3"
     >
       {projects.map((project) => (
         <ProjectListRow key={project.id} project={project} />
