@@ -157,6 +157,70 @@ describe('ProjectsPage actions', () => {
     ])
   })
 
+  it('filters projects from the search input using names and descriptions', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects',
+        body: [
+          {
+            id: 'alpha-project',
+            name: 'Alpha',
+            description: 'Production secrets',
+            createdAt: '2025-01-01T10:00:00Z',
+          },
+          {
+            id: 'beta-project',
+            name: 'Beta',
+            description: 'Staging access',
+            createdAt: '2025-01-02T10:00:00Z',
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await screen.findByRole('list', { name: 'Projects' })
+
+    await user.type(
+      screen.getByRole('searchbox', { name: 'Search projects' }),
+      'production',
+    )
+
+    expect(getProjectHrefs()).toEqual(['/projects/alpha-project'])
+    expect(screen.queryByRole('link', { name: /beta/i })).not.toBeInTheDocument()
+  })
+
+  it('shows a search-specific empty state when no projects match', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects',
+        body: [
+          {
+            id: 'alpha-project',
+            name: 'Alpha',
+            createdAt: '2025-01-01T10:00:00Z',
+          },
+        ],
+      },
+    ])
+    const user = userEvent.setup()
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    await screen.findByRole('list', { name: 'Projects' })
+    await user.type(
+      screen.getByRole('searchbox', { name: 'Search projects' }),
+      'does not exist',
+    )
+
+    expect(screen.getByText('No matching projects')).toBeInTheDocument()
+    expect(
+      screen.getByText(/No projects matched "does not exist"/i),
+    ).toBeInTheDocument()
+  })
+
   it('validates the create modal, submits, and navigates to the new project', async () => {
     const fetchMock = mockFetchSequence([
       { path: '/projects', body: [] },

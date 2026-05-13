@@ -91,6 +91,25 @@ describe('ProjectsPage', () => {
     expect(sortTrigger).not.toHaveClass('sm:w-72')
   })
 
+  it('renders a themed search input', async () => {
+    mockFetchSequence([{ path: '/projects', body: [] }])
+
+    renderWithRouter({ children: <ProjectsPage /> })
+
+    const searchInput = await screen.findByRole('searchbox', {
+      name: 'Search projects',
+    })
+    const searchWrapper = searchInput.parentElement
+
+    expect(searchInput).toHaveAttribute('placeholder', 'Search for a project')
+    expect(searchInput).toHaveClass('rounded-[var(--radius-md-lg)]')
+    expect(searchInput).toHaveClass('bg-background')
+    expect(searchInput).toHaveClass('pl-10')
+    expect(searchInput).toHaveClass('h-10')
+    expect(searchWrapper).toHaveClass('md:w-[20rem]')
+    expect(searchWrapper).toHaveClass('lg:w-[22rem]')
+  })
+
   it('shows an error state when projects cannot load', async () => {
     mockFetchSequence([
       {

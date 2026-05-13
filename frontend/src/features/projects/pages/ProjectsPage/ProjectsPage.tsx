@@ -4,6 +4,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   Clock3Icon,
+  SearchIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '../../../../components/ui/button'
@@ -14,6 +15,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '../../../../components/ui/dropdown-menu'
+import { Input } from '../../../../components/ui/input'
 import { ProjectCreateModal, ProjectsContent } from '../../ui'
 import { useProjectsPageState } from './useProjectsPageState'
 
@@ -91,6 +93,20 @@ export function ProjectsPage() {
           </h1>
         </div>
         <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+          <div className="relative w-full shrink-0 md:w-[20rem] lg:w-[22rem]">
+            <SearchIcon
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              aria-label="Search projects"
+              className="h-10 rounded-[var(--radius-md-lg)] border-border bg-background pl-10 text-sm placeholder:text-muted-foreground"
+              onChange={(event) => projects.search.setTerm(event.target.value)}
+              placeholder="Search for a project"
+              type="search"
+              value={projects.search.term}
+            />
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -167,11 +183,13 @@ export function ProjectsPage() {
       >
         <ProjectsContent
           error={projects.query.error}
+          hasActiveSearch={Boolean(projects.search.term.trim())}
           isError={projects.query.isError}
           isPending={projects.query.isPending}
           onCreateProject={createProject.open}
           onRetry={() => projects.query.refetch()}
-          projects={projects.sortedProjects}
+          projects={projects.filteredProjects}
+          searchTerm={projects.search.term}
         />
       </section>
 

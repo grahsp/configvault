@@ -5,20 +5,24 @@ import { ProjectList } from './ProjectList'
 
 interface ProjectsContentProps {
   error: unknown
+  hasActiveSearch: boolean
   isError: boolean
   isPending: boolean
   onCreateProject: () => void
   onRetry: () => void
   projects: ProjectListItem[]
+  searchTerm: string
 }
 
 export function ProjectsContent({
   error,
+  hasActiveSearch,
   isError,
   isPending,
   onCreateProject,
   onRetry,
   projects,
+  searchTerm,
 }: ProjectsContentProps) {
   if (isPending) {
     return (
@@ -53,6 +57,16 @@ export function ProjectsContent({
   }
 
   if (projects.length === 0) {
+    if (hasActiveSearch) {
+      return (
+        <StatePanel title="No matching projects">
+          <p>
+            No projects matched "{searchTerm.trim()}". Try a different search.
+          </p>
+        </StatePanel>
+      )
+    }
+
     return <ProjectEmptyState onCreateProject={onCreateProject} />
   }
 

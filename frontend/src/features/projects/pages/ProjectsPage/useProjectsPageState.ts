@@ -14,6 +14,7 @@ export function useProjectsPageState() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [sortField, setSortField] = useState<ProjectSortField>('createdAt')
   const [sortDirection, setSortDirection] = useState<ProjectSortDirection>('desc')
 
@@ -28,6 +29,21 @@ export function useProjectsPageState() {
       }),
     [projectsQuery.data, sortDirection, sortField],
   )
+  const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase()
+  const filteredProjects = useMemo(() => {
+    if (!normalizedSearchTerm) {
+      return sortedProjects
+    }
+
+    return sortedProjects.filter((project) => {
+      const searchableText = [project.name, project.description]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase()
+
+      return searchableText.includes(normalizedSearchTerm)
+    })
+  }, [normalizedSearchTerm, sortedProjects])
 
   function openCreateModal() {
     createProjectMutation.reset()
@@ -83,7 +99,12 @@ export function useProjectsPageState() {
       projectName,
     },
     projects: {
+      filteredProjects,
       query: projectsQuery,
+      search: {
+        setTerm: setSearchTerm,
+        term: searchTerm,
+      },
       sortedProjects,
       sort: {
         direction: sortDirection,
