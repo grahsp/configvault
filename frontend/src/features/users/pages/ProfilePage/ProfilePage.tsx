@@ -1,8 +1,21 @@
+import { useEffect } from 'react'
+import { useAuth } from '../../../../shared/hooks/useAuth'
 import { useCurrentUser } from '../../model'
 import styles from './ProfilePage.module.css'
 
 export function ProfilePage() {
-  const { user, isLoading, error } = useCurrentUser()
+  const { isAuthenticated } = useAuth()
+  const { user, isLoading, error, refreshCurrentUser } = useCurrentUser()
+
+  useEffect(() => {
+    if (!isAuthenticated || user || isLoading || error) {
+      return
+    }
+
+    void refreshCurrentUser().catch(() => {
+      // Errors are exposed through context state.
+    })
+  }, [error, isAuthenticated, isLoading, refreshCurrentUser, user])
 
   return (
     <main className={styles.page}>

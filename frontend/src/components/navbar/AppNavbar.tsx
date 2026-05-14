@@ -13,11 +13,11 @@ import {
 
 export function AppNavbar() {
   const { isAuthenticated, isLoading, login, logout, signup, user: auth0User } = useAuth()
-  const { user: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser()
+  const { user: currentUser } = useCurrentUser()
   const profilePicture = auth0User?.picture
   const profileName = currentUser?.displayName?.trim() || auth0User?.name?.trim() || 'Account'
   const profileEmail = currentUser?.email?.trim() || auth0User?.email?.trim()
-  const isIdentityLoading = isLoading || (isAuthenticated && isCurrentUserLoading)
+  const isIdentityLoading = isLoading
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/92 px-4 backdrop-blur sm:px-6 lg:px-8">

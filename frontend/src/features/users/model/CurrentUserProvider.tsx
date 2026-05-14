@@ -11,7 +11,7 @@ import { CurrentUserContext } from './currentUserContext'
 import type { CurrentUser } from './currentUser.ts'
 
 export function CurrentUserProvider({ children }: PropsWithChildren) {
-  const { getAccessTokenSilently, isAuthenticated } = useAuth()
+  const { getAccessTokenSilentlySafe, isAuthenticated } = useAuth()
   const [currentUser, setCurrentUser] = useState<CurrentUser>()
   const [error, setError] = useState<Error>()
   const [isLoading, setIsLoading] = useState(false)
@@ -32,7 +32,7 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
     setError(undefined)
 
     try {
-      const user = await getCurrentUser(getAccessTokenSilently)
+      const user = await getCurrentUser(getAccessTokenSilentlySafe)
 
       if (requestIdRef.current !== requestId) {
         return user
@@ -56,22 +56,23 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
       setIsLoading(false)
       throw error
     }
-  }, [getAccessTokenSilently, isAuthenticated])
+  }, [getAccessTokenSilentlySafe, isAuthenticated])
 
   useEffect(() => {
-    async function loadCurrentUser() {
-      await refreshCurrentUser()
+    if (isAuthenticated) {
+      return
     }
 
-    loadCurrentUser().catch(() => {
-      // Errors are exposed through context state.
-    })
-  }, [refreshCurrentUser])
+    requestIdRef.current += 1
+    setCurrentUser(undefined)
+    setError(undefined)
+    setIsLoading(false)
+  }, [isAuthenticated])
 
   return (
     <CurrentUserContext.Provider
       value={{
-        user: isAuthenticated && !isLoading ? currentUser : undefined,
+        user: isAuthenticated ? currentUser : undefined,
         isLoading: isAuthenticated ? isLoading : false,
         error: isAuthenticated ? error : undefined,
         refreshCurrentUser,

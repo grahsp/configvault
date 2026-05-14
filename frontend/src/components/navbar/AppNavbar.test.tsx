@@ -126,16 +126,23 @@ describe('AppNavbar', () => {
     expect(screen.queryByRole('button', { name: /log in/i })).not.toBeInTheDocument()
   })
 
-  it('renders a skeleton trigger while current user data is loading for an authenticated session', () => {
+  it('renders the account menu immediately while current user data is still loading', () => {
     renderNavbar({
       currentUser: {
         user: undefined,
         isLoading: true,
+        error: undefined,
+      },
+      auth: {
+        user: {
+          name: 'Grace Hopper',
+          email: 'grace@example.com',
+        },
       },
     })
 
-    expect(screen.getByTestId('account-menu-skeleton')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /open account menu/i })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('account-menu-skeleton')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open account menu/i })).toBeInTheDocument()
   })
 })
 
