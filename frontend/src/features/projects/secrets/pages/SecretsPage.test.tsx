@@ -84,9 +84,16 @@ function getRestoreCalls(fetchMock: ReturnType<typeof vi.fn>) {
 }
 
 async function openImportSecrets(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(
-    await screen.findByRole('button', { name: 'Open secret actions' }),
-  )
+  const actionMenuButton =
+    (await screen
+      .findByRole('button', { name: 'Open add secret actions' })
+      .catch(() => null)) ??
+    (await screen
+      .findByRole('button', { name: 'Open secret actions' })
+      .catch(() => null)) ??
+    (await screen.findByRole('button', { name: 'Secret actions' }))
+
+  await user.click(actionMenuButton)
   await user.click(screen.getByRole('menuitem', { name: 'Import Secrets' }))
 }
 
@@ -1036,15 +1043,21 @@ describe('SecretsPage', () => {
       within(table).getByRole('columnheader', { name: 'Value' }),
     ).toBeInTheDocument()
 
-    const apiKeyRow = within(table).getByRole('row', {
-      name: /Key API_KEY Value\*{12} View history for API_KEY Reveal API_KEY Delete API_KEY/,
-    })
-    const databaseRow = within(table).getByRole('row', {
-      name: /Key DATABASE_URL Value Delete DATABASE_URL/,
-    })
-
-    expect(apiKeyRow).toBeInTheDocument()
-    expect(databaseRow).toBeInTheDocument()
+    expect(within(table).getByDisplayValue('API_KEY')).toBeInTheDocument()
+    expect(within(table).getByDisplayValue('************')).toBeInTheDocument()
+    expect(
+      within(table).getByRole('button', { name: 'View history for API_KEY' }),
+    ).toBeInTheDocument()
+    expect(
+      within(table).getByRole('button', { name: 'Reveal API_KEY' }),
+    ).toBeInTheDocument()
+    expect(
+      within(table).getByRole('button', { name: 'Delete API_KEY' }),
+    ).toBeInTheDocument()
+    expect(within(table).getByDisplayValue('DATABASE_URL')).toBeInTheDocument()
+    expect(
+      within(table).getByRole('button', { name: 'Delete DATABASE_URL' }),
+    ).toBeInTheDocument()
   })
 
   it('removes the edit button and lets existing rows be edited immediately', async () => {

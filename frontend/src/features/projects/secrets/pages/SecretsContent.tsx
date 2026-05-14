@@ -6,7 +6,6 @@ import {
   SecretsLoadingState,
   SecretsTable,
 } from '../ui'
-import styles from './SecretsContent.module.css'
 
 export interface SecretsContentProps {
   isError: boolean
@@ -46,13 +45,12 @@ export function SecretsContent({
   rows,
 }: SecretsContentProps) {
   if (isLoading) {
-    return <SecretsLoadingState className={styles.statePanel} />
+    return <SecretsLoadingState />
   }
 
   if (isError) {
     return (
       <SecretsErrorState
-        className={styles.statePanel}
         errorMessage={loadErrorMessage}
         onRetry={onRetry}
       />
@@ -62,7 +60,6 @@ export function SecretsContent({
   if (rows.length === 0) {
     return (
       <SecretsEmptyState
-        className={styles.statePanel}
         onOpenAddSecret={onOpenAddSecret}
         onOpenImportModal={onOpenImportModal}
       />

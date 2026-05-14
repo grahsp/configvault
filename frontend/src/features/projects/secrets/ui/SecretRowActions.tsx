@@ -1,4 +1,5 @@
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Button } from '../../../../components/ui/button'
+import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
 import {
   EyeIcon,
@@ -7,7 +8,6 @@ import {
   TrashIcon,
   UndoIcon,
 } from './SecretRowIcons.tsx'
-import styles from './SecretsTable.module.css'
 
 interface SecretRowActionsProps {
   secret: Secret
@@ -31,54 +31,47 @@ export function SecretRowActions({
   onReveal,
 }: SecretRowActionsProps) {
   return (
-    <div className={styles.rowActions}>
+    <div className="flex items-center gap-1">
       {secret.hasValue ? (
-        <button
-          className={cx(
-            styles.iconAction,
-            styles.iconActionHistory,
-            isMarkedForDeletion && styles.iconActionHistoryMuted,
-          )}
+        <Button
+          aria-label={`View history for ${secret.key}`}
+          className={cn(isMarkedForDeletion && "text-muted-foreground")}
           disabled={isSaving || isMarkedForDeletion}
+          size="icon-sm"
           onClick={() => onOpenHistory(secret)}
           type="button"
+          variant="ghost"
         >
-          <span className={styles.visuallyHidden}>View history for {secret.key}</span>
           <HistoryIcon />
-        </button>
+        </Button>
       ) : null}
       {secret.hasValue ? (
-        <button
-          className={cx(
-            styles.iconAction,
-            styles.iconActionReveal,
-            isMarkedForDeletion && styles.iconActionRevealMuted,
-          )}
+        <Button
+          aria-label={isValueRevealed ? `Hide ${secret.key}` : `Reveal ${secret.key}`}
+          className={cn(isMarkedForDeletion && "text-muted-foreground")}
           disabled={isRevealing}
+          size="icon-sm"
           onClick={() => onReveal(secret)}
           type="button"
+          variant="ghost"
         >
-          <span className={styles.visuallyHidden}>
-            {isValueRevealed ? `Hide ${secret.key}` : `Reveal ${secret.key}`}
-          </span>
           {isValueRevealed ? <EyeOffIcon /> : <EyeIcon />}
-        </button>
+        </Button>
       ) : null}
-      <button
-        className={cx(
-          styles.iconAction,
-          styles.iconActionDelete,
-          isMarkedForDeletion && styles.iconActionDeleteActive,
+      <Button
+        aria-label={isMarkedForDeletion ? `Undo delete ${secret.key}` : `Delete ${secret.key}`}
+        className={cn(
+          "text-destructive hover:text-destructive",
+          isMarkedForDeletion && "bg-destructive/10",
         )}
         disabled={isSaving}
+        size="icon-sm"
         onClick={() => onDeleteToggle(secret)}
         type="button"
+        variant="ghost"
       >
-        <span className={styles.visuallyHidden}>
-          {isMarkedForDeletion ? `Undo delete ${secret.key}` : `Delete ${secret.key}`}
-        </span>
         {isMarkedForDeletion ? <UndoIcon /> : <TrashIcon />}
-      </button>
+      </Button>
     </div>
   )
 }

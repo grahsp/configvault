@@ -1,7 +1,6 @@
 import type { Secret } from '../domain'
 import type { SecretRowViewModel } from '../application'
 import { SecretRow } from './SecretRow.tsx'
-import styles from './SecretsTable.module.css'
 
 interface SecretsTableProps {
   isSaving: boolean
@@ -29,48 +28,53 @@ export function SecretsTable({
   onToggleDelete,
 }: SecretsTableProps) {
   return (
-    <div className={styles.tableWrapper}>
-      <table className={styles.configItemsTable}>
-        <caption className={styles.visuallyHidden}>Project secrets</caption>
-        <thead>
-          <tr>
-            <th scope="col">Key</th>
-            <th scope="col">Value</th>
-            <th className={styles.actionsColumn} scope="col">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <SecretRow
-              secret={row.secret}
-              draftKey={row.draftKey}
-              draftValue={row.draftValue}
-              isMarkedForDeletion={row.isMarkedForDeletion}
-              isRevealing={row.isRevealing}
-              isSaving={isSaving}
-              isValueRevealed={row.isValueRevealed}
-              key={row.secret.id}
-              onCancelEdit={onCancelEdit}
-              onDeleteToggle={onToggleDelete}
-              onDraftKeyChange={(nextDraftKey) =>
-                onDraftKeyChange(row.secret, nextDraftKey)
-              }
-              onDraftValueChange={(nextDraftValue) =>
-                onDraftValueChange(row.secret, nextDraftValue)
-              }
-              onOpenHistory={onOpenHistory}
-              onReveal={onReveal}
-              onSaveEdit={() => void onSaveEdit()}
-              onStartValueEdit={onStartValueEdit}
-              revealedValue={row.revealedValue}
-              shouldFocus={row.shouldFocus}
-              validationError={row.validationError}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div aria-label="Project secrets" className="flex flex-col" role="table">
+      <div className="hidden border-b border-border/40 pb-3 md:block" role="rowgroup">
+        <div
+          className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center gap-4"
+          role="row"
+        >
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
+            Key
+          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
+            Value
+          </span>
+          <span className="text-right text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
+            Actions
+          </span>
+        </div>
+      </div>
+
+      <div className="-mx-3 flex flex-col" role="rowgroup">
+        {rows.map((row) => (
+          <SecretRow
+            secret={row.secret}
+            draftKey={row.draftKey}
+            draftValue={row.draftValue}
+            isMarkedForDeletion={row.isMarkedForDeletion}
+            isRevealing={row.isRevealing}
+            isSaving={isSaving}
+            isValueRevealed={row.isValueRevealed}
+            key={row.secret.id}
+            onCancelEdit={onCancelEdit}
+            onDeleteToggle={onToggleDelete}
+            onDraftKeyChange={(nextDraftKey) =>
+              onDraftKeyChange(row.secret, nextDraftKey)
+            }
+            onDraftValueChange={(nextDraftValue) =>
+              onDraftValueChange(row.secret, nextDraftValue)
+            }
+            onOpenHistory={onOpenHistory}
+            onReveal={onReveal}
+            onSaveEdit={() => void onSaveEdit()}
+            onStartValueEdit={onStartValueEdit}
+            revealedValue={row.revealedValue}
+            shouldFocus={row.shouldFocus}
+            validationError={row.validationError}
+          />
+        ))}
+      </div>
     </div>
   )
 }

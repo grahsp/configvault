@@ -5,8 +5,8 @@ import {
   SecretsTableFooterActions,
   SecretsTableHeaderActions,
 } from '../ui'
+import { Separator } from '../../../../components/ui/separator'
 import { SecretsContent } from './SecretsContent.tsx'
-import styles from './SecretsSection.module.css'
 
 interface SecretsSectionProps {
   environmentName: string
@@ -22,15 +22,23 @@ export function SecretsSection({
     projectId,
   })
   const hasRows = editor.rows.length > 0
-  const showHeaderActions = !editor.isLoading && !editor.isError && hasRows
-  const showFooterActions = showHeaderActions && editor.hasUnsavedChanges
+  const showFooterActions = editor.hasUnsavedChanges
 
   return (
-    <section className={styles.sectionCard}>
-      <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>Secrets</h3>
-        {showHeaderActions ? (
-          <div className={styles.sectionHeaderActions}>
+    <section className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold tracking-[-0.02em] text-foreground">
+            Secrets
+          </h2>
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            Set environment-specific config and secrets, then manage key and
+            value updates from one edit state.
+          </p>
+        </div>
+
+        {!editor.isLoading && !editor.isError && hasRows ? (
+          <div className="flex items-center gap-2 self-start">
             <SecretsTableHeaderActions
               canCopyExport={editor.canCopyExport}
               isCopyingExport={editor.isCopyingExport}
@@ -40,11 +48,9 @@ export function SecretsSection({
             />
           </div>
         ) : null}
-        <p className={styles.sectionDescription}>
-          Set environment-specific config and secrets, then manage key and value
-          updates from one edit state.
-        </p>
       </div>
+
+      <Separator />
 
       <SecretsContent
         isError={editor.isError}
@@ -66,13 +72,16 @@ export function SecretsSection({
       />
 
       {showFooterActions ? (
-        <div className={styles.sectionFooterActions}>
+        <>
+          <Separator />
+          <div className="flex items-center justify-end gap-2">
           <SecretsTableFooterActions
             isSaving={editor.isSaving}
             onCancelEdit={editor.onCancelEdit}
             onSaveEdit={editor.onSaveEdit}
           />
-        </div>
+          </div>
+        </>
       ) : null}
 
       {editor.isImportModalOpen ? (

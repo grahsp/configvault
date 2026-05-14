@@ -1,8 +1,9 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Field, FieldLabel } from '../../../../components/ui/field'
+import { Input } from '../../../../components/ui/input'
+import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
-import styles from './SecretsTable.module.css'
 
 interface SecretValueFieldProps {
   secret: Secret
@@ -32,7 +33,7 @@ export function SecretValueField({
   onStartValueEdit,
   revealedValue,
 }: SecretValueFieldProps) {
-  const valueFieldRef = useRef<HTMLTextAreaElement>(null)
+  const valueFieldRef = useRef<HTMLInputElement>(null)
   const shouldMoveCaretRef = useRef(false)
   const isStartingValueEditRef = useRef(false)
 
@@ -48,7 +49,7 @@ export function SecretValueField({
   }, [draftValue])
 
   function handleKeyDown(
-    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: KeyboardEvent<HTMLInputElement>,
   ) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
@@ -107,14 +108,14 @@ export function SecretValueField({
     secret.hasValue && draftValue === null && !isMarkedForDeletion
 
   return (
-    <>
-      <label className={styles.visuallyHidden} htmlFor={`value-${secret.id}`}>
+    <Field className="gap-2">
+      <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`value-${secret.id}`}>
         Value
-      </label>
-      <textarea
-        className={cx(
-          styles.valueField,
-          isMarkedForDeletion && styles.markedForDeletionField,
+      </FieldLabel>
+      <Input
+        className={cn(
+          "h-10 rounded-xl border-border/60 bg-background font-mono shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
+          isMarkedForDeletion && "line-through",
         )}
         disabled={isSaving || isMarkedForDeletion}
         id={`value-${secret.id}`}
@@ -124,9 +125,9 @@ export function SecretValueField({
         onKeyDown={handleKeyDown}
         readOnly={isMarkedForDeletion || isValueFieldLocked}
         ref={valueFieldRef}
-        rows={1}
+        type="text"
         value={draftValue !== null || !secret.hasValue ? getEditingValue() : getDisplayValue()}
       />
-    </>
+    </Field>
   )
 }

@@ -1,10 +1,11 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
-import { cx } from '../../../../shared/utils/cx.ts'
+import { Field, FieldDescription, FieldLabel } from '../../../../components/ui/field'
+import { Input } from '../../../../components/ui/input'
+import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
 import { SecretRowActions } from './SecretRowActions.tsx'
 import { SecretValueField } from './SecretValueField.tsx'
-import styles from './SecretsTable.module.css'
 
 interface SecretRowProps {
   secret: Secret
@@ -71,24 +72,24 @@ export function SecretRow({
   }
 
   return (
-    <tr
-      className={cx(
-        styles.editingRow,
-        isMarkedForDeletion && styles.pendingDeleteRow,
+    <div
+      className={cn(
+        "grid gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-start",
+        isMarkedForDeletion && "bg-destructive/5 opacity-70",
       )}
+      role="row"
     >
-      <th className={styles.keyCell} scope="row">
-        <div className={styles.fieldGroup}>
-          <label className={styles.visuallyHidden} htmlFor={`key-${secret.id}`}>
+      <div role="cell">
+        <Field className="gap-2">
+          <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`key-${secret.id}`}>
             Key
-          </label>
-          <input
+          </FieldLabel>
+          <Input
             aria-describedby={validationError ? errorId : undefined}
             aria-invalid={Boolean(validationError)}
-            className={cx(
-              styles.textField,
-              isMarkedForDeletion && styles.markedForDeletionField,
-              validationError && styles.textFieldError,
+            className={cn(
+              "h-10 rounded-xl border-border/60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
+              isMarkedForDeletion && "line-through",
             )}
             disabled={isSaving || isMarkedForDeletion}
             id={`key-${secret.id}`}
@@ -100,13 +101,17 @@ export function SecretRow({
             value={draftKey}
           />
           {validationError ? (
-            <span className={styles.inlineKeyError} id={errorId} role="alert">
+            <FieldDescription
+              className="text-destructive"
+              id={errorId}
+              role="alert"
+            >
               {validationError}
-            </span>
+            </FieldDescription>
           ) : null}
-        </div>
-      </th>
-      <td className={styles.valueCell}>
+        </Field>
+      </div>
+      <div role="cell">
         <SecretValueField
           draftValue={draftValue}
           isMarkedForDeletion={isMarkedForDeletion}
@@ -119,8 +124,8 @@ export function SecretRow({
           revealedValue={revealedValue}
           secret={secret}
         />
-      </td>
-      <td className={styles.actionsColumn}>
+      </div>
+      <div className="flex justify-start md:justify-end" role="cell">
         <SecretRowActions
           isMarkedForDeletion={isMarkedForDeletion}
           isRevealing={isRevealing}
@@ -131,7 +136,7 @@ export function SecretRow({
           onReveal={onReveal}
           secret={secret}
         />
-      </td>
-    </tr>
+      </div>
+    </div>
   )
 }

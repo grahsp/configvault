@@ -1,4 +1,4 @@
-import { Button } from '../../../../shared/ui'
+import { Button } from '../../../../components/ui/button'
 
 interface SecretsTableFooterActionsProps {
   isSaving: boolean
@@ -14,18 +14,19 @@ export function SecretsTableFooterActions({
   return (
     <>
       <Button
+        className="rounded-[var(--radius-md-lg)]"
         disabled={isSaving}
         onClick={() => void onSaveEdit()}
         type="button"
-        variant="primary"
       >
         {isSaving ? 'Saving' : 'Save Changes'}
       </Button>
       <Button
+        className="rounded-[var(--radius-md-lg)]"
         disabled={isSaving}
         onClick={onCancelEdit}
         type="button"
-        variant="secondary"
+        variant="outline"
       >
         Cancel
       </Button>

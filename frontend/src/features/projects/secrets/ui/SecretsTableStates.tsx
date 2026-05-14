@@ -1,13 +1,30 @@
-import type { StatePanelProps } from '../../../../shared/ui'
-import { Button, SplitButton, StatePanel } from '../../../../shared/ui'
+import { ChevronDownIcon } from 'lucide-react'
+import { Button } from '../../../../components/ui/button'
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from '../../../../components/ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../../../components/ui/dropdown-menu'
+import { cn } from '../../../../lib/utils'
 
-type SecretsStateProps = Pick<StatePanelProps, 'className'>
+interface SecretsStateProps {
+  className?: string
+}
 
 export function SecretsLoadingState(props: SecretsStateProps) {
   return (
-    <StatePanel role="status" title="Loading secrets..." {...props}>
-      <p>Secrets are being prepared.</p>
-    </StatePanel>
+    <div
+      className={cn("flex min-h-40 flex-col justify-center gap-2 py-6", props.className)}
+      role="status"
+    >
+      <h3 className="text-base font-semibold text-foreground">Loading secrets...</h3>
+      <p className="text-sm text-muted-foreground">Secrets are being prepared.</p>
+    </div>
   )
 }
 
@@ -22,19 +39,20 @@ export function SecretsErrorState({
   ...props
 }: SecretsErrorStateProps) {
   return (
-    <StatePanel
-      actions={
-        <Button onClick={onRetry} type="button" variant="secondary">
+    <div
+      className={cn("flex min-h-40 flex-col justify-center gap-4 py-6", props.className)}
+      role="alert"
+    >
+      <div className="flex flex-col gap-2">
+        <h3 className="text-base font-semibold text-foreground">Failed to load secrets.</h3>
+        <p className="text-sm text-muted-foreground">{errorMessage}</p>
+      </div>
+      <div>
+        <Button onClick={onRetry} type="button" variant="outline">
           Retry
         </Button>
-      }
-      role="alert"
-      title="Failed to load secrets."
-      tone="error"
-      {...props}
-    >
-      <p>{errorMessage}</p>
-    </StatePanel>
+      </div>
+    </div>
   )
 }
 
@@ -49,21 +67,39 @@ export function SecretsEmptyState({
   ...props
 }: SecretsEmptyStateProps) {
   return (
-    <StatePanel
-      actions={
-        <SplitButton
-          actionLabel="+ Add Secret"
-          menuActionLabel="Import Secrets"
-          menuLabel="Open secret actions"
-          onActionClick={onOpenAddSecret}
-          onMenuActionClick={onOpenImportModal}
-          variant="primary"
-        />
-      }
-      title="No secrets yet"
-      {...props}
+    <div
+      className={cn("flex min-h-40 flex-col justify-center gap-4 py-6", props.className)}
     >
-      <p>Add a secret key to start tracking values across environments.</p>
-    </StatePanel>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-base font-semibold text-foreground">No secrets yet</h3>
+        <p className="text-sm text-muted-foreground">
+          Add a secret key to start tracking values across environments.
+        </p>
+      </div>
+      <ButtonGroup className="overflow-hidden rounded-lg bg-primary text-primary-foreground">
+        <Button className="rounded-lg" onClick={onOpenAddSecret} type="button">
+          + Add Secret
+        </Button>
+        <ButtonGroupSeparator className="my-2 w-px shrink-0 self-stretch bg-primary-foreground/20" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              aria-label="Open add secret actions"
+              className="h-9 w-9 rounded-lg"
+              size="icon"
+              type="button"
+              variant="default"
+            >
+              <ChevronDownIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onOpenImportModal}>
+              Import Secrets
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </ButtonGroup>
+    </div>
   )
 }
