@@ -56,7 +56,7 @@ export function SecretsSection({
               ariaLabel={`Secret sort: ${
                 secretSortOptions.find((option) => option.id === editor.sortOptionId)?.label ?? 'Key (A-Z)'
               }`}
-              buttonClassName="border-border/60 bg-background/80 shadow-none"
+              buttonClassName="shadow-none"
               buttonSize="icon"
               onSelect={editor.onSortOptionChange}
               options={[...secretSortOptions]}

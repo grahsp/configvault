@@ -85,9 +85,10 @@ describe('ProjectsPage', () => {
       name: /project sort: newest to oldest/i,
     })
 
-    expect(sortTrigger).toHaveAttribute('data-variant', 'outline')
-    expect(sortTrigger).toHaveClass('border-border')
-    expect(sortTrigger).toHaveClass('bg-background')
+    expect(sortTrigger).toHaveAttribute('data-variant', 'ghost')
+    expect(sortTrigger).toHaveClass('border-transparent')
+    expect(sortTrigger).toHaveClass('!bg-transparent')
+    expect(sortTrigger).toHaveClass('hover:!bg-muted/60')
     expect(sortTrigger).not.toHaveClass('sm:w-72')
   })
 

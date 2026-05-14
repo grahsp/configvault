@@ -42,10 +42,13 @@ export function SortMenu<T extends string = string>({
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={ariaLabel}
-          className={cn('rounded-[var(--radius-md-lg)]', buttonClassName)}
+          className={cn(
+            'rounded-[var(--radius-md-lg)] !border-transparent !bg-transparent text-muted-foreground shadow-none hover:!bg-muted/60 hover:text-foreground focus-visible:!border-transparent focus-visible:!bg-muted/60 focus-visible:ring-0 aria-expanded:!bg-muted/60 aria-expanded:text-foreground',
+            buttonClassName,
+          )}
           size={buttonSize}
           type="button"
-          variant="outline"
+          variant="ghost"
         >
           <SelectedIcon aria-hidden="true" />
         </Button>
