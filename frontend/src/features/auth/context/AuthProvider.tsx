@@ -11,6 +11,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     <Auth0Provider
       domain={authConfig.domain}
       clientId={authConfig.clientId}
+      useRefreshTokens
+      useRefreshTokensFallback={false}
+      cacheLocation="localstorage"
       onRedirectCallback={(appState) => {
         const target = resolveAuthRedirectTarget(appState as AuthRedirectState)
 

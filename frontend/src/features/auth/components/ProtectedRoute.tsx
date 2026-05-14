@@ -1,27 +1,32 @@
 import type { PropsWithChildren } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
-import { Navigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { PageLoader } from '../../../shared/ui'
-import { useCurrentUser } from '../../users'
+import { useAuth } from '../../../shared/hooks/useAuth'
 
 export function ProtectedRoute({ children }: PropsWithChildren) {
-  const { isAuthenticated, isLoading } = useAuth0()
-  const { isLoading: isCurrentUserLoading, error } = useCurrentUser()
+  const { isAuthenticated, isLoading, login } = useAuth()
+  const hasStartedLoginRef = useRef(false)
+
+  useEffect(() => {
+    if (isLoading || isAuthenticated || hasStartedLoginRef.current) {
+      return
+    }
+
+    hasStartedLoginRef.current = true
+    void login({
+      returnTo: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    }).catch(() => {
+      hasStartedLoginRef.current = false
+    })
+  }, [isAuthenticated, isLoading, login])
 
   if (isLoading) {
     return <PageLoader fullScreen={false} />
   }
 
   if (!isAuthenticated) {
-    return <Navigate replace to="/" />
-  }
-
-  if (isCurrentUserLoading) {
     return <PageLoader fullScreen={false} />
   }
 
-  if (error) {
-    return <p role="alert">Unable to load user data. Please try again.</p>
-  }
   return <>{children}</>
 }

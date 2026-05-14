@@ -3,10 +3,12 @@ import { createApiClient } from '../../api/apiClient'
 import { useAuth } from '../hooks/useAuth'
 
 export function useAuthenticatedApiClient() {
-  const { getAccessTokenSilently } = useAuth()
+  const { getAccessTokenSilently, getAccessTokenSilentlySafe } = useAuth()
+  const accessTokenGetter =
+    getAccessTokenSilentlySafe ?? getAccessTokenSilently
 
   return useMemo(
-    () => createApiClient({ getAccessTokenSilently }),
-    [getAccessTokenSilently],
+    () => createApiClient({ getAccessTokenSilently: accessTokenGetter }),
+    [accessTokenGetter],
   )
 }

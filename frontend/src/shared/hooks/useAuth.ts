@@ -6,6 +6,12 @@ export interface AuthRedirectOptions {
   returnTo?: string
 }
 
+function getCurrentReturnTo() {
+  const { hash, pathname, search } = window.location
+
+  return `${pathname}${search}${hash}`
+}
+
 export function useAuth() {
   const auth = useAuth0()
 
@@ -13,6 +19,12 @@ export function useAuth() {
     auth.loginWithRedirect({
       appState: options?.returnTo ? { returnTo: options.returnTo } : undefined,
       authorizationParams: options?.authorizationParams,
+    })
+
+  const reauthenticate = (options?: AuthRedirectOptions) =>
+    login({
+      ...options,
+      returnTo: options?.returnTo ?? getCurrentReturnTo(),
     })
 
   const signup = (options?: AuthRedirectOptions) =>
@@ -31,8 +43,11 @@ export function useAuth() {
 
   return {
     ...auth,
+    getAccessTokenSilently: auth.getAccessTokenSilently,
+    getAccessTokenSilentlySafe: auth.getAccessTokenSilently,
     login,
     signup,
+    reauthenticate,
     logout,
   }
 }

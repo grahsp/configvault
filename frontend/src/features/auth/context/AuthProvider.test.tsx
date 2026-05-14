@@ -6,7 +6,10 @@ import type { AuthRedirectState } from '../utils/authRedirectState'
 
 interface MockAuth0ProviderProps {
   children?: ReactNode
+  cacheLocation?: string
   onRedirectCallback?: (appState?: AuthRedirectState) => void
+  useRefreshTokens?: boolean
+  useRefreshTokensFallback?: boolean
 }
 
 const { auth0ProviderMock } = vi.hoisted(() => ({
@@ -72,13 +75,16 @@ describe('AuthProvider', () => {
 
       const props = auth0ProviderMock.mock.calls[0]?.[0]
       expect(props).toBeDefined()
+      expect(props?.useRefreshTokens).toBe(true)
+      expect(props?.useRefreshTokensFallback).toBe(false)
+      expect(props?.cacheLocation).toBe('localstorage')
       expect(props?.onRedirectCallback).toBeTypeOf('function')
 
       props!.onRedirectCallback!({
-        returnTo: '/invitations/invite-token',
+        returnTo: '/projects/project-123?tab=members',
       })
 
-      expect(location.replace).toHaveBeenCalledWith('/invitations/invite-token')
+      expect(location.replace).toHaveBeenCalledWith('/projects/project-123?tab=members')
     } finally {
       location.restore()
     }
@@ -96,6 +102,9 @@ describe('AuthProvider', () => {
 
       const props = auth0ProviderMock.mock.calls[0]?.[0]
       expect(props).toBeDefined()
+      expect(props?.useRefreshTokens).toBe(true)
+      expect(props?.useRefreshTokensFallback).toBe(false)
+      expect(props?.cacheLocation).toBe('localstorage')
       expect(props?.onRedirectCallback).toBeTypeOf('function')
 
       props!.onRedirectCallback!(undefined)
