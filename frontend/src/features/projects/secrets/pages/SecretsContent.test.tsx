@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { Secret } from '../domain'
 import { SecretsContent, type SecretsContentProps } from './SecretsContent.tsx'
@@ -132,7 +133,9 @@ describe('SecretsContent', () => {
     expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
   })
 
-  it('shows a history action only for secrets that have a saved value', () => {
+  it('shows saved-value shells with an overflow menu only for secrets that have a saved value', async () => {
+    const user = userEvent.setup()
+
     render(
       <SecretsContent
         {...createProps({
@@ -164,11 +167,44 @@ describe('SecretsContent', () => {
       />,
     )
 
+    const apiValueGroup = screen.getByRole('group', {
+      name: 'Value for API_KEY',
+    })
+    const emptyValueGroup = screen.getByRole('group', {
+      name: 'Value for EMPTY_KEY',
+    })
+
+    expect(apiValueGroup).toHaveClass('h-9')
     expect(
-      screen.getByRole('button', { name: 'View history for API_KEY' }),
+      within(apiValueGroup).getByRole('button', { name: 'Reveal API_KEY' }),
+    ).toBeInTheDocument()
+    expect(within(apiValueGroup).getByText('••••••')).toBeInTheDocument()
+    expect(within(apiValueGroup).getByText('Click to reveal')).toHaveClass(
+      'group-hover:opacity-100',
+      'group-focus-visible:opacity-100',
+    )
+    expect(
+      within(apiValueGroup).getByRole('button', {
+        name: 'Open actions for API_KEY',
+      }).closest('[data-slot="input-group-addon"]'),
+    ).not.toBeNull()
+    expect(emptyValueGroup).toHaveClass('h-9')
+    expect(
+      within(emptyValueGroup).getByRole('textbox', { name: 'Value' }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'View history for EMPTY_KEY' }),
-    ).not.toBeInTheDocument()
+      within(emptyValueGroup).getByRole('button', {
+        name: 'Open actions for EMPTY_KEY',
+      }).closest('[data-slot="input-group-addon"]'),
+    ).not.toBeNull()
+
+    await user.click(
+      within(apiValueGroup).getByRole('button', {
+        name: 'Open actions for API_KEY',
+      }),
+    )
+    const menu = screen.getByRole('menu')
+    expect(within(menu).getByRole('menuitem', { name: 'View history' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
   })
 })

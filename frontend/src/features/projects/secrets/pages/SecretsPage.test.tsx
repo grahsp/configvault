@@ -103,6 +103,15 @@ async function openSecretActionsMenu(user: ReturnType<typeof userEvent.setup>) {
   )
 }
 
+async function openSecretRowActionsMenu(
+  user: ReturnType<typeof userEvent.setup>,
+  secretKey: string,
+) {
+  await user.click(
+    await screen.findByRole('button', { name: `Open actions for ${secretKey}` }),
+  )
+}
+
 const projectDetails = {
   id: 'project-1',
   name: 'Production secrets',
@@ -272,9 +281,8 @@ describe('SecretsPage', () => {
     await user.clear(keyInput)
     await user.type(keyInput, 'API_KEY_UPDATED')
 
-    await user.click(
-      screen.getByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
 
     expect(
       await screen.findByRole('heading', { name: 'API_KEY' }),
@@ -400,9 +408,8 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
 
     const historyDialog = await screen.findByRole('dialog', {
       name: 'API_KEY',
@@ -443,9 +450,8 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
     await screen.findByRole('dialog', { name: 'API_KEY' })
 
     await user.keyboard('{Escape}')
@@ -527,9 +533,8 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
     await user.click(screen.getByRole('button', { name: 'Restore revision 2' }))
 
     expect(
@@ -634,9 +639,8 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
     await user.click(screen.getByRole('button', { name: 'Restore revision 0' }))
     await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
 
@@ -689,7 +693,8 @@ describe('SecretsPage', () => {
     const keyInput = await screen.findByRole('textbox', { name: 'Key' })
     await user.clear(keyInput)
     await user.type(keyInput, 'API_KEY_UPDATED')
-    await user.click(screen.getByRole('button', { name: 'View history for API_KEY' }))
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
 
     const restoreButton = await screen.findByRole('button', {
       name: 'Restore revision 0',
@@ -749,9 +754,8 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'View history for API_KEY' }),
-    )
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'View history' }))
     await user.click(screen.getByRole('button', { name: 'Restore revision 0' }))
     await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
 
@@ -1025,19 +1029,32 @@ describe('SecretsPage', () => {
 
     expect(within(list).getAllByRole('listitem')).toHaveLength(2)
     expect(within(list).getByDisplayValue('API_KEY')).toBeInTheDocument()
-    expect(within(list).getByDisplayValue('************')).toBeInTheDocument()
+    const apiValueGroup = within(list).getByRole('group', {
+      name: 'Value for API_KEY',
+    })
+    const emptyValueGroup = within(list).getByRole('group', {
+      name: 'Value for DATABASE_URL',
+    })
+    expect(apiValueGroup).toHaveClass('h-9')
+    expect(within(apiValueGroup).getByText('••••••')).toBeInTheDocument()
     expect(
-      within(list).getByRole('button', { name: 'View history for API_KEY' }),
+      within(apiValueGroup).getByRole('button', { name: 'Reveal API_KEY' }),
     ).toBeInTheDocument()
     expect(
-      within(list).getByRole('button', { name: 'Reveal API_KEY' }),
+      within(list).queryByRole('button', { name: 'Hide API_KEY' }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(apiValueGroup).getByRole('button', { name: 'Open actions for API_KEY' }),
     ).toBeInTheDocument()
     expect(
-      within(list).getByRole('button', { name: 'Delete API_KEY' }),
-    ).toBeInTheDocument()
+      within(apiValueGroup).getByText('Click to reveal'),
+    ).toHaveClass('group-hover:opacity-100', 'group-focus-visible:opacity-100')
     expect(within(list).getByDisplayValue('DATABASE_URL')).toBeInTheDocument()
+    expect(emptyValueGroup).toHaveClass('h-9')
     expect(
-      within(list).getByRole('button', { name: 'Delete DATABASE_URL' }),
+      within(emptyValueGroup).getByRole('button', {
+        name: 'Open actions for DATABASE_URL',
+      }),
     ).toBeInTheDocument()
   })
 
@@ -1327,7 +1344,8 @@ describe('SecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
-    await user.click(await screen.findByRole('button', { name: 'Delete API_KEY' }))
+    await openSecretRowActionsMenu(user, 'API_KEY')
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
@@ -1413,15 +1431,48 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    const valueInput = (await screen.findAllByRole('textbox', { name: 'Value' }))[0]
-    await user.click(valueInput!)
-    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+    const valueGroup = await screen.findByRole('group', {
+      name: 'Value for API_KEY',
+    })
+
+    await user.click(
+      within(valueGroup).getByRole('button', { name: 'Reveal API_KEY' }),
+    )
+    expect(await within(valueGroup).findByText('secret-value')).toBeInTheDocument()
+    expect(
+      within(valueGroup).getByRole('button', { name: 'Hide API_KEY' }),
+    ).toBeInTheDocument()
+    const revealedActionRail = within(valueGroup)
+      .getByRole('button', { name: 'Open actions for API_KEY' })
+      .closest('[data-slot="input-group-addon"]')
+    expect(revealedActionRail).not.toBeNull()
+
+    await user.click(
+      within(valueGroup).getByRole('button', { name: 'Edit value for API_KEY' }),
+    )
+    expect(within(valueGroup).getByDisplayValue('secret-value')).toBeInTheDocument()
+    expect(
+      within(valueGroup).getByRole('button', { name: 'Hide API_KEY' }),
+    ).toBeInTheDocument()
+    const editingActionRail = within(valueGroup)
+      .getByRole('button', { name: 'Open actions for API_KEY' })
+      .closest('[data-slot="input-group-addon"]')
+    expect(editingActionRail).toBe(revealedActionRail)
+    expect(
+      within(valueGroup)
+        .getByRole('button', { name: 'Hide API_KEY' })
+        .closest('[data-slot="input-group-addon"]'),
+    ).toBe(editingActionRail)
+    expect(valueGroup).toHaveClass('h-9')
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByDisplayValue('secret-value')).not.toBeInTheDocument()
+    expect(within(valueGroup).queryByDisplayValue('secret-value')).not.toBeInTheDocument()
+    expect(within(valueGroup).getByText('secret-value')).toBeInTheDocument()
 
-    await user.click(screen.getAllByRole('textbox', { name: 'Value' })[0]!)
-    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+    await user.click(
+      within(valueGroup).getByRole('button', { name: 'Edit value for API_KEY' }),
+    )
+    expect(within(valueGroup).getByDisplayValue('secret-value')).toBeInTheDocument()
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
   })
 
@@ -1489,8 +1540,9 @@ describe('SecretsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
     expect(await screen.findByText('Secret value saved')).toBeInTheDocument()
 
-    const updatedValueInput = screen.getAllByRole('textbox', { name: 'Value' })[0]
-    await user.click(updatedValueInput!)
+    await user.click(screen.getByRole('button', { name: 'Reveal API_KEY' }))
+    expect(await screen.findByText('first-secret')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Edit value for API_KEY' }))
     const editableValueInput = await screen.findByDisplayValue('first-secret')
     await user.clear(editableValueInput)
     await user.type(editableValueInput, 'second-secret')
@@ -1545,13 +1597,14 @@ describe('SecretsPage', () => {
     renderProjectDetail('/projects/project-1/secrets')
 
     await user.click(await screen.findByRole('button', { name: /Reveal API_KEY/ }))
-    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+    expect(await screen.findByText('secret-value')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /Hide API_KEY/ }))
-    expect(screen.queryByDisplayValue('secret-value')).not.toBeInTheDocument()
+    expect(screen.queryByText('secret-value')).not.toBeInTheDocument()
+    expect(screen.getAllByText('••••••').length).toBeGreaterThan(0)
 
     await user.click(screen.getByRole('button', { name: /Reveal API_KEY/ }))
-    expect(await screen.findByDisplayValue('secret-value')).toBeInTheDocument()
+    expect(await screen.findByText('secret-value')).toBeInTheDocument()
     expect(getValueEndpointCalls(fetchMock)).toHaveLength(1)
   })
 })

@@ -1,34 +1,50 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
-import { Field, FieldLabel } from '../../../../components/ui/field'
+import { MoreHorizontalIcon } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../../../components/ui/dropdown-menu'
 import { Input } from '../../../../components/ui/input'
+import {InputGroup, InputGroupAddon, InputGroupButton} from '../../../../components/ui/input-group'
 import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
+import { EyeOffIcon } from './SecretRowIcons.tsx'
 
 interface SecretValueFieldProps {
   secret: Secret
   draftValue: string | null
   isMarkedForDeletion: boolean
+  isRevealing: boolean
   isSaving: boolean
   isValueRevealed: boolean
   onCancelEdit: () => void
+  onDeleteToggle: (secret: Secret) => void
   onDraftValueChange: (value: string) => void
+  onOpenHistory: (secret: Secret) => void
+  onReveal: (secret: Secret) => void
   onSaveEdit: () => void
   onStartValueEdit: (secret: Secret) => Promise<void> | void
   revealedValue?: string
 }
 
-const maskedValue = '************'
+const maskedValue = '••••••'
 const emptyValue = '(empty)'
 
 export function SecretValueField({
   secret,
   draftValue,
   isMarkedForDeletion,
+  isRevealing,
   isSaving,
   isValueRevealed,
   onCancelEdit,
+  onDeleteToggle,
   onDraftValueChange,
+  onOpenHistory,
+  onReveal,
   onSaveEdit,
   onStartValueEdit,
   revealedValue,
@@ -63,10 +79,6 @@ export function SecretValueField({
   }
 
   function getDisplayValue() {
-    if (isMarkedForDeletion) {
-      return ''
-    }
-
     if (isValueRevealed && revealedValue !== undefined) {
       return revealedValue
     }
@@ -75,10 +87,6 @@ export function SecretValueField({
   }
 
   function getEditingValue() {
-    if (isMarkedForDeletion) {
-      return ''
-    }
-
     if (draftValue !== null) {
       return draftValue
     }
@@ -104,30 +112,174 @@ export function SecretValueField({
     })
   }
 
-  const isValueFieldLocked =
-    secret.hasValue && draftValue === null && !isMarkedForDeletion
+  function handleDisplayKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    action: () => void,
+  ) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      action()
+    }
+  }
+
+  function handleReveal() {
+    if (isSaving || isRevealing || isMarkedForDeletion) {
+      return
+    }
+
+    onReveal(secret)
+  }
+
+  function handleStartEdit() {
+    if (isSaving || isMarkedForDeletion || isStartingValueEditRef.current) {
+      return
+    }
+
+    shouldMoveCaretRef.current = true
+    isStartingValueEditRef.current = true
+    void Promise.resolve(onStartValueEdit(secret)).finally(() => {
+      isStartingValueEditRef.current = false
+    })
+  }
+
+  const isEditing = draftValue !== null || !secret.hasValue
+  const canOpenHistory = secret.hasValue && !isMarkedForDeletion
+  const showsHideAction = secret.hasValue && (isValueRevealed || draftValue !== null)
+  const groupLabel = `Value for ${secret.key}`
+  const displayAction = isValueRevealed ? handleStartEdit : handleReveal
+
+  function renderActionMenu() {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <InputGroupButton
+            aria-label={`Open actions for ${secret.key}`}
+            className={cn(isMarkedForDeletion && "text-muted-foreground")}
+            disabled={isSaving}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+          >
+            <MoreHorizontalIcon className="size-4" />
+          </InputGroupButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {secret.hasValue ? (
+            <DropdownMenuItem
+              disabled={!canOpenHistory}
+              onSelect={() => onOpenHistory(secret)}
+            >
+              View history
+            </DropdownMenuItem>
+          ) : null}
+          <DropdownMenuItem
+            onSelect={() => onDeleteToggle(secret)}
+            variant={isMarkedForDeletion ? 'default' : 'destructive'}
+          >
+            {isMarkedForDeletion ? 'Undo delete' : 'Delete'}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  function renderInlineActions() {
+    return (
+      <InputGroupAddon
+        align="inline-end"
+        className="shrink-0 gap-1 pr-1.5 pl-0"
+      >
+        {showsHideAction ? (
+          <InputGroupButton
+            aria-label={`Hide ${secret.key}`}
+            className={cn(isMarkedForDeletion && "text-muted-foreground")}
+            disabled={isSaving || isRevealing || isMarkedForDeletion}
+            onClick={() => onReveal(secret)}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+          >
+            <EyeOffIcon />
+          </InputGroupButton>
+        ) : null}
+        {renderActionMenu()}
+      </InputGroupAddon>
+    )
+  }
 
   return (
-    <Field className="gap-1.5">
-      <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`value-${secret.id}`}>
-        Value
-      </FieldLabel>
-      <Input
-        className={cn(
-          "h-9 rounded-xl border-border/60 bg-background font-mono shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
-          isMarkedForDeletion && "line-through",
-        )}
-        disabled={isSaving || isMarkedForDeletion}
-        id={`value-${secret.id}`}
-        onChange={(event) => onDraftValueChange(event.target.value)}
-        onClick={handleValueFieldFocus}
-        onFocus={handleValueFieldFocus}
-        onKeyDown={handleKeyDown}
-        readOnly={isMarkedForDeletion || isValueFieldLocked}
-        ref={valueFieldRef}
-        type="text"
-        value={draftValue !== null || !secret.hasValue ? getEditingValue() : getDisplayValue()}
-      />
-    </Field>
+    <InputGroup
+      aria-label={groupLabel}
+      className={cn(
+        "h-9 rounded-xl border-border/60 bg-background shadow-none transition-colors focus-within:ring-2 focus-within:ring-primary/30",
+        secret.hasValue && draftValue === null && !isMarkedForDeletion && !isValueRevealed
+          ? "cursor-pointer hover:border-border hover:bg-muted/20"
+          : null,
+        isMarkedForDeletion && "bg-destructive/5 opacity-70",
+      )}
+      data-disabled={isSaving || isMarkedForDeletion || isRevealing}
+    >
+      {isEditing ? (
+        <Input
+          aria-label="Value"
+          className={cn(
+            "h-full flex-1 rounded-none border-0 bg-transparent px-3 py-0 font-mono text-base leading-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0",
+            isMarkedForDeletion && "line-through",
+          )}
+          data-slot="input-group-control"
+          disabled={isSaving || isMarkedForDeletion}
+          onChange={(event) => onDraftValueChange(event.target.value)}
+          onClick={handleValueFieldFocus}
+          onFocus={handleValueFieldFocus}
+          onKeyDown={handleKeyDown}
+          readOnly={isMarkedForDeletion || !isEditing}
+          ref={valueFieldRef}
+          type="text"
+          value={getEditingValue()}
+        />
+      ) : (
+        <button
+          aria-label={
+            isValueRevealed
+              ? `Edit value for ${secret.key}`
+              : `Reveal ${secret.key}`
+          }
+          className={cn(
+            "group relative flex h-full min-w-0 flex-1 items-center gap-3 px-3 py-0 font-mono text-left outline-none",
+            isMarkedForDeletion
+              ? "cursor-default"
+              : isValueRevealed
+              ? "cursor-text"
+              : "cursor-pointer",
+          )}
+          disabled={isSaving || isRevealing || isMarkedForDeletion}
+          onClick={displayAction}
+          onKeyDown={(event) => handleDisplayKeyDown(event, displayAction)}
+          type="button"
+        >
+          <span
+            className={cn(
+              "min-w-0 truncate text-base leading-none transition-opacity",
+              isMarkedForDeletion
+                ? "text-muted-foreground line-through"
+                : isValueRevealed
+                ? "text-foreground"
+                : "text-muted-foreground/80 group-hover:opacity-0 group-focus-visible:opacity-0",
+            )}
+          >
+            {getDisplayValue()}
+          </span>
+          {!isValueRevealed && !isMarkedForDeletion ? (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 left-3 right-3 hidden items-center truncate text-xs font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 md:inline-flex"
+            >
+              Click to reveal
+            </span>
+          ) : null}
+        </button>
+      )}
+      {renderInlineActions()}
+    </InputGroup>
   )
 }

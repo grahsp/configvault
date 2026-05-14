@@ -4,7 +4,6 @@ import { Field, FieldDescription, FieldLabel } from '../../../../components/ui/f
 import { Input } from '../../../../components/ui/input'
 import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
-import { SecretRowActions } from './SecretRowActions.tsx'
 import { SecretValueField } from './SecretValueField.tsx'
 
 interface SecretRowProps {
@@ -79,7 +78,7 @@ export function SecretRow({
       )}
       role="listitem"
     >
-      <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-start md:gap-3">
+      <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-start md:gap-3">
         <div>
           <Field className="gap-1.5">
             <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`key-${secret.id}`}>
@@ -116,25 +115,17 @@ export function SecretRow({
           <SecretValueField
             draftValue={draftValue}
             isMarkedForDeletion={isMarkedForDeletion}
-            isSaving={isSaving}
-            isValueRevealed={isValueRevealed}
-            onCancelEdit={onCancelEdit}
-            onDraftValueChange={onDraftValueChange}
-            onSaveEdit={onSaveEdit}
-            onStartValueEdit={onStartValueEdit}
-            revealedValue={revealedValue}
-            secret={secret}
-          />
-        </div>
-        <div className="flex justify-start md:justify-end">
-          <SecretRowActions
-            isMarkedForDeletion={isMarkedForDeletion}
             isRevealing={isRevealing}
             isSaving={isSaving}
             isValueRevealed={isValueRevealed}
+            onCancelEdit={onCancelEdit}
             onDeleteToggle={onDeleteToggle}
+            onDraftValueChange={onDraftValueChange}
             onOpenHistory={onOpenHistory}
             onReveal={onReveal}
+            onSaveEdit={onSaveEdit}
+            onStartValueEdit={onStartValueEdit}
+            revealedValue={revealedValue}
             secret={secret}
           />
         </div>
