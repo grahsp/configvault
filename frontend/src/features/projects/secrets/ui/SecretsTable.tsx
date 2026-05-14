@@ -29,7 +29,7 @@ export function SecretsTable({
 }: SecretsTableProps) {
   return (
     <div aria-label="Project secrets" className="flex flex-col" role="list">
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
         {rows.map((row) => (
           <SecretRow
             secret={row.secret}

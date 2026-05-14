@@ -73,12 +73,12 @@ export function SecretRow({
   return (
     <div
       className={cn(
-        "px-1 py-1.5 transition-colors hover:bg-muted/10",
+        "px-1 py-0.5 transition-colors hover:bg-muted/10",
         isMarkedForDeletion && "bg-destructive/5 opacity-70",
       )}
       role="listitem"
     >
-      <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-start md:gap-3">
+      <div className="flex flex-col gap-1.5 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-start md:gap-1.5">
         <div>
           <Field className="gap-1.5">
             <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`key-${secret.id}`}>
@@ -88,7 +88,7 @@ export function SecretRow({
               aria-describedby={validationError ? errorId : undefined}
               aria-invalid={Boolean(validationError)}
               className={cn(
-                "h-9 rounded-xl border-border/60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                "h-9 rounded-lg border-border/60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
                 isMarkedForDeletion && "line-through",
               )}
               disabled={isSaving || isMarkedForDeletion}

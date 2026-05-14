@@ -211,7 +211,7 @@ export function SecretValueField({
     <InputGroup
       aria-label={groupLabel}
       className={cn(
-        "h-9 rounded-xl border-border/60 bg-background shadow-none transition-colors focus-within:ring-2 focus-within:ring-primary/30",
+        "h-9 rounded-lg border-border/60 bg-background shadow-none transition-colors focus-within:ring-2 focus-within:ring-primary/30",
         secret.hasValue && draftValue === null && !isMarkedForDeletion && !isValueRevealed
           ? "cursor-pointer hover:border-border hover:bg-muted/20"
           : null,
