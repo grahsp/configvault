@@ -90,8 +90,15 @@ export function PathSegmentSelector({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] p-0">
-        <Command shouldFilter value={search}>
+      <PopoverContent
+        align="start"
+        className="w-[min(22rem,calc(100vw-2rem))] overflow-hidden border border-border p-0 ring-0"
+      >
+        <Command
+          className="rounded-none border-0 bg-transparent"
+          shouldFilter
+          value={search}
+        >
           <CommandInput
             aria-label={`Search ${label.toLowerCase()}`}
             onValueChange={setSearch}
