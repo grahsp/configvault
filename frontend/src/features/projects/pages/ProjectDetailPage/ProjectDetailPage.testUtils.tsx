@@ -7,7 +7,6 @@ import { CurrentUserContext } from '../../../users/model/currentUserContext'
 import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { SecretsPage } from '../../secrets/pages'
 import { MembersPage } from '../../members/pages'
-import { GeneralPage } from './GeneralPage'
 import { ProjectDetailPage } from './ProjectDetailPage'
 
 export type MockRoute = {
@@ -123,10 +122,6 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
               {
                 index: true,
                 element: <Navigate to="secrets" replace />,
-              },
-              {
-                path: 'general',
-                element: <GeneralPage />,
               },
               {
                 path: 'secrets',
