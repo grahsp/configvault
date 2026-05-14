@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { type Environment } from '../../environments'
 import { StatePanel } from '../../../../shared/ui'
 import {
@@ -8,10 +8,11 @@ import {
   isNotFoundError,
   type ProjectDetails,
 } from '../../domain'
-import { useProject } from '../../application'
+import { useDeleteProject, useProject } from '../../application'
 import { useEnvironments } from '../../environments/application/useEnvironments'
 import { Button } from '../../../../components/ui/button'
 import { ProjectLayout } from './ProjectLayout'
+import { ProjectDeleteDialog } from '../../ui'
 
 function resolveEnvironment(
   environments: Environment[],
@@ -42,8 +43,11 @@ function resolveEnvironment(
 }
 
 export function ProjectDetailPage() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { projectId } = useParams()
+  const deleteProjectMutation = useDeleteProject()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const projectQuery = useProject(projectId ?? '')
   const project = projectQuery.data
@@ -110,6 +114,30 @@ export function ProjectDetailPage() {
       }
 
       return nextParams
+    })
+  }
+
+  function openDeleteDialog() {
+    deleteProjectMutation.reset()
+    setIsDeleteDialogOpen(true)
+  }
+
+  function closeDeleteDialog() {
+    if (deleteProjectMutation.isPending) {
+      return
+    }
+
+    deleteProjectMutation.reset()
+    setIsDeleteDialogOpen(false)
+  }
+
+  function confirmDeleteProject() {
+    if (!projectId) {
+      return
+    }
+
+    deleteProjectMutation.mutate(projectId, {
+      onSuccess: () => navigate('/projects'),
     })
   }
 
@@ -184,14 +212,25 @@ export function ProjectDetailPage() {
         ) : null}
 
         {!projectQuery.isPending && !projectQuery.isError && project ? (
-          <ProjectLayout
-            environments={environments}
-            environmentsQuery={environmentsQuery}
-            onEnvironmentChange={handleEnvironmentChange}
-            project={project}
-            selectedEnvironmentId={resolvedEnvironmentId}
-            selectedEnvironmentName={selectedEnvironmentName}
-          />
+          <>
+            <ProjectLayout
+              environments={environments}
+              environmentsQuery={environmentsQuery}
+              onEnvironmentChange={handleEnvironmentChange}
+              onOpenProjectDeleteDialog={openDeleteDialog}
+              project={project}
+              selectedEnvironmentId={resolvedEnvironmentId}
+              selectedEnvironmentName={selectedEnvironmentName}
+            />
+            {isDeleteDialogOpen ? (
+              <ProjectDeleteDialog
+                mutation={deleteProjectMutation}
+                onCancel={closeDeleteDialog}
+                onConfirm={confirmDeleteProject}
+                projectName={project.name}
+              />
+            ) : null}
+          </>
         ) : null}
       </section>
     </div>

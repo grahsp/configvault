@@ -71,9 +71,7 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.queryByRole('link', { name: 'Back to projects' }),
     ).not.toBeInTheDocument()
-    expect(
-      await screen.findByRole('heading', { name: 'Secrets' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
   })
 
   it('normalizes mixed-case project role values from the API', async () => {
@@ -140,12 +138,9 @@ describe('ProjectDetailPage', () => {
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
 
-    const generalLink = screen.getByRole('link', { name: 'General' })
     const secretsLink = screen.getByRole('link', { name: 'Secrets' })
     const membersLink = screen.getByRole('link', { name: 'Members' })
 
-    expect(generalLink).toHaveAttribute('href', '/projects/project-1/general')
-    expect(generalLink).not.toHaveAttribute('aria-current')
     expect(secretsLink).toHaveAttribute('href', '/projects/project-1/secrets')
     expect(secretsLink).toHaveAttribute('aria-current', 'page')
     expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
@@ -163,6 +158,9 @@ describe('ProjectDetailPage', () => {
         .getByRole('heading', { name: 'Production secrets' })
         .closest('section'),
     ).toContainElement(screen.getByRole('button', { name: /Environment/i }))
+    expect(
+      screen.getByRole('button', { name: 'Actions' }),
+    ).toBeInTheDocument()
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -698,33 +696,7 @@ describe('ProjectDetailPage', () => {
     expect(await screen.findByText('No active invitation links.')).toBeInTheDocument()
   })
 
-  it('renders the general route directly', async () => {
-    mockFetchSequence([
-      {
-        path: '/projects/project-1',
-        body: projectDetails,
-      },
-    ])
-
-    renderProjectDetail('/projects/project-1/general')
-
-    expect(
-      await screen.findByRole('heading', { name: 'Production secrets' }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'General' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'General' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-    expect(screen.getByText('Project name')).toBeInTheDocument()
-    expect(screen.getByText('Description')).toBeInTheDocument()
-    expect(screen.getByText('Created')).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Delete project' }),
-    ).toBeInTheDocument()
-  })
-
-  it('deletes the project from the general route', async () => {
+  it('deletes the project from the header actions menu', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -739,11 +711,12 @@ describe('ProjectDetailPage', () => {
       },
     ])
 
-    const { router } = renderProjectDetail('/projects/project-1/general')
+    const { router } = renderProjectDetail('/projects/project-1/secrets')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Delete project' }),
+      await screen.findByRole('button', { name: 'Actions' }),
     )
+    await user.click(screen.getByRole('menuitem', { name: 'Delete project' }))
 
     expect(
       screen.getByRole('dialog', { name: 'Delete project' }),
