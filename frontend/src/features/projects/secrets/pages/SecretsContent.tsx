@@ -1,13 +1,17 @@
+import { StatePanel } from '../../../../shared/ui'
 import type { Secret } from '../domain'
 import type { SecretRowViewModel } from '../application'
 import {
   SecretsEmptyState,
+  SecretsEnvironmentRequiredState,
   SecretsErrorState,
   SecretsLoadingState,
   SecretsTable,
 } from '../ui'
 
 export interface SecretsContentProps {
+  hasActiveSearch: boolean
+  hasSelectedEnvironment: boolean
   isError: boolean
   isLoading: boolean
   isSaving: boolean
@@ -24,9 +28,12 @@ export interface SecretsContentProps {
   onSaveEdit: () => Promise<void>
   onStartValueEdit: (secret: Secret) => Promise<void> | void
   onToggleDelete: (secret: Secret) => void
+  searchTerm: string
 }
 
 export function SecretsContent({
+  hasActiveSearch,
+  hasSelectedEnvironment,
   isError,
   isLoading,
   isSaving,
@@ -43,6 +50,7 @@ export function SecretsContent({
   onStartValueEdit,
   onToggleDelete,
   rows,
+  searchTerm,
 }: SecretsContentProps) {
   if (isLoading) {
     return <SecretsLoadingState />
@@ -57,7 +65,21 @@ export function SecretsContent({
     )
   }
 
+  if (!hasSelectedEnvironment) {
+    return <SecretsEnvironmentRequiredState />
+  }
+
   if (rows.length === 0) {
+    if (hasActiveSearch) {
+      return (
+        <StatePanel title="No matching secrets">
+          <p>
+            No secrets matched "{searchTerm.trim()}". Try a different search.
+          </p>
+        </StatePanel>
+      )
+    }
+
     return (
       <SecretsEmptyState
         onOpenAddSecret={onOpenAddSecret}

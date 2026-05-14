@@ -28,25 +28,8 @@ export function SecretsTable({
   onToggleDelete,
 }: SecretsTableProps) {
   return (
-    <div aria-label="Project secrets" className="flex flex-col" role="table">
-      <div className="hidden border-b border-border/40 pb-3 md:block" role="rowgroup">
-        <div
-          className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center gap-4"
-          role="row"
-        >
-          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
-            Key
-          </span>
-          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
-            Value
-          </span>
-          <span className="text-right text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground" role="columnheader">
-            Actions
-          </span>
-        </div>
-      </div>
-
-      <div className="-mx-3 flex flex-col" role="rowgroup">
+    <div aria-label="Project secrets" className="flex flex-col" role="list">
+      <div className="flex flex-col gap-3">
         {rows.map((row) => (
           <SecretRow
             secret={row.secret}

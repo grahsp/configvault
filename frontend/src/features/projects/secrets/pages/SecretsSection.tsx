@@ -1,3 +1,5 @@
+import { ArrowDownAZIcon, ArrowDownZAIcon } from 'lucide-react'
+import { SortMenu, ToolbarSearchInput } from '../../../projects/ui'
 import { useSecretsEditor } from '../application'
 import {
   ImportSecretsModal,
@@ -8,51 +10,82 @@ import {
 import { Separator } from '../../../../components/ui/separator'
 import { SecretsContent } from './SecretsContent.tsx'
 
+const secretSortOptions = [
+  {
+    icon: ArrowDownAZIcon,
+    id: 'key-asc',
+    label: 'Key (A-Z)',
+  },
+  {
+    icon: ArrowDownZAIcon,
+    id: 'key-desc',
+    label: 'Key (Z-A)',
+  },
+] as const
+
 interface SecretsSectionProps {
   environmentName: string
+  isEnvironmentLoading: boolean
   projectId: string
 }
 
 export function SecretsSection({
   environmentName,
+  isEnvironmentLoading,
   projectId,
 }: SecretsSectionProps) {
   const editor = useSecretsEditor({
     environmentName,
+    isEnvironmentLoading,
     projectId,
   })
-  const hasRows = editor.rows.length > 0
+  const hasRows = editor.totalRowCount > 0
   const showFooterActions = editor.hasUnsavedChanges
 
   return (
-    <section className="flex flex-col gap-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-bold tracking-[-0.02em] text-foreground">
-            Secrets
-          </h2>
-          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-            Set environment-specific config and secrets, then manage key and
-            value updates from one edit state.
-          </p>
-        </div>
-
-        {!editor.isLoading && !editor.isError && hasRows ? (
-          <div className="flex items-center gap-2 self-start">
+    <section className="flex flex-col gap-4 sm:gap-5">
+      {!editor.isLoading && !editor.isError && hasRows ? (
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center">
+            <h2 className="text-[1.45rem] font-bold leading-[0.98] tracking-[-0.015em] text-foreground/85">
+              Secrets ({editor.totalRowCount})
+            </h2>
+          </div>
+          <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
+            <SortMenu
+              ariaLabel={`Secret sort: ${
+                secretSortOptions.find((option) => option.id === editor.sortOptionId)?.label ?? 'Key (A-Z)'
+              }`}
+              buttonClassName="border-border/60 bg-background/80 shadow-none"
+              buttonSize="icon"
+              onSelect={editor.onSortOptionChange}
+              options={[...secretSortOptions]}
+              selectedOptionId={editor.sortOptionId}
+            />
+            <ToolbarSearchInput
+              ariaLabel="Search secrets"
+              inputClassName="h-9 border-border/60 bg-background/80 pl-9 text-sm shadow-none placeholder:text-muted-foreground/80"
+              iconClassName="left-3 size-3.5"
+              onChange={editor.onSearchTermChange}
+              placeholder="Search for a secret..."
+              value={editor.searchTerm}
+              wrapperClassName="relative w-full sm:w-[15rem] lg:w-[16rem]"
+            />
             <SecretsTableHeaderActions
               canCopyExport={editor.canCopyExport}
+              compact
               isCopyingExport={editor.isCopyingExport}
               onCopyExport={editor.onCopyExport}
               onOpenAddSecret={editor.onOpenAddSecret}
               onOpenImportModal={editor.onOpenImportModal}
             />
           </div>
-        ) : null}
-      </div>
-
-      <Separator />
+        </div>
+      ) : null}
 
       <SecretsContent
+        hasActiveSearch={editor.hasActiveSearch}
+        hasSelectedEnvironment={editor.hasSelectedEnvironment}
         isError={editor.isError}
         isLoading={editor.isLoading}
         isSaving={editor.isSaving}
@@ -69,6 +102,7 @@ export function SecretsSection({
         onStartValueEdit={editor.onStartValueEdit}
         onToggleDelete={editor.onToggleDelete}
         rows={editor.rows}
+        searchTerm={editor.searchTerm}
       />
 
       {showFooterActions ? (

@@ -150,17 +150,6 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    expect(
-      await screen.findByRole('heading', { name: 'Secrets' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Environment', { selector: 'span' }),
-    ).toBeInTheDocument()
-    expect(
-      screen
-        .getByRole('heading', { name: 'Secrets' })
-        .closest('section'),
-    ).not.toContainElement(screen.getByText('Environment', { selector: 'span' }))
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
@@ -898,7 +887,7 @@ describe('SecretsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Import' }))
 
     expect(await screen.findByText('Secrets imported')).toBeInTheDocument()
-    expect(await screen.findByRole('row', { name: /Key API_KEY/ })).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('API_KEY')).toBeInTheDocument()
 
     const importCalls = getImportCalls(fetchMock)
     expect(importCalls).toHaveLength(1)
@@ -964,9 +953,7 @@ describe('SecretsPage', () => {
 
     expect(await screen.findByText('Secrets imported')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument()
-    expect(
-      await screen.findByRole('row', { name: /Key DATABASE_URL/ }),
-    ).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('DATABASE_URL')).toBeInTheDocument()
   })
 
   it('shows an import error toast when the import request fails', async () => {
@@ -1032,32 +1019,83 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    const table = await screen.findByRole('table', {
+    const list = await screen.findByRole('list', {
+      name: 'Project secrets',
+    })
+
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2)
+    expect(within(list).getByDisplayValue('API_KEY')).toBeInTheDocument()
+    expect(within(list).getByDisplayValue('************')).toBeInTheDocument()
+    expect(
+      within(list).getByRole('button', { name: 'View history for API_KEY' }),
+    ).toBeInTheDocument()
+    expect(
+      within(list).getByRole('button', { name: 'Reveal API_KEY' }),
+    ).toBeInTheDocument()
+    expect(
+      within(list).getByRole('button', { name: 'Delete API_KEY' }),
+    ).toBeInTheDocument()
+    expect(within(list).getByDisplayValue('DATABASE_URL')).toBeInTheDocument()
+    expect(
+      within(list).getByRole('button', { name: 'Delete DATABASE_URL' }),
+    ).toBeInTheDocument()
+  })
+
+  it('filters and sorts secrets from the toolbar', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      environmentsRoute,
+      {
+        path: '/projects/project-1/secrets',
+        body: [
+          {
+            id: 'config-1',
+            key: 'BETA_KEY',
+            hasValue: true,
+            revision: 1,
+          },
+          {
+            id: 'config-2',
+            key: 'ALPHA_KEY',
+            hasValue: false,
+            revision: 0,
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    const list = await screen.findByRole('list', {
       name: 'Project secrets',
     })
 
     expect(
-      within(table).getByRole('columnheader', { name: 'Key' }),
-    ).toBeInTheDocument()
-    expect(
-      within(table).getByRole('columnheader', { name: 'Value' }),
-    ).toBeInTheDocument()
+      within(list).getAllByRole('textbox', { name: 'Key' }).map((input) => input.getAttribute('value')),
+    ).toEqual(['ALPHA_KEY', 'BETA_KEY'])
 
-    expect(within(table).getByDisplayValue('API_KEY')).toBeInTheDocument()
-    expect(within(table).getByDisplayValue('************')).toBeInTheDocument()
+    await user.click(
+      screen.getByRole('button', { name: /secret sort: key \(a-z\)/i }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Key (Z-A)' }))
+
     expect(
-      within(table).getByRole('button', { name: 'View history for API_KEY' }),
-    ).toBeInTheDocument()
-    expect(
-      within(table).getByRole('button', { name: 'Reveal API_KEY' }),
-    ).toBeInTheDocument()
-    expect(
-      within(table).getByRole('button', { name: 'Delete API_KEY' }),
-    ).toBeInTheDocument()
-    expect(within(table).getByDisplayValue('DATABASE_URL')).toBeInTheDocument()
-    expect(
-      within(table).getByRole('button', { name: 'Delete DATABASE_URL' }),
-    ).toBeInTheDocument()
+      within(list).getAllByRole('textbox', { name: 'Key' }).map((input) => input.getAttribute('value')),
+    ).toEqual(['BETA_KEY', 'ALPHA_KEY'])
+
+    await user.type(
+      screen.getByRole('searchbox', { name: 'Search secrets' }),
+      'alpha',
+    )
+
+    expect(within(list).getAllByRole('listitem')).toHaveLength(1)
+    expect(within(list).getByDisplayValue('ALPHA_KEY')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('BETA_KEY')).not.toBeInTheDocument()
   })
 
   it('removes the edit button and lets existing rows be edited immediately', async () => {
@@ -1152,7 +1190,7 @@ describe('SecretsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret created')).toBeInTheDocument()
-    expect(await screen.findByRole('row', { name: /API_KEY/ })).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('API_KEY')).toBeInTheDocument()
     expect(getBulkSaveCalls(fetchMock)).toHaveLength(1)
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/projects/project-1/secrets/operations'),
@@ -1197,10 +1235,8 @@ describe('SecretsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
     expect(await screen.findByText('Secret renamed')).toBeInTheDocument()
-    expect(
-      await screen.findByRole('row', { name: /PUBLIC_KEY/ }),
-    ).toBeInTheDocument()
-    expect(screen.queryByRole('row', { name: /API_KEY/ })).not.toBeInTheDocument()
+    expect(await screen.findByDisplayValue('PUBLIC_KEY')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('API_KEY')).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/projects/project-1/secrets/operations'),
       expect.objectContaining({

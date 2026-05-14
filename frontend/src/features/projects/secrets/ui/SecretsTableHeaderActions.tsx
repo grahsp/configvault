@@ -1,4 +1,4 @@
-import { ChevronDownIcon, MoreHorizontalIcon } from 'lucide-react'
+import { ChevronDownIcon } from 'lucide-react'
 import { Button } from '../../../../components/ui/button'
 import {
   ButtonGroup,
@@ -13,6 +13,7 @@ import {
 
 interface SecretsTableHeaderActionsProps {
   canCopyExport: boolean
+  compact?: boolean
   isCopyingExport: boolean
   onCopyExport: () => Promise<void>
   onOpenAddSecret: () => void
@@ -21,15 +22,20 @@ interface SecretsTableHeaderActionsProps {
 
 export function SecretsTableHeaderActions({
   canCopyExport,
+  compact = false,
   isCopyingExport,
   onCopyExport,
   onOpenAddSecret,
   onOpenImportModal,
 }: SecretsTableHeaderActionsProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <ButtonGroup className="overflow-hidden rounded-lg bg-primary text-primary-foreground">
-        <Button className="rounded-lg" onClick={onOpenAddSecret} type="button">
+        <Button
+          className={compact ? 'h-8 rounded-lg px-3 text-sm' : 'rounded-lg'}
+          onClick={onOpenAddSecret}
+          type="button"
+        >
           + Add Secret
         </Button>
         <ButtonGroupSeparator className="my-2 w-px shrink-0 self-stretch bg-primary-foreground/20" />
@@ -37,8 +43,8 @@ export function SecretsTableHeaderActions({
           <DropdownMenuTrigger asChild>
             <Button
               aria-label="Open add secret actions"
-              className="h-9 w-9 rounded-lg"
-              size="icon"
+              className={compact ? 'h-8 w-8 rounded-lg' : 'h-9 w-9 rounded-lg'}
+              size={compact ? 'icon-sm' : 'icon'}
               type="button"
               variant="default"
             >
@@ -58,13 +64,18 @@ export function SecretsTableHeaderActions({
           <DropdownMenuTrigger asChild>
             <Button
               aria-label="Secret actions"
-              className="h-9 w-9 rounded-lg"
+              className={
+                compact
+                  ? 'h-8 rounded-lg px-3 text-sm text-foreground shadow-none'
+                  : 'h-9 rounded-lg px-3.5 text-sm text-foreground shadow-none'
+              }
               disabled={isCopyingExport}
-              size="icon"
+              size={compact ? 'sm' : 'default'}
               type="button"
               variant="ghost"
             >
-              <MoreHorizontalIcon />
+              <span>Export</span>
+              <ChevronDownIcon />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

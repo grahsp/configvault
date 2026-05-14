@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { buildSecretRows } from './secretRowViewModels.ts'
 import type {
   SecretRowViewModel,
@@ -18,13 +18,19 @@ import { useSecretsTransferActions } from './useSecretsTransferActions.ts'
 
 interface UseSecretsEditorOptions {
   environmentName: string
+  isEnvironmentLoading: boolean
   projectId: string
 }
 
+type SecretSortOptionId = 'key-asc' | 'key-desc'
+
 export function useSecretsEditor({
   environmentName,
+  isEnvironmentLoading,
   projectId,
 }: UseSecretsEditorOptions) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortOptionId, setSortOptionId] = useState<SecretSortOptionId>('key-asc')
   const secretsQuery = useSecretsQuery(projectId, environmentName)
   const mutations = useSecretsMutations(projectId, environmentName)
   const secrets = secretsQuery.data ?? []
@@ -95,6 +101,26 @@ export function useSecretsEditor({
       visibleRevealedValues,
     ],
   )
+  const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase()
+  const filteredRows = useMemo(() => {
+    const sortedRows = [...rows].sort((firstRow, secondRow) => {
+      const direction = sortOptionId === 'key-desc' ? -1 : 1
+
+      return (
+        firstRow.draftKey.localeCompare(secondRow.draftKey, undefined, {
+          sensitivity: 'base',
+        }) * direction
+      )
+    })
+
+    if (!normalizedSearchTerm) {
+      return sortedRows
+    }
+
+    return sortedRows.filter((row) =>
+      row.draftKey.toLocaleLowerCase().includes(normalizedSearchTerm),
+    )
+  }, [normalizedSearchTerm, rows, sortOptionId])
 
   const editSessionState: SecretsEditSessionController = {
     setDrafts,
@@ -154,13 +180,14 @@ export function useSecretsEditor({
   return {
     canCopyExport: Boolean(environmentName),
     environmentName,
+    hasSelectedEnvironment: Boolean(environmentName),
     hasUnsavedChanges,
     historySecret,
     isCopyingExport: mutations.exportSecrets.isPending,
     isError: secretsQuery.isError,
     isImportModalOpen,
     isImporting: mutations.importSecrets.isPending,
-    isLoading: !environmentName || secretsQuery.isLoading,
+    isLoading: isEnvironmentLoading || secretsQuery.isLoading,
     isSaving: mutations.saveSecrets.isPending,
     loadErrorMessage: secretsQuery.isError
         ? getErrorMessage(
@@ -168,6 +195,7 @@ export function useSecretsEditor({
           'Something went wrong while loading secrets.',
         )
       : undefined,
+    hasActiveSearch: Boolean(normalizedSearchTerm),
     onCancelEdit: editSession.onCancelEdit,
     onCloseImportModal: editSession.onCloseImportModal,
     onCopyExport: transferActions.onCopyExport,
@@ -181,9 +209,14 @@ export function useSecretsEditor({
     onReveal: revealActions.onReveal,
     onRetry: () => secretsQuery.refetch(),
     onSaveEdit: saveActions.onSaveEdit,
+    onSearchTermChange: setSearchTerm,
     onStartValueEdit: revealActions.onStartValueEdit,
+    onSortOptionChange: setSortOptionId,
     onToggleDelete: editSession.onToggleDelete,
-    rows,
+    rows: filteredRows,
+    searchTerm,
+    sortOptionId,
+    totalRowCount: rows.length,
   }
 }
 

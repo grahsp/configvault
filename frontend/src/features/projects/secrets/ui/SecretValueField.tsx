@@ -108,13 +108,13 @@ export function SecretValueField({
     secret.hasValue && draftValue === null && !isMarkedForDeletion
 
   return (
-    <Field className="gap-2">
+    <Field className="gap-1.5">
       <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`value-${secret.id}`}>
         Value
       </FieldLabel>
       <Input
         className={cn(
-          "h-10 rounded-xl border-border/60 bg-background font-mono shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
+          "h-9 rounded-xl border-border/60 bg-background font-mono shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
           isMarkedForDeletion && "line-through",
         )}
         disabled={isSaving || isMarkedForDeletion}

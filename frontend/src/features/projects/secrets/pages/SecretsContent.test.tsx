@@ -19,6 +19,8 @@ function createProps(
   const secret = createSecret()
 
   return {
+    hasActiveSearch: false,
+    hasSelectedEnvironment: true,
     isError: false,
     isLoading: false,
     isSaving: false,
@@ -45,6 +47,7 @@ function createProps(
         shouldFocus: false,
       },
     ],
+    searchTerm: '',
     ...overrides,
   }
 }
@@ -55,7 +58,7 @@ describe('SecretsContent', () => {
 
     expect(screen.getByText('Loading secrets...')).toBeInTheDocument()
     expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Project secrets' })).not.toBeInTheDocument()
   })
 
   it('renders only the error branch', () => {
@@ -72,7 +75,7 @@ describe('SecretsContent', () => {
     expect(screen.getByText('Failed to load secrets.')).toBeInTheDocument()
     expect(screen.getByText('Load failed.')).toBeInTheDocument()
     expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Project secrets' })).not.toBeInTheDocument()
   })
 
   it('renders only the empty branch', () => {
@@ -81,19 +84,52 @@ describe('SecretsContent', () => {
     expect(screen.getByText('No secrets yet')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '+ Add Secret' })).toBeInTheDocument()
     expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Project secrets' })).not.toBeInTheDocument()
   })
 
-  it('renders only the table branch when rows exist', () => {
+  it('renders only the list branch when rows exist', () => {
     render(<SecretsContent {...createProps()} />)
 
     expect(
-      screen.getByRole('table', { name: 'Project secrets' }),
+      screen.getByRole('list', { name: 'Project secrets' }),
     ).toBeInTheDocument()
     expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
     expect(screen.queryByText('Failed to load secrets.')).not.toBeInTheDocument()
     expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+  })
+
+  it('renders the blocked branch when no environment is selected', () => {
+    render(
+      <SecretsContent
+        {...createProps({
+          hasSelectedEnvironment: false,
+          rows: [],
+        })}
+      />,
+    )
+
+    expect(screen.getByText('No environment available')).toBeInTheDocument()
+    expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
+    expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
+  })
+
+  it('renders a search-specific empty state when no secrets match', () => {
+    render(
+      <SecretsContent
+        {...createProps({
+          hasActiveSearch: true,
+          rows: [],
+          searchTerm: 'missing',
+        })}
+      />,
+    )
+
+    expect(screen.getByText('No matching secrets')).toBeInTheDocument()
+    expect(
+      screen.getByText(/No secrets matched "missing"/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('No secrets yet')).not.toBeInTheDocument()
   })
 
   it('shows a history action only for secrets that have a saved value', () => {

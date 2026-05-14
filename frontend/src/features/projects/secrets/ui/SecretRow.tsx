@@ -74,68 +74,70 @@ export function SecretRow({
   return (
     <div
       className={cn(
-        "grid gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-start",
+        "px-1 py-1.5 transition-colors hover:bg-muted/10",
         isMarkedForDeletion && "bg-destructive/5 opacity-70",
       )}
-      role="row"
+      role="listitem"
     >
-      <div role="cell">
-        <Field className="gap-2">
-          <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`key-${secret.id}`}>
-            Key
-          </FieldLabel>
-          <Input
-            aria-describedby={validationError ? errorId : undefined}
-            aria-invalid={Boolean(validationError)}
-            className={cn(
-              "h-10 rounded-xl border-border/60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
-              isMarkedForDeletion && "line-through",
-            )}
-            disabled={isSaving || isMarkedForDeletion}
-            id={`key-${secret.id}`}
-            onChange={(event) => onDraftKeyChange(event.target.value)}
-            onKeyDown={handleKeyDown}
-            readOnly={isMarkedForDeletion}
-            ref={keyFieldRef}
-            type="text"
-            value={draftKey}
+      <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] md:items-start md:gap-3">
+        <div>
+          <Field className="gap-1.5">
+            <FieldLabel className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:sr-only" htmlFor={`key-${secret.id}`}>
+              Key
+            </FieldLabel>
+            <Input
+              aria-describedby={validationError ? errorId : undefined}
+              aria-invalid={Boolean(validationError)}
+              className={cn(
+                "h-9 rounded-xl border-border/60 bg-background shadow-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                isMarkedForDeletion && "line-through",
+              )}
+              disabled={isSaving || isMarkedForDeletion}
+              id={`key-${secret.id}`}
+              onChange={(event) => onDraftKeyChange(event.target.value)}
+              onKeyDown={handleKeyDown}
+              readOnly={isMarkedForDeletion}
+              ref={keyFieldRef}
+              type="text"
+              value={draftKey}
+            />
+            {validationError ? (
+              <FieldDescription
+                className="text-destructive"
+                id={errorId}
+                role="alert"
+              >
+                {validationError}
+              </FieldDescription>
+            ) : null}
+          </Field>
+        </div>
+        <div>
+          <SecretValueField
+            draftValue={draftValue}
+            isMarkedForDeletion={isMarkedForDeletion}
+            isSaving={isSaving}
+            isValueRevealed={isValueRevealed}
+            onCancelEdit={onCancelEdit}
+            onDraftValueChange={onDraftValueChange}
+            onSaveEdit={onSaveEdit}
+            onStartValueEdit={onStartValueEdit}
+            revealedValue={revealedValue}
+            secret={secret}
           />
-          {validationError ? (
-            <FieldDescription
-              className="text-destructive"
-              id={errorId}
-              role="alert"
-            >
-              {validationError}
-            </FieldDescription>
-          ) : null}
-        </Field>
-      </div>
-      <div role="cell">
-        <SecretValueField
-          draftValue={draftValue}
-          isMarkedForDeletion={isMarkedForDeletion}
-          isSaving={isSaving}
-          isValueRevealed={isValueRevealed}
-          onCancelEdit={onCancelEdit}
-          onDraftValueChange={onDraftValueChange}
-          onSaveEdit={onSaveEdit}
-          onStartValueEdit={onStartValueEdit}
-          revealedValue={revealedValue}
-          secret={secret}
-        />
-      </div>
-      <div className="flex justify-start md:justify-end" role="cell">
-        <SecretRowActions
-          isMarkedForDeletion={isMarkedForDeletion}
-          isRevealing={isRevealing}
-          isSaving={isSaving}
-          isValueRevealed={isValueRevealed}
-          onDeleteToggle={onDeleteToggle}
-          onOpenHistory={onOpenHistory}
-          onReveal={onReveal}
-          secret={secret}
-        />
+        </div>
+        <div className="flex justify-start md:justify-end">
+          <SecretRowActions
+            isMarkedForDeletion={isMarkedForDeletion}
+            isRevealing={isRevealing}
+            isSaving={isSaving}
+            isValueRevealed={isValueRevealed}
+            onDeleteToggle={onDeleteToggle}
+            onOpenHistory={onOpenHistory}
+            onReveal={onReveal}
+            secret={secret}
+          />
+        </div>
       </div>
     </div>
   )
