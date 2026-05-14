@@ -11,7 +11,7 @@ export function SecretsPage() {
     useOutletContext<ProjectLayoutContext>()
 
   return (
-    <section className="flex flex-col pt-3 sm:pt-4">
+    <section className="flex flex-col pt-2 sm:pt-2.5">
       <SecretsSection
         environmentName={selectedEnvironmentName}
         isEnvironmentLoading={isEnvironmentLoading}
