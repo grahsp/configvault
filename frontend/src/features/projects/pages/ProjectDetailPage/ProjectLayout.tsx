@@ -1,10 +1,11 @@
+import { ArrowLeftIcon } from 'lucide-react'
 import { Link, Outlet } from 'react-router-dom'
-import { EnvironmentDropdown, type Environment } from '../../environments'
-import { cx } from '../../../../shared/utils/cx'
+import type { Environment } from '../../environments'
 import type { ProjectDetails } from '../../domain'
 import { ProjectSubNav } from '../../ui'
+import { Button } from '../../../../components/ui/button'
 import type { ProjectLayoutContext } from './ProjectDetailPage'
-import styles from './ProjectDetailPage.module.css'
+import { ProjectEnvironmentSelect } from './ProjectEnvironmentSelect'
 
 interface ProjectLayoutProps {
   isSecretsRoute: boolean
@@ -25,33 +26,47 @@ export function ProjectLayout({
 }: ProjectLayoutProps) {
   return (
     <>
-      <div className={cx(styles.cardHeader, styles.detailHeader)}>
-        <div className={styles.titleSection}>
-          <Link className={styles.backLink} to="/projects">
-            Back to projects
-          </Link>
-          <div className={styles.titleBar}>
-            <h1 id="project-detail-title">{project.name}</h1>
+      <div className="flex flex-col gap-6 pb-2 sm:gap-7">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              asChild
+              className="w-fit rounded-xl px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+              size="sm"
+              variant="ghost"
+            >
+              <Link to="/projects">
+                <ArrowLeftIcon data-icon="inline-start" />
+                Back to projects
+              </Link>
+            </Button>
             {isSecretsRoute ? (
-              <div className={styles.environmentPicker}>
-                <span className={styles.environmentLabel}>Environment</span>
-                <EnvironmentDropdown
-                  onEnvironmentChange={onEnvironmentChange}
-                  onSelectedEnvironmentChange={onSelectedEnvironmentChange}
-                  projectId={project.id}
-                  selectedEnvironmentId={selectedEnvironmentId}
-                />
-              </div>
+              <ProjectEnvironmentSelect
+                onEnvironmentChange={onEnvironmentChange}
+                onSelectedEnvironmentChange={onSelectedEnvironmentChange}
+                projectId={project.id}
+                selectedEnvironmentId={selectedEnvironmentId}
+              />
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h1
+              className="m-0 text-[clamp(1.7rem,4vw,2.2rem)] font-extrabold leading-[0.96] tracking-[-0.02em]"
+              id="project-detail-title"
+            >
+              {project.name}
+            </h1>
+            {project.description ? (
+              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                {project.description}
+              </p>
             ) : null}
           </div>
         </div>
+
+        <ProjectSubNav projectId={project.id} />
       </div>
-
-      {project.description ? (
-        <p className={styles.cardCopy}>{project.description}</p>
-      ) : null}
-
-      <ProjectSubNav projectId={project.id} />
       <Outlet
         context={{ project, selectedEnvironmentName } satisfies ProjectLayoutContext}
       />

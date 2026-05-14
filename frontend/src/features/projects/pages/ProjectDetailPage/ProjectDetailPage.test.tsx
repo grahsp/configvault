@@ -190,11 +190,13 @@ describe('ProjectDetailPage', () => {
       '/projects/project-1/secrets?environmentId=env-staging',
     )
 
-    expect(
-      await screen.findByRole('button', {
-        name: /^Staging$/,
-      }),
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.getByRole('combobox', {
+          name: 'Environment',
+        }),
+      ).toHaveTextContent('Staging')
+    })
     expect(
       screen
         .getByRole('heading', { name: 'Production secrets' })
@@ -229,8 +231,8 @@ describe('ProjectDetailPage', () => {
     const { router } = renderProjectDetail('/projects/project-1/secrets')
 
     await user.click(
-      await screen.findByRole('button', {
-        name: /^Development$/,
+      await screen.findByRole('combobox', {
+        name: 'Environment',
       }),
     )
     await user.click(screen.getByRole('option', { name: 'Staging' }))

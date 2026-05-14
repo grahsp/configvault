@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { Navigate, createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
+import { AppLayout } from '../../../../layouts/AppLayout'
+import { CurrentUserContext } from '../../../users/model/currentUserContext'
 import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { SecretsPage } from '../../secrets/pages'
 import { MembersPage } from '../../members/pages'
@@ -35,14 +37,42 @@ function createTestQueryClient() {
   })
 }
 
+function ensurePointerCapturePolyfill() {
+  if (!HTMLElement.prototype.hasPointerCapture) {
+    HTMLElement.prototype.hasPointerCapture = () => false
+  }
+
+  if (!HTMLElement.prototype.setPointerCapture) {
+    HTMLElement.prototype.setPointerCapture = () => undefined
+  }
+
+  if (!HTMLElement.prototype.releasePointerCapture) {
+    HTMLElement.prototype.releasePointerCapture = () => undefined
+  }
+
+  if (!HTMLElement.prototype.scrollIntoView) {
+    HTMLElement.prototype.scrollIntoView = () => undefined
+  }
+}
+
 function renderProjectDetailResult(router: ReturnType<typeof createMemoryRouter>) {
   const queryClient = createTestQueryClient()
+  ensurePointerCapturePolyfill()
 
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <RouterProvider router={router} />
+          <CurrentUserContext.Provider
+            value={{
+              user: undefined,
+              isLoading: false,
+              error: undefined,
+              refreshCurrentUser: async () => undefined,
+            }}
+          >
+            <RouterProvider router={router} />
+          </CurrentUserContext.Provider>
         </ToastProvider>
       </QueryClientProvider>,
     ),
@@ -54,24 +84,30 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
   const router = createMemoryRouter(
     [
       {
-        path: '/projects/:projectId',
-        element: <ProjectDetailPage />,
+        path: '/',
+        element: <AppLayout />,
         children: [
           {
-            index: true,
-            element: <Navigate to="secrets" replace />,
-          },
-          {
-            path: 'general',
-            element: <GeneralPage />,
-          },
-          {
-            path: 'secrets',
-            element: <SecretsPage />,
-          },
-          {
-            path: 'members',
-            element: <MembersPage />,
+            path: 'projects/:projectId',
+            element: <ProjectDetailPage />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="secrets" replace />,
+              },
+              {
+                path: 'general',
+                element: <GeneralPage />,
+              },
+              {
+                path: 'secrets',
+                element: <SecretsPage />,
+              },
+              {
+                path: 'members',
+                element: <MembersPage />,
+              },
+            ],
           },
         ],
       },

@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { type Environment } from '../../environments'
-import { Button, StatePanel } from '../../../../shared/ui'
-import { cx } from '../../../../shared/utils/cx'
+import { StatePanel } from '../../../../shared/ui'
 import {
   getErrorMessage,
   isAuthError,
@@ -10,8 +9,8 @@ import {
   type ProjectDetails,
 } from '../../domain'
 import { useProject } from '../../application'
+import { Button } from '../../../../components/ui/button'
 import { ProjectLayout } from './ProjectLayout'
-import styles from './ProjectDetailPage.module.css'
 
 export function ProjectDetailPage() {
   const location = useLocation()
@@ -47,8 +46,8 @@ export function ProjectDetailPage() {
 
   if (!projectId) {
     return (
-      <main className={cx(styles.page, styles.pageTop)}>
-        <section className={styles.card}>
+      <div className="flex flex-col gap-6 pb-8 pt-3 sm:gap-7 sm:pb-10 sm:pt-0">
+        <section className="max-w-3xl rounded-2xl border border-border/60 bg-background p-6">
           <StatePanel title="Project not found">
             <p>
               Check the project link or return to your workspace.
@@ -56,7 +55,7 @@ export function ProjectDetailPage() {
             <BackToProjectsLink />
           </StatePanel>
         </section>
-      </main>
+      </div>
     )
   }
 
@@ -66,8 +65,8 @@ export function ProjectDetailPage() {
     projectQuery.isError && isAuthError(projectQuery.error)
 
   return (
-    <main className={cx(styles.page, styles.pageTop)}>
-      <section className={styles.card} aria-labelledby="project-detail-title">
+    <div className="flex flex-col gap-6 pb-8 pt-3 sm:gap-7 sm:pb-10 sm:pt-0">
+      <section aria-labelledby="project-detail-title" className="flex flex-col gap-6">
         {projectQuery.isPending ? (
           <StatePanel role="status" title="Loading project">
             <p>
@@ -126,7 +125,7 @@ export function ProjectDetailPage() {
           />
         ) : null}
       </section>
-    </main>
+    </div>
   )
 }
 
@@ -148,8 +147,8 @@ function ProjectNotFoundState() {
 
 function BackToProjectsLink() {
   return (
-    <Link className={styles.backActionLink} to="/projects">
-      Back to projects
-    </Link>
+    <Button asChild className="w-fit rounded-xl" type="button" variant="outline">
+      <Link to="/projects">Back to projects</Link>
+    </Button>
   )
 }
