@@ -64,9 +64,13 @@ describe('ProjectDetailPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Project/i })).toHaveTextContent(
+      'Production secrets',
+    )
+    expect(screen.queryByText('Credentials for production services')).not.toBeInTheDocument()
     expect(
-      screen.getByText('Credentials for production services'),
-    ).toBeInTheDocument()
+      screen.queryByRole('link', { name: 'Back to projects' }),
+    ).not.toBeInTheDocument()
     expect(
       await screen.findByRole('heading', { name: 'Secrets' }),
     ).toBeInTheDocument()
@@ -158,7 +162,7 @@ describe('ProjectDetailPage', () => {
       screen
         .getByRole('heading', { name: 'Production secrets' })
         .closest('section'),
-    ).toContainElement(screen.getByText('Environment', { selector: 'span' }))
+    ).toContainElement(screen.getByRole('button', { name: /Environment/i }))
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -181,7 +185,7 @@ describe('ProjectDetailPage', () => {
         ],
       },
       {
-        path: '/projects/project-1/secrets',
+        path: '/projects/project-1/secrets?environment=Staging',
         body: [],
       },
     ])
@@ -192,8 +196,8 @@ describe('ProjectDetailPage', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('combobox', {
-          name: 'Environment',
+        screen.getByRole('button', {
+          name: /Environment/i,
         }),
       ).toHaveTextContent('Staging')
     })
@@ -201,8 +205,78 @@ describe('ProjectDetailPage', () => {
       screen
         .getByRole('heading', { name: 'Production secrets' })
         .closest('section'),
-    ).toContainElement(screen.getByText('Environment', { selector: 'span' }))
+    ).toContainElement(screen.getByRole('button', { name: /Environment/i }))
     expect(router.state.location.search).toBe('?environmentId=env-staging')
+  })
+
+  it('auto-selects the first environment on the secrets route and requests matching secrets', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets?environment=Development',
+        body: [],
+      },
+    ])
+
+    const { router } = renderProjectDetail('/projects/project-1/secrets')
+
+    expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?environmentId=env-development')
+    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+      'Development',
+    )
+  })
+
+  it('rewrites stale environment ids to the resolved project environment before loading secrets', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets?environment=Development',
+        body: [],
+      },
+    ])
+
+    const { router } = renderProjectDetail(
+      '/projects/project-1/secrets?environmentId=env-retired',
+    )
+
+    expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?environmentId=env-development')
+    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+      'Development',
+    )
   })
 
   it('updates the secrets route query string when selecting an environment', async () => {
@@ -226,13 +300,21 @@ describe('ProjectDetailPage', () => {
           },
         ],
       },
+      {
+        path: '/projects/project-1/secrets?environment=Development',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/secrets?environment=Staging',
+        body: [],
+      },
     ])
 
     const { router } = renderProjectDetail('/projects/project-1/secrets')
 
     await user.click(
-      await screen.findByRole('combobox', {
-        name: 'Environment',
+      await screen.findByRole('button', {
+        name: /Environment/i,
       }),
     )
     await user.click(screen.getByRole('option', { name: 'Staging' }))
@@ -242,9 +324,9 @@ describe('ProjectDetailPage', () => {
       'href',
       '/projects/project-1/members?environmentId=env-staging',
     )
-    expect(
-      screen.queryByRole('button', { name: '+ Add Secret' }),
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+      'Staging',
+    )
   })
 
   it('renders the members route directly', async () => {
@@ -288,6 +370,130 @@ describe('ProjectDetailPage', () => {
     expect(
       screen.getByRole('button', { name: 'Invite Link' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Environment/i })).toBeInTheDocument()
+  })
+
+  it('filters projects and keeps the current section when switching projects', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects',
+        body: [
+          {
+            id: 'project-1',
+            name: 'Production secrets',
+          },
+          {
+            id: 'project-2',
+            name: 'Staging vault',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [],
+      },
+      {
+        path: '/projects/project-2',
+        body: {
+          ...projectDetails,
+          id: 'project-2',
+          name: 'Staging vault',
+        },
+      },
+      {
+        path: '/projects/project-2/environments',
+        body: [
+          {
+            id: 'env-production',
+            environmentName: 'Production',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-2/secrets?environment=Production',
+        body: [],
+      },
+    ])
+
+    const { router } = renderProjectDetail(
+      '/projects/project-1/secrets?environmentId=env-staging',
+    )
+
+    await user.click(await screen.findByRole('button', { name: /Project/i }))
+    await user.type(screen.getByPlaceholderText('Search projects...'), 'vault')
+    await user.click(screen.getByRole('option', { name: 'Staging vault' }))
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/projects/project-2/secrets')
+    })
+    expect(router.state.location.search).toBe('?environmentId=env-production')
+    expect(screen.getByRole('button', { name: /Project/i })).toHaveTextContent(
+      'Staging vault',
+    )
+    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+      'Production',
+    )
+  })
+
+  it('filters environments and closes the selector with escape', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets',
+        body: [],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/secrets')
+
+    await user.click(await screen.findByRole('button', { name: /Environment/i }))
+    await user.type(screen.getByPlaceholderText('Search environments...'), 'stag')
+
+    expect(screen.getByRole('option', { name: 'Staging' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('option', { name: 'Development' }),
+    ).not.toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+
+    await waitFor(() => {
+      expect(
+        screen.queryByPlaceholderText('Search environments...'),
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('creates and copies an invitation URL from the members page', async () => {
@@ -1376,6 +1582,19 @@ describe('ProjectDetailPage', () => {
         body: projectDetails,
       },
       {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/secrets?environment=Development',
+        body: [],
+      },
+      {
         path: '/projects/project-1/members',
         body: [],
       },
@@ -1403,6 +1622,28 @@ describe('ProjectDetailPage', () => {
     expect(screen.getByRole('link', { name: 'Secrets' })).not.toHaveAttribute(
       'aria-current',
     )
+  })
+
+  it('shows a non-loading empty state when a project has no environments', async () => {
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [],
+      },
+    ])
+
+    const { router } = renderProjectDetail('/projects/project-1/secrets')
+
+    expect(await screen.findByText('No environment available')).toBeInTheDocument()
+    expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
+    expect(router.state.location.search).toBe('')
+    expect(
+      screen.queryByRole('button', { name: '+ Add Secret' }),
+    ).not.toBeInTheDocument()
   })
 
   it('shows an error state when project details cannot load', async () => {

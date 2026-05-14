@@ -1,5 +1,4 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Tabs, TabsList } from '../../../../components/ui/tabs'
 import { cn } from '../../../../lib/utils'
 
 interface ProjectSubNavProps {
@@ -9,11 +8,6 @@ interface ProjectSubNavProps {
 export function ProjectSubNav({ projectId }: ProjectSubNavProps) {
   const location = useLocation()
   const currentSearch = location.search
-  const activeTab = location.pathname.endsWith('/general')
-    ? 'general'
-    : location.pathname.endsWith('/members')
-      ? 'members'
-      : 'secrets'
   const tabs = [
     {
       label: 'General',
@@ -42,25 +36,24 @@ export function ProjectSubNav({ projectId }: ProjectSubNavProps) {
   ]
 
   return (
-    <Tabs className="w-full" value={activeTab}>
-      <nav aria-label="Project sections">
-        <TabsList className="h-auto w-full justify-start gap-6 rounded-none border-b border-border/50 bg-transparent p-0">
-          {tabs.map((tab) => (
-            <NavLink
-              className={({ isActive }) =>
-                cn(
-                  'inline-flex items-center border-b-2 border-transparent px-0 pb-3 pt-0 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground',
-                  isActive && 'border-foreground text-foreground',
-                )
-              }
-              key={tab.label}
-              to={tab.to}
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </TabsList>
-      </nav>
-    </Tabs>
+    <nav aria-label="Project sections">
+      <div className="flex items-center gap-2 border-b border-border/60">
+        {tabs.map((tab) => (
+          <NavLink
+            className={({ isActive }) =>
+              cn(
+                'relative inline-flex h-10 items-center rounded-t-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground hover:after:absolute hover:after:inset-x-3 hover:after:bottom-0 hover:after:h-0.5 hover:after:rounded-full hover:after:bg-foreground',
+                isActive &&
+                  'text-foreground after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary',
+              )
+            }
+            key={tab.label}
+            to={tab.to}
+          >
+            {tab.label}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
   )
 }

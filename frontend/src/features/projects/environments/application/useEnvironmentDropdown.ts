@@ -10,14 +10,12 @@ import { useEnvironments } from './useEnvironments.ts'
 
 interface UseEnvironmentDropdownOptions {
   onEnvironmentChange: (environmentId: string) => void
-  onSelectedEnvironmentChange?: (environment: Environment | null) => void
   projectId: string
   selectedEnvironmentId: string
 }
 
 export function useEnvironmentDropdown({
   onEnvironmentChange,
-  onSelectedEnvironmentChange,
   projectId,
   selectedEnvironmentId,
 }: UseEnvironmentDropdownOptions): EnvironmentDropdownProps {
@@ -31,9 +29,6 @@ export function useEnvironmentDropdown({
 
   const { selectedEnvironment, selectedIndex } = useEnvironmentSelection({
     environments,
-    onEnvironmentChange,
-    onSelectedEnvironmentChange,
-    projectId,
     selectedEnvironmentId,
   })
 

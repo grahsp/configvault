@@ -103,3 +103,16 @@ export function SecretsEmptyState({
     </div>
   )
 }
+
+export function SecretsEnvironmentRequiredState(props: SecretsStateProps) {
+  return (
+    <div
+      className={cn("flex min-h-40 flex-col justify-center gap-2 py-6", props.className)}
+    >
+      <h3 className="text-base font-semibold text-foreground">No environment available</h3>
+      <p className="text-sm text-muted-foreground">
+        Create an environment before managing this project&apos;s secrets.
+      </p>
+    </div>
+  )
+}

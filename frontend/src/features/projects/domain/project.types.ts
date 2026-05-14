@@ -9,6 +9,7 @@ export interface ProjectListItem {
 }
 
 export interface ProjectDetails {
+  defaultEnvironmentId?: string
   id: string
   name: string
   role?: ProjectRole

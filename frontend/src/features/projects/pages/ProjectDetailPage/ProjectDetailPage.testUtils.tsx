@@ -18,6 +18,19 @@ export type MockRoute = {
   status?: number
 }
 
+const defaultProjectsResponse = [
+  {
+    id: 'project-1',
+    name: 'Production secrets',
+    description: 'Credentials for production services',
+  },
+  {
+    id: 'project-2',
+    name: 'Staging secrets',
+    description: 'Credentials for staging services',
+  },
+]
+
 function LocationProbe() {
   const location = useLocation()
 
@@ -52,6 +65,22 @@ function ensurePointerCapturePolyfill() {
 
   if (!HTMLElement.prototype.scrollIntoView) {
     HTMLElement.prototype.scrollIntoView = () => undefined
+  }
+
+  if (!window.ResizeObserver) {
+    window.ResizeObserver = class ResizeObserver {
+      disconnect() {
+        return undefined
+      }
+
+      observe() {
+        return undefined
+      }
+
+      unobserve() {
+        return undefined
+      }
+    }
   }
 }
 
@@ -137,10 +166,10 @@ function emptyResponse(status = 204) {
   return new Response(null, { status })
 }
 
-function getRequestPath(input: RequestInfo | URL) {
+function getRequestUrl(input: RequestInfo | URL) {
   const url = input instanceof Request ? input.url : input.toString()
 
-  return new URL(url, window.location.origin).pathname
+  return new URL(url, window.location.origin)
 }
 
 export function mockFetchSequence(routes: MockRoute[]) {
@@ -148,14 +177,20 @@ export function mockFetchSequence(routes: MockRoute[]) {
   const fetchMock = vi.fn(
     async (input: RequestInfo | URL, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
-      const path = getRequestPath(input)
+      const requestUrl = getRequestUrl(input)
+      const path = `${requestUrl.pathname}${requestUrl.search}`
+      const pathname = requestUrl.pathname
       const matchingRouteIndex = pendingRoutes.findIndex(
         (route) =>
-          route.path === path &&
+          (route.path === path || route.path === pathname) &&
           (route.method ?? 'GET') === method.toUpperCase(),
       )
 
       if (matchingRouteIndex === -1) {
+        if (pathname === '/projects' && method.toUpperCase() === 'GET') {
+          return jsonResponse(defaultProjectsResponse)
+        }
+
         throw new Error(`Unexpected ${method} request to ${path}`)
       }
 
