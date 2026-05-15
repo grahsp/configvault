@@ -1,31 +1,66 @@
-import { Button, StatePanel } from '../../../../../shared/ui'
+import type { ReactNode } from 'react'
+import { Button } from '@/components/ui/button.tsx'
+import { cn } from '@/lib/utils.ts'
 import {
-  AddMemberForm,
-  InvitationLinksTable,
-  MembersTable,
+  InviteMemberDialog,
+  ManagementList,
+  ManagementListBody,
+  ManagementListHeader,
+  ManagementListHeaderCell,
   RemoveMemberDialog,
   RevokeInvitationDialog,
+  PendingInvitesSection,
+  SectionHeader,
 } from '../../ui'
 import { formatCreatedDate, getErrorMessage } from '../../../domain'
-import { useMembersPageState } from './useMembersPageState'
 import { MemberRowContainer } from './MemberRowContainer'
-import styles from '../../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
+import { useMembersPageState } from './useMembersPageState'
+
+interface MembersStatePanelProps {
+  actions?: ReactNode
+  children: ReactNode
+  className?: string
+  role?: 'status' | 'alert'
+  title: string
+  tone?: 'default' | 'error'
+}
+
+function MembersStatePanel({
+  actions,
+  children,
+  className,
+  role,
+  title,
+  tone = 'default',
+}: MembersStatePanelProps) {
+  return (
+    <div
+      className={cn(
+        'flex min-h-[var(--panel-min-height)] flex-col justify-center gap-4 rounded-[var(--radius-md)] border border-dashed border-[color:var(--color-border-strong)] bg-[color:var(--color-surface-muted)] p-6 text-left',
+        tone === 'error' &&
+          'border-[color:var(--color-border-danger)] bg-[color:var(--color-surface-danger)]',
+        className,
+      )}
+      role={role}
+    >
+      <div className="flex flex-col gap-2">
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+        <div className="text-sm leading-6 text-muted-foreground [&>*]:m-0">{children}</div>
+      </div>
+      {actions ? <div className="flex flex-wrap gap-3 max-sm:flex-col">{actions}</div> : null}
+    </div>
+  )
+}
 
 export function MembersPage() {
   const {
-    addMemberErrorMessage,
-    addMemberMutation,
     canManageMembers,
     closeRemoveDialog,
     closeRevokeInvitationDialog,
     confirmRevokeInvitation,
     confirmRemoveMember,
-    createInvitationMutation,
-    generateInvitation,
-    invitationError,
     invitationPendingRevocation,
     invitations,
-    invitationsQuery,
     memberPendingRemoval,
     members,
     membersQuery,
@@ -39,60 +74,42 @@ export function MembersPage() {
     removeMemberDialogDisplayName,
     removeMemberErrorMessage,
     removeMemberMutation,
-    setUserId,
-    submitAddMember,
-    userId,
   } = useMembersPageState()
 
   return (
-    <section className={styles.membersSection} aria-label="Project members">
-      <div className={`${styles.contentSection} ${styles.membersContentSection}`}>
-        <AddMemberForm
-          actions={
-            canManageMembers ? (
-              <Button
-                className={`${styles.memberAction} ${styles.memberActionSquare}`}
-                disabled={createInvitationMutation.isPending}
-                onClick={generateInvitation}
-                type="button"
-                variant="secondary"
-              >
-                {createInvitationMutation.isPending ? 'Inviting...' : 'Invite Link'}
-              </Button>
-            ) : null
+    <section aria-label="Project members" className="mt-4 grid gap-8">
+      <div className="grid gap-3">
+        <SectionHeader
+          actions={canManageMembers ? <InviteMemberDialog projectId={projectId} /> : undefined}
+          title={
+            <h2 className="m-0 text-xl font-semibold tracking-tight text-foreground">
+              Members ({members.length})
+            </h2>
           }
-          canManageMembers={canManageMembers}
-          errorMessage={addMemberErrorMessage}
-          isPending={addMemberMutation.isPending}
-          onSubmit={submitAddMember}
-          onUserIdChange={setUserId}
-          userId={userId}
         />
 
         {membersQuery.isPending ? (
-          <StatePanel
-            className={styles.sectionState}
+          <MembersStatePanel
+            className="min-h-[var(--panel-min-height)]"
             role="status"
             title="Loading members..."
           >
-            <p>
-              Project access details are being prepared.
-            </p>
-          </StatePanel>
+            <p>Project access details are being prepared.</p>
+          </MembersStatePanel>
         ) : null}
 
         {membersQuery.isError ? (
-          <StatePanel
+          <MembersStatePanel
             actions={
               <Button
                 onClick={() => membersQuery.refetch()}
                 type="button"
-                variant="secondary"
+                variant="outline"
               >
                 Retry
               </Button>
             }
-            className={styles.sectionState}
+            className="min-h-[var(--panel-min-height)]"
             role="alert"
             title="Failed to load members."
             tone="error"
@@ -103,124 +120,53 @@ export function MembersPage() {
                 'Something went wrong while loading project members.',
               )}
             </p>
-          </StatePanel>
+          </MembersStatePanel>
         ) : null}
 
         {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-          <StatePanel className={styles.sectionState} title="No members found.">
-            <p>
-              Members with project access will appear here.
-            </p>
-          </StatePanel>
+          <MembersStatePanel
+            className="min-h-[var(--panel-min-height)]"
+            title="No members found."
+          >
+            <p>Members with project access will appear here.</p>
+          </MembersStatePanel>
         ) : null}
 
         {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (
-          <MembersTable>
-            {members.map((member) => (
-              <MemberRowContainer
-                canManageMembers={canManageMembers}
-                isRemovePending={
-                  removeMemberMutation.isPending &&
-                  memberPendingRemoval?.userId === member.userId
-                }
-                key={member.userId}
-                member={member}
-                onRemove={openRemoveDialog}
-                projectId={projectId}
-              />
-            ))}
-          </MembersTable>
+          <ManagementList caption="Project members">
+            <ManagementListHeader>
+              <ManagementListHeaderCell>Name</ManagementListHeaderCell>
+              <ManagementListHeaderCell>Role</ManagementListHeaderCell>
+              <ManagementListHeaderCell className="w-px text-right">
+                Actions
+              </ManagementListHeaderCell>
+            </ManagementListHeader>
+            <ManagementListBody>
+              {members.map((member) => (
+                <MemberRowContainer
+                  canManageMembers={canManageMembers}
+                  isRemovePending={
+                    removeMemberMutation.isPending &&
+                    memberPendingRemoval?.userId === member.userId
+                  }
+                  key={member.userId}
+                  member={member}
+                  onRemove={openRemoveDialog}
+                  projectId={projectId}
+                />
+              ))}
+            </ManagementListBody>
+          </ManagementList>
         ) : null}
       </div>
 
-      {canManageMembers ? (
-        <div className={`${styles.contentSection} ${styles.invitationSection}`}>
-          <div className={styles.sectionHeader}>
-            <h2 className={`${styles.sectionTitle} ${styles.invitationSectionTitle}`}>
-              Invitations
-            </h2>
-          </div>
-
-          {invitationError ? (
-            <p className={styles.formError} role="alert">
-              {invitationError}
-            </p>
-          ) : null}
-
-          {invitationsQuery.isPending ? (
-            <StatePanel
-              className={styles.sectionState}
-              role="status"
-              title="Loading invitation links..."
-            >
-              <p>
-                Active invitation links are being prepared.
-              </p>
-            </StatePanel>
-          ) : null}
-
-          {invitationsQuery.isError ? (
-            <StatePanel
-              actions={
-                <Button
-                  onClick={() => invitationsQuery.refetch()}
-                  type="button"
-                  variant="secondary"
-                >
-                  Retry
-                </Button>
-              }
-              className={styles.sectionState}
-              role="alert"
-              title="Failed to load invitation links."
-              tone="error"
-            >
-              <p>
-                {getErrorMessage(
-                  invitationsQuery.error,
-                  'Something went wrong while loading invitation links.',
-                )}
-              </p>
-            </StatePanel>
-          ) : null}
-
-          {!invitationsQuery.isPending &&
-          !invitationsQuery.isError &&
-          invitations.length === 0 ? (
-            <StatePanel className={styles.sectionState} title="No active invitation links.">
-              <p>
-                Generate an invitation URL to grant project access with a link.
-              </p>
-            </StatePanel>
-          ) : null}
-
-          {!invitationsQuery.isPending &&
-          !invitationsQuery.isError &&
-          invitations.length > 0 ? (
-            <InvitationLinksTable>
-              {invitations.map((invitation) => (
-                <tr key={invitation.invitationId}>
-                  <th scope="row">{invitation.createdByName}</th>
-                  <td>{formatCreatedDate(invitation.createdAt)}</td>
-                  <td>{formatCreatedDate(invitation.expiresAt)}</td>
-                  <td>
-                    <Button
-                      disabled={
-                        revokeInvitationMutation.isPending &&
-                        invitationPendingRevocation?.invitationId === invitation.invitationId
-                      }
-                      onClick={() => openRevokeInvitationDialog(invitation)}
-                      type="button"
-                      variant="danger"
-                    >
-                      Revoke
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </InvitationLinksTable>
-          ) : null}
-        </div>
+      {canManageMembers && invitations.length > 0 ? (
+        <PendingInvitesSection
+          invitationPendingRevocation={invitationPendingRevocation}
+          invitations={invitations}
+          isRevokePending={revokeInvitationMutation.isPending}
+          onRevoke={openRevokeInvitationDialog}
+        />
       ) : null}
 
       {memberPendingRemoval ? (

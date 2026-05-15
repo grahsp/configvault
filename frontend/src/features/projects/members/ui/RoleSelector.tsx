@@ -1,7 +1,19 @@
-import type { ChangeEvent } from 'react'
-import { useId } from 'react'
+import { CheckIcon, ChevronDownIcon } from 'lucide-react'
+import { useId, useState } from 'react'
+import { Button } from '../../../../components/ui/button'
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '../../../../components/ui/command'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../../../../components/ui/popover'
 import type { ProjectRole } from '../domain'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
+import { cn } from '../../../../lib/utils'
 
 const roleLabels: Record<ProjectRole, string> = {
   owner: 'Owner',
@@ -28,35 +40,72 @@ export function RoleSelector({
   onRoleChange,
   role,
 }: RoleSelectorProps) {
-  const inputId = useId()
+  const [open, setOpen] = useState(false)
   const errorId = useId()
+  const isDisabled = !canEdit || isPending
 
-  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
-    onRoleChange(event.target.value as ProjectRole)
+  function handleSelect(nextRole: ProjectRole) {
+    onRoleChange(nextRole)
+    setOpen(false)
   }
 
   return (
-    <div className={styles.roleSelectorGroup}>
-      <label className={styles.visuallyHidden} htmlFor={inputId}>
-        Role for {displayName}
-      </label>
-      <select
-        aria-describedby={errorMessage ? errorId : undefined}
-        aria-invalid={errorMessage ? 'true' : undefined}
-        className={styles.roleSelector}
-        disabled={!canEdit || isPending}
-        id={inputId}
-        onChange={handleChange}
-        value={role}
-      >
-        {roleOptions.map((roleOption) => (
-          <option key={roleOption} value={roleOption}>
-            {roleLabels[roleOption]}
-          </option>
-        ))}
-      </select>
+    <div className="grid justify-items-start gap-1.5">
+      <Popover onOpenChange={setOpen} open={open}>
+        <PopoverTrigger asChild>
+          <Button
+            aria-describedby={errorMessage ? errorId : undefined}
+            aria-invalid={errorMessage ? 'true' : undefined}
+            aria-label={`Role for ${displayName}`}
+            className={cn(
+              'h-auto min-w-0 justify-start gap-1 rounded-none border-0 bg-transparent px-0 py-0 text-left text-sm font-medium text-muted-foreground shadow-none transition-colors hover:bg-transparent hover:text-foreground',
+              'disabled:pointer-events-none disabled:opacity-60',
+              !isDisabled && 'data-[state=open]:bg-transparent data-[state=open]:text-foreground',
+              errorMessage ? 'text-destructive' : null,
+            )}
+            disabled={isDisabled}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            <span>{roleLabels[role]}</span>
+            <ChevronDownIcon
+              className={cn(
+                'size-3.5 shrink-0 transition-transform group-aria-expanded/button:rotate-180',
+                errorMessage ? 'text-destructive/80' : 'text-muted-foreground',
+              )}
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="w-36 overflow-hidden border border-border p-0 ring-0"
+        >
+          <Command className="rounded-none border-0 bg-transparent">
+            <CommandList>
+              <CommandGroup>
+                {roleOptions.map((roleOption) => (
+                  <CommandItem
+                    key={roleOption}
+                    onSelect={() => handleSelect(roleOption)}
+                    value={roleOption}
+                  >
+                    <CheckIcon
+                      className={cn(
+                        'size-4 text-foreground transition-opacity',
+                        roleOption === role ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    <span>{roleLabels[roleOption]}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
       {errorMessage ? (
-        <p className={styles.inlineError} id={errorId} role="alert">
+        <p className="m-0 text-sm font-medium text-destructive" id={errorId} role="alert">
           {errorMessage}
         </p>
       ) : null}

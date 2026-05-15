@@ -10,6 +10,13 @@ const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
 }))
 
+const inviteMemberButtonName = /\+?\s*Invite member/
+const roleButtonName = (displayName: string) => `Role for ${displayName}`
+const memberActionsButtonName = (displayName: string) =>
+  `Member actions for ${displayName}`
+const invitationActionsButtonName = (createdByName: string) =>
+  `Invitation actions for ${createdByName}`
+
 vi.mock('../../../../shared/hooks/useAuth', () => ({
   useAuth: () => ({
     getAccessTokenSilently: authMocks.getAccessTokenSilently,
@@ -17,6 +24,7 @@ vi.mock('../../../../shared/hooks/useAuth', () => ({
 }))
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 
@@ -101,6 +109,39 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1/invitations',
         body: [],
       },
+      {
+        method: 'POST',
+        path: '/projects/project-1/invitations',
+        body: {
+          token: 'invite-token-123',
+        },
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/invitations',
+        body: {
+          token: 'invite-token-123',
+        },
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/invitations',
+        body: {
+          token: 'invite-token-123',
+        },
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/members')
@@ -108,7 +149,9 @@ describe('ProjectDetailPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
-    expect(await screen.findByRole('form', { name: 'Add member' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: inviteMemberButtonName }),
+    ).toBeInTheDocument()
   })
 
   it('shows project section navigation on the secrets route', async () => {
@@ -363,11 +406,10 @@ describe('ProjectDetailPage', () => {
     )
     expect(await screen.findByText('No members found.')).toBeInTheDocument()
     expect(
-      screen.getByRole('form', { name: 'Add member' }),
+      screen.getByRole('button', { name: inviteMemberButtonName }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Invite Link' }),
-    ).toBeInTheDocument()
+    expect(screen.queryByRole('form', { name: 'Add member' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Invite Link' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Environment/i })).toBeInTheDocument()
   })
 
@@ -494,7 +536,107 @@ describe('ProjectDetailPage', () => {
     })
   })
 
-  it('creates and copies an invitation URL from the members page', async () => {
+  it('opens the invite member dialog with local email and link flows', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        path: '/projects/project-1/members',
+        body: [],
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/invitations',
+        body: {
+          token: 'invite-token-123',
+        },
+      },
+      {
+        path: '/projects/project-1/invitations',
+        body: [],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/members')
+
+    await user.click(await screen.findByRole('button', { name: inviteMemberButtonName }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Invite to project' })
+    const userIdForm = within(dialog).getByRole('form', { name: 'Invite by user ID' })
+    const userIdInput = within(userIdForm).getByRole('textbox', { name: 'User ID' })
+    const overlay = document.body.querySelector('[data-slot="dialog-overlay"]')
+
+    expect(
+      within(dialog).queryByText('Grant access by inviting a user ID or generating a link.'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(userIdForm).queryByText('Enter a specific user ID to prepare a direct invite locally'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(dialog).getByRole('heading', { name: 'Invite by user ID' }),
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByRole('combobox')).not.toBeInTheDocument()
+    expect(
+      within(dialog).getByRole('button', { name: 'Generate link' }),
+    ).toBeInTheDocument()
+    expect(
+      within(dialog).queryByRole('textbox', { name: 'Generated invitation link' }),
+    ).not.toBeInTheDocument()
+    expect(within(dialog).queryByText(/Treat it like a password/i)).not.toBeInTheDocument()
+    expect(overlay).toHaveClass('z-50')
+    expect(dialog).toHaveClass('z-[60]')
+
+    await user.click(within(userIdForm).getByRole('button', { name: 'Send invite' }))
+
+    expect(await within(userIdForm).findByRole('alert')).toHaveTextContent(
+      'Enter a user ID.',
+    )
+    expect(userIdInput).toHaveAttribute('aria-invalid', 'true')
+
+    await user.type(userIdInput, '  user-123  ')
+    await user.click(within(userIdForm).getByRole('button', { name: 'Send invite' }))
+
+    await waitFor(() => {
+      expect(userIdInput).toHaveValue('')
+    })
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringContaining('/projects/project-1/members'),
+      expect.objectContaining({ method: 'POST' }),
+    )
+
+    await user.click(within(dialog).getByRole('button', { name: 'Generate link' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/invitations'),
+        expect.objectContaining({ method: 'POST' }),
+      ),
+    )
+
+    expect(
+      await within(dialog).findByRole('textbox', { name: 'Generated invitation link' }),
+    ).toHaveValue('http://localhost:3000/invitations/invite-token-123')
+    expect(within(dialog).getByRole('button', { name: 'Copy' })).toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Revoke' })).not.toBeInTheDocument()
+  })
+
+  it('copies the generated invitation URL and shows a toast', async () => {
     const user = userEvent.setup()
     const writeText = vi.fn().mockResolvedValue(undefined)
 
@@ -525,58 +667,35 @@ describe('ProjectDetailPage', () => {
       },
       {
         path: '/projects/project-1/invitations',
-        body: [
-          {
-            invitationId: 'invite-1',
-            createdById: 'current-user',
-            createdByName: 'Olivia Owner',
-            createdAt: '2025-02-01T11:00:00Z',
-            expiresAt: '2025-02-08T11:00:00Z',
-          },
-        ],
+        body: [],
       },
       {
-        path: '/projects/project-1/invitations',
         method: 'POST',
+        path: '/projects/project-1/invitations',
         body: {
-          token: 'invite-token',
+          token: 'invite-token-123',
         },
       },
       {
         path: '/projects/project-1/invitations',
-        body: [
-          {
-            invitationId: 'invite-1',
-            createdById: 'current-user',
-            createdByName: 'Olivia Owner',
-            createdAt: '2025-02-01T11:00:00Z',
-            expiresAt: '2025-02-08T11:00:00Z',
-          },
-          {
-            invitationId: 'invite-2',
-            createdById: 'current-user',
-            createdByName: 'Olivia Owner',
-            createdAt: '2025-02-01T12:00:00Z',
-            expiresAt: '2025-02-08T12:00:00Z',
-          },
-        ],
+        body: [],
       },
     ])
 
     renderProjectDetail('/projects/project-1/members')
 
-    await user.click(
-      await screen.findByRole('button', { name: 'Invite Link' }),
+    await user.click(await screen.findByRole('button', { name: inviteMemberButtonName }))
+    const dialog = screen.getByRole('dialog', { name: 'Invite to project' })
+
+    await user.click(within(dialog).getByRole('button', { name: 'Generate link' }))
+    await within(dialog).findByRole('textbox', { name: 'Generated invitation link' })
+    await user.click(within(dialog).getByRole('button', { name: 'Copy' }))
+
+    expect(writeText).toHaveBeenCalledWith(
+      'http://localhost:3000/invitations/invite-token-123',
     )
-
-    await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith(
-        'http://localhost:3000/invitations/invite-token',
-      )
-    })
-
     expect(
-      await screen.findByText('Invitation URL copied to clipboard.'),
+      await screen.findByText('Invitation link copied to clipboard.'),
     ).toBeInTheDocument()
   })
 
@@ -616,7 +735,7 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     const invitationTable = await screen.findByRole('table', {
-      name: 'Active invitation links',
+      name: 'Pending Invites',
     })
 
     expect(
@@ -629,9 +748,13 @@ describe('ProjectDetailPage', () => {
       within(invitationTable).getByRole('columnheader', { name: 'Expires' }),
     ).toBeInTheDocument()
     expect(
-      within(invitationTable).getByRole('button', { name: 'Revoke' }),
+      within(invitationTable).getByRole('button', {
+        name: invitationActionsButtonName('Olivia Owner'),
+      }),
     ).toBeEnabled()
-    expect(screen.getByRole('heading', { name: 'Invitations' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Pending Invites' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('Olivia Owner')).toBeInTheDocument()
   })
 
@@ -680,7 +803,12 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    await user.click(await screen.findByRole('button', { name: 'Revoke' }))
+    await user.click(
+      await screen.findByRole('button', {
+        name: invitationActionsButtonName('Olivia Owner'),
+      }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Revoke' }))
 
     const dialog = screen.getByRole('dialog', { name: 'Revoke invitation link' })
     expect(within(dialog).getByText('Revoke this invitation link?')).toBeInTheDocument()
@@ -693,7 +821,15 @@ describe('ProjectDetailPage', () => {
         expect.objectContaining({ method: 'POST' }),
       ),
     )
-    expect(await screen.findByText('No active invitation links.')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', { name: 'Pending Invites' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(
+      screen.queryByRole('table', { name: 'Pending Invites' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('No active invitation links.')).not.toBeInTheDocument()
   })
 
   it('deletes the project from the header actions menu', async () => {
@@ -754,12 +890,14 @@ describe('ProjectDetailPage', () => {
       screen.getByText('Project access details are being prepared.'),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('form', { name: 'Add member' }),
+      screen.getByRole('button', { name: inviteMemberButtonName }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /^Remove / }),
+      screen.queryByRole('button', { name: /^Role for / }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Member actions for / }),
     ).not.toBeInTheDocument()
 
     membersResponse.resolve(
@@ -773,6 +911,8 @@ describe('ProjectDetailPage', () => {
   })
 
   it('shows loaded project members', async () => {
+    const user = userEvent.setup()
+
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -841,50 +981,53 @@ describe('ProjectDetailPage', () => {
       name: /Olivia OwnerYou Owner No actions available/,
     })
     const otherOwnerRow = within(membersTable).getByRole('row', {
-      name: /Oscar Owner Role for Oscar OwnerOwner Remove/,
+      name: /Oscar Owner Owner/,
     })
     const adminRow = within(membersTable).getByRole('row', {
-      name: /Alex Admin Role for Alex AdminAdmin Remove/,
+      name: /Alex Admin Admin/,
     })
     const memberRow = within(membersTable).getByRole('row', {
-      name: /user-member Role for user-memberMember Remove/,
+      name: /user-member Member/,
     })
 
     expect(ownerRow).toBeInTheDocument()
     expect(within(ownerRow).queryByRole('button')).not.toBeInTheDocument()
     expect(
-      within(otherOwnerRow).getByRole('combobox', {
-        name: 'Role for Oscar Owner',
-      }),
-    ).toBeDisabled()
-    expect(
       within(otherOwnerRow).getByRole('button', {
-        name: 'Remove Oscar Owner',
+        name: roleButtonName('Oscar Owner'),
       }),
     ).toBeDisabled()
+    await user.click(
+      within(otherOwnerRow).getByRole('button', {
+        name: memberActionsButtonName('Oscar Owner'),
+      }),
+    )
     expect(
-      within(adminRow).getByRole('combobox', {
-        name: 'Role for Alex Admin',
+      screen.getByRole('menuitem', { name: 'Remove' }),
+    ).toBeDisabled()
+    expect(
+      within(adminRow).getByRole('button', {
+        name: roleButtonName('Alex Admin'),
       }),
     ).toBeEnabled()
     expect(
       within(adminRow).getByRole('button', {
-        name: 'Remove Alex Admin',
-      }),
-    ).toBeEnabled()
-    expect(
-      within(memberRow).getByRole('combobox', {
-        name: 'Role for user-member',
+        name: memberActionsButtonName('Alex Admin'),
       }),
     ).toBeEnabled()
     expect(
       within(memberRow).getByRole('button', {
-        name: 'Remove user-member',
+        name: memberActionsButtonName('user-member'),
+      }),
+    ).toBeEnabled()
+    expect(
+      within(memberRow).getByRole('button', {
+        name: roleButtonName('user-member'),
       }),
     ).toBeEnabled()
   })
 
-  it('shows the add member form for admins', async () => {
+  it('shows the invite member trigger for admins', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -918,34 +1061,31 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const addMemberForm = await screen.findByRole('form', {
-      name: 'Add member',
+    const inviteMemberButton = await screen.findByRole('button', {
+      name: inviteMemberButtonName,
     })
     const currentUserRow = await screen.findByRole('row', {
       name: /Alex AdminYou Admin No actions available/,
     })
     const memberRow = await screen.findByRole('row', {
-      name: /Morgan Member Role for Morgan MemberMember Remove/,
+      name: /Morgan Member Member/,
     })
 
-    expect(addMemberForm).toBeInTheDocument()
+    expect(inviteMemberButton).toBeInTheDocument()
     expect(
-      within(currentUserRow).queryByRole('combobox', {
-        name: 'Role for Alex Admin',
+      within(currentUserRow).queryByRole('button', {
+        name: roleButtonName('Alex Admin'),
       }),
     ).not.toBeInTheDocument()
     expect(within(currentUserRow).queryByRole('button')).not.toBeInTheDocument()
     expect(
-      within(currentUserRow).getByText('No actions available'),
-    ).toBeInTheDocument()
-    expect(
-      within(memberRow).getByRole('combobox', {
-        name: 'Role for Morgan Member',
+      within(memberRow).getByRole('button', {
+        name: roleButtonName('Morgan Member'),
       }),
     ).toBeEnabled()
     expect(
       within(memberRow).getByRole('button', {
-        name: 'Remove Morgan Member',
+        name: memberActionsButtonName('Morgan Member'),
       }),
     ).toBeEnabled()
   })
@@ -980,23 +1120,25 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const roleSelector = await screen.findByRole('combobox', {
-      name: 'Role for Alex Admin',
+    const roleSelector = await screen.findByRole('button', {
+      name: roleButtonName('Alex Admin'),
     })
 
     expect(roleSelector).toBeDisabled()
     expect(
-      screen.getByRole('button', { name: 'Remove Alex Admin' }),
-    ).toBeDisabled()
-    expect(
-      screen.queryByRole('heading', { name: 'Invitations' }),
+      screen.queryByRole('button', {
+        name: memberActionsButtonName('Alex Admin'),
+      }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('form', { name: 'Add member' }),
+      screen.queryByRole('heading', { name: 'Pending Invites' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: inviteMemberButtonName }),
     ).not.toBeInTheDocument()
   })
 
-  it('shows the add member form for users who can manage members', async () => {
+  it('shows the invite member trigger for users who can manage members', async () => {
     mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -1021,19 +1163,19 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const addMemberForm = await screen.findByRole('form', {
-      name: 'Add member',
-    })
-
     expect(
-      within(addMemberForm).getByRole('textbox', { name: 'User ID' }),
-    ).toBeInTheDocument()
-    expect(
-      within(addMemberForm).getByRole('button', { name: '+ Add' }),
+      await screen.findByRole('button', { name: inviteMemberButtonName }),
     ).toBeEnabled()
+    expect(
+      screen.queryByRole('heading', { name: 'Pending Invites' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('table', { name: 'Pending Invites' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('No active invitation links.')).not.toBeInTheDocument()
   })
 
-  it('does not add a member when the user ID is empty', async () => {
+  it('blocks invalid invite user IDs locally without making a network call', async () => {
     const fetchMock = mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -1059,154 +1201,23 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const addMemberForm = await screen.findByRole('form', {
-      name: 'Add member',
-    })
+    await user.click(await screen.findByRole('button', { name: inviteMemberButtonName }))
 
-    await user.click(
-      within(addMemberForm).getByRole('button', { name: '+ Add' }),
-    )
+    const dialog = screen.getByRole('dialog', { name: 'Invite to project' })
+    const userIdForm = within(dialog).getByRole('form', { name: 'Invite by user ID' })
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
+    await user.click(within(userIdForm).getByRole('button', { name: 'Send invite' }))
+
+    expect(await within(userIdForm).findByRole('alert')).toHaveTextContent(
       'Enter a user ID.',
     )
     expect(
-      within(addMemberForm).getByRole('textbox', { name: 'User ID' }),
+      within(userIdForm).getByRole('textbox', { name: 'User ID' }),
     ).toHaveAttribute('aria-invalid', 'true')
     expect(fetchMock).not.toHaveBeenCalledWith(
       expect.stringContaining('/projects/project-1/members'),
       expect.objectContaining({ method: 'POST' }),
     )
-  })
-
-  it('adds a member with the default member role and refreshes the list', async () => {
-    const fetchMock = mockFetchSequence([
-      {
-        path: '/projects/project-1',
-        body: projectDetails,
-      },
-      {
-        path: '/projects/project-1/members',
-        body: [
-          {
-            userId: 'current-user',
-            displayName: 'Olivia Owner',
-            role: 'owner',
-            isCurrentUser: true,
-          },
-        ],
-      },
-      {
-        path: '/projects/project-1/invitations',
-        body: [],
-      },
-      {
-        method: 'POST',
-        path: '/projects/project-1/members/new-user',
-        status: 204,
-      },
-      {
-        path: '/projects/project-1/members',
-        body: [
-          {
-            userId: 'current-user',
-            displayName: 'Olivia Owner',
-            role: 'owner',
-            isCurrentUser: true,
-          },
-          {
-            userId: 'new-user',
-            displayName: null,
-            role: 'member',
-            isCurrentUser: false,
-          },
-        ],
-      },
-      {
-        path: '/projects/project-1/invitations',
-        body: [],
-      },
-    ])
-    const user = userEvent.setup()
-
-    renderProjectDetail('/projects/project-1/members')
-
-    const addMemberForm = await screen.findByRole('form', {
-      name: 'Add member',
-    })
-    const userIdInput = within(addMemberForm).getByRole('textbox', {
-      name: 'User ID',
-    })
-
-    await user.type(userIdInput, ' new-user ')
-    await user.click(
-      within(addMemberForm).getByRole('button', { name: '+ Add' }),
-    )
-
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/projects/project-1/members/new-user'),
-        expect.objectContaining({
-          method: 'POST',
-        }),
-      ),
-    )
-    expect(
-      await screen.findByRole('row', {
-        name: /new-user Role for new-userMember Remove/,
-      }),
-    ).toBeInTheDocument()
-    expect(userIdInput).toHaveValue('')
-  })
-
-  it('shows add member errors without clearing the entered user ID', async () => {
-    mockFetchSequence([
-      {
-        path: '/projects/project-1',
-        body: projectDetails,
-      },
-      {
-        path: '/projects/project-1/members',
-        body: [
-          {
-            userId: 'current-user',
-            displayName: 'Olivia Owner',
-            role: 'owner',
-            isCurrentUser: true,
-          },
-        ],
-      },
-      {
-        path: '/projects/project-1/invitations',
-        body: [],
-      },
-      {
-        method: 'POST',
-        path: '/projects/project-1/members/new-user',
-        body: { message: 'Member could not be invited.' },
-        status: 409,
-      },
-    ])
-    const user = userEvent.setup()
-
-    renderProjectDetail('/projects/project-1/members')
-
-    const addMemberForm = await screen.findByRole('form', {
-      name: 'Add member',
-    })
-    const userIdInput = within(addMemberForm).getByRole('textbox', {
-      name: 'User ID',
-    })
-
-    await user.type(userIdInput, 'new-user')
-    await user.click(
-      within(addMemberForm).getByRole('button', { name: '+ Add' }),
-    )
-
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Member could not be invited.',
-    )
-    expect(userIdInput).toHaveValue('new-user')
   })
 
   it('updates a member role and refreshes the member list', async () => {
@@ -1267,11 +1278,12 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const roleSelector = await screen.findByRole('combobox', {
-      name: 'Role for user-member',
+    const roleSelector = await screen.findByRole('button', {
+      name: roleButtonName('user-member'),
     })
 
-    await user.selectOptions(roleSelector, 'admin')
+    await user.click(roleSelector)
+    await user.click(screen.getByRole('option', { name: 'Admin' }))
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
@@ -1282,7 +1294,7 @@ describe('ProjectDetailPage', () => {
         }),
       ),
     )
-    await waitFor(() => expect(roleSelector).toHaveValue('admin'))
+    await waitFor(() => expect(roleSelector).toHaveTextContent('Admin'))
   })
 
   it('shows role update errors without changing the displayed role', async () => {
@@ -1323,16 +1335,17 @@ describe('ProjectDetailPage', () => {
 
     renderProjectDetail('/projects/project-1/members')
 
-    const roleSelector = await screen.findByRole('combobox', {
-      name: 'Role for user-member',
+    const roleSelector = await screen.findByRole('button', {
+      name: roleButtonName('user-member'),
     })
 
-    await user.selectOptions(roleSelector, 'admin')
+    await user.click(roleSelector)
+    await user.click(screen.getByRole('option', { name: 'Admin' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Role change rejected.',
     )
-    expect(roleSelector).toHaveValue('member')
+    expect(roleSelector).toHaveTextContent('Member')
     expect(roleSelector).toHaveAttribute('aria-invalid', 'true')
   })
 
@@ -1369,8 +1382,11 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Remove user-member' }),
+      await screen.findByRole('button', {
+        name: memberActionsButtonName('user-member'),
+      }),
     )
+    await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
 
     const dialog = screen.getByRole('dialog', { name: 'Remove member' })
     expect(
@@ -1441,8 +1457,11 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Remove user-member' }),
+      await screen.findByRole('button', {
+        name: memberActionsButtonName('user-member'),
+      }),
     )
+    await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
 
     const dialog = screen.getByRole('dialog', { name: 'Remove member' })
     await user.click(within(dialog).getByRole('button', { name: 'Remove' }))
@@ -1455,7 +1474,9 @@ describe('ProjectDetailPage', () => {
     )
     await waitFor(() =>
       expect(
-        screen.queryByRole('button', { name: 'Remove user-member' }),
+        screen.queryByRole('button', {
+          name: memberActionsButtonName('user-member'),
+        }),
       ).not.toBeInTheDocument(),
     )
   })
@@ -1499,8 +1520,11 @@ describe('ProjectDetailPage', () => {
     renderProjectDetail('/projects/project-1/members')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Remove user-member' }),
+      await screen.findByRole('button', {
+        name: memberActionsButtonName('user-member'),
+      }),
     )
+    await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
     await user.click(
       within(screen.getByRole('dialog', { name: 'Remove member' })).getByRole(
         'button',
@@ -1512,7 +1536,9 @@ describe('ProjectDetailPage', () => {
       'Member removal rejected.',
     )
     expect(
-      screen.getByRole('button', { name: 'Remove user-member' }),
+      screen.getByRole('button', {
+        name: memberActionsButtonName('user-member'),
+      }),
     ).toBeInTheDocument()
   })
 
@@ -1540,9 +1566,11 @@ describe('ProjectDetailPage', () => {
     )
     expect(screen.getByText('Members service failed.')).toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /^Remove / }),
+      screen.queryByRole('button', { name: /^Role for / }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /^Member actions for / }),
     ).not.toBeInTheDocument()
   })
 

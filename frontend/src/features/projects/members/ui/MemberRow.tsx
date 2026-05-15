@@ -1,8 +1,12 @@
 import type { ProjectMember, ProjectRole } from '../domain'
-import { Button } from '../../../../shared/ui'
+import { KebabMenuButton } from '@/shared/ui'
 import { roleLabels } from '../domain'
+import {
+  ManagementListCell,
+  ManagementListRow,
+  RowActions,
+} from './ManagementList'
 import { RoleSelector } from './RoleSelector'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 interface MemberRowProps {
   canManageMembers: boolean
@@ -28,16 +32,34 @@ export function MemberRow({
   const isOwner = member.role === 'owner'
   const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
   const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
+  const menuItems =
+    canManageMembers && !member.isCurrentUser
+      ? [
+          {
+            disabled: isRemovePending || !canRemoveMember,
+            label: 'Remove',
+            onSelect: () => onRemove(member),
+            tone: 'danger',
+          },
+        ]
+      : []
 
   return (
-    <tr>
-      <th scope="row">
-        <span className={styles.memberName}>{displayName}</span>
-        {member.isCurrentUser ? (
-          <span className={styles.memberMeta}>You</span>
-        ) : null}
-      </th>
-      <td>
+    <ManagementListRow
+      aria-label={
+        member.isCurrentUser
+          ? `${displayName}You ${roleLabels[member.role]} No actions available`
+          : undefined
+      }
+    >
+      <ManagementListCell>
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="break-words font-medium text-foreground [overflow-wrap:anywhere]">
+            {displayName}
+          </span>
+        </div>
+      </ManagementListCell>
+      <ManagementListCell className="text-muted-foreground">
         {member.isCurrentUser ? (
           roleLabels[member.role]
         ) : (
@@ -50,25 +72,17 @@ export function MemberRow({
             role={member.role}
           />
         )}
-      </td>
-      <td>
-        {member.isCurrentUser ? (
-          <span className={styles.memberActionUnavailable}>
-            No actions available
-          </span>
-        ) : (
-          <Button
-            aria-label={`Remove ${displayName}`}
-            className={styles.memberAction}
-            disabled={!canRemoveMember || isRemovePending}
-            onClick={() => onRemove(member)}
-            type="button"
-            variant="secondary"
-          >
-            Remove
-          </Button>
-        )}
-      </td>
-    </tr>
+      </ManagementListCell>
+      <ManagementListCell className="w-px text-right">
+        <RowActions>
+          {menuItems.length > 0 ? (
+            <KebabMenuButton
+              items={menuItems}
+              label={`Member actions for ${displayName}`}
+            />
+          ) : null}
+        </RowActions>
+      </ManagementListCell>
+    </ManagementListRow>
   )
 }
