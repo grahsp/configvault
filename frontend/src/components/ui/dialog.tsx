@@ -2,7 +2,7 @@ import * as React from "react"
 import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
-import { cn } from "../../lib/utils"
+import { cn } from "@/lib/utils.ts"
 
 function Dialog({
   ...props
@@ -36,7 +36,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 bg-slate-950/55 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 rounded",
         className,
       )}
       {...props}
@@ -58,7 +58,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 flex w-[calc(100vw-2rem)] max-w-xl translate-x-[-50%] translate-y-[-50%] flex-col gap-6 rounded-[24px] border border-border/80 bg-card p-6 text-card-foreground shadow-[0_24px_80px_rgba(15,23,42,0.28)] duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:p-8",
+          "fixed top-[50%] left-[50%] z-[60] flex w-[calc(100vw-2rem)] max-w-xl translate-x-[-50%] translate-y-[-50%] flex-col gap-6 rounded-lg border border-border/80 bg-card p-6 text-card-foreground shadow-[0_24px_80px_rgba(15,23,42,0.28)] duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:p-8",
           className,
         )}
         {...props}

@@ -1,12 +1,15 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
   useEffect,
   useId,
   useRef,
   useState,
 } from 'react'
 
-export function useMenuButtonState() {
+export function useMenuButtonState(
+  additionalRefs: RefObject<HTMLElement | null>[] = [],
+) {
   const [isOpen, setIsOpen] = useState(false)
   const menuId = useId()
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -17,7 +20,13 @@ export function useMenuButtonState() {
     }
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node
+      const isInsideRoot = rootRef.current?.contains(target) ?? false
+      const isInsideAdditionalRef = additionalRefs.some(
+        (ref) => ref.current?.contains(target) ?? false,
+      )
+
+      if (!isInsideRoot && !isInsideAdditionalRef) {
         setIsOpen(false)
       }
     }
@@ -35,7 +44,7 @@ export function useMenuButtonState() {
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [isOpen])
+  }, [additionalRefs, isOpen])
 
   const handleTriggerKeyDown = (
     event: ReactKeyboardEvent<HTMLButtonElement>,

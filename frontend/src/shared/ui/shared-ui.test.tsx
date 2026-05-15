@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { Button } from './Button'
 import buttonStyles from './Button.module.css'
 import { ConfirmationDialog } from './ConfirmationDialog'
+import { CopyableInput } from './CopyableInput'
 import { KebabMenuButton } from './KebabMenuButton'
 import kebabMenuButtonStyles from './KebabMenuButton.module.css'
 import { Modal } from './Modal'
@@ -162,6 +163,56 @@ describe('shared ui primitives', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
+  it('renders destructive kebab items with danger styling', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <KebabMenuButton
+        items={[
+          {
+            label: 'Remove',
+            onSelect: vi.fn(),
+            tone: 'danger',
+          },
+        ]}
+        label="Member actions"
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Member actions' }))
+
+    expect(screen.getByRole('menuitem', { name: 'Remove' })).toHaveClass(
+      kebabMenuButtonStyles.menuItemDanger,
+    )
+  })
+
+  it('keeps disabled kebab menu items non-interactive', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+
+    render(
+      <KebabMenuButton
+        items={[
+          {
+            disabled: true,
+            label: 'Remove',
+            onSelect,
+          },
+        ]}
+        label="Member actions"
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Member actions' }))
+
+    const menuItem = screen.getByRole('menuitem', { name: 'Remove' })
+    expect(menuItem).toHaveClass(kebabMenuButtonStyles.menuItemDisabled)
+    expect(menuItem).toBeDisabled()
+
+    await user.click(menuItem)
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
   it('renders state panel tones, actions, and roles', () => {
     const { rerender } = render(
       <StatePanel title="Nothing here yet">
@@ -187,6 +238,34 @@ describe('shared ui primitives', () => {
     expect(alert).toHaveClass(statePanelStyles.error)
     expect(within(alert).getByText('Load failed')).toBeInTheDocument()
     expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+  })
+
+  it('renders a read-only copyable input and runs the copy action', async () => {
+    const user = userEvent.setup()
+    const onCopy = vi.fn()
+
+    render(
+      <CopyableInput
+        ariaLabel="Invitation link"
+        onCopy={onCopy}
+        value="http://localhost:3000/invitations/invite-token-123"
+      />,
+    )
+
+    expect(screen.getByRole('textbox', { name: 'Invitation link' })).toHaveValue(
+      'http://localhost:3000/invitations/invite-token-123',
+    )
+    expect(screen.getByRole('textbox', { name: 'Invitation link' })).toHaveAttribute(
+      'readonly',
+    )
+
+    await user.hover(screen.getByRole('button', { name: 'Copy' }))
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Copy')
+
+    await user.click(screen.getByRole('button', { name: 'Copy' }))
+
+    expect(onCopy).toHaveBeenCalledTimes(1)
   })
 
   it('renders a full-page spinner loader', () => {
