@@ -8,7 +8,11 @@ import {
   DropdownMenuTrigger,
 } from '../../../../components/ui/dropdown-menu'
 import { Input } from '../../../../components/ui/input'
-import {InputGroup, InputGroupAddon, InputGroupButton} from '../../../../components/ui/input-group'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+} from '../../../../components/ui/input-group'
 import { cn } from '../../../../lib/utils'
 import type { Secret } from '../domain'
 import { EyeOffIcon } from './SecretRowIcons.tsx'
@@ -16,9 +20,14 @@ import { EyeOffIcon } from './SecretRowIcons.tsx'
 interface SecretValueFieldProps {
   secret: Secret
   draftValue: string | null
+  displayValue?: string
+  hideActionMenu?: boolean
+  keepInlineActionsVisibleWhenStatic?: boolean
   isMarkedForDeletion: boolean
   isRevealing: boolean
+  isRevealedReadOnly?: boolean
   isSaving: boolean
+  isStatic?: boolean
   isValueRevealed: boolean
   onCancelEdit: () => void
   onDeleteToggle: (secret: Secret) => void
@@ -36,9 +45,14 @@ const emptyValue = '(empty)'
 export function SecretValueField({
   secret,
   draftValue,
+  displayValue,
+  hideActionMenu = false,
+  keepInlineActionsVisibleWhenStatic = false,
   isMarkedForDeletion,
   isRevealing,
+  isRevealedReadOnly = false,
   isSaving,
+  isStatic = false,
   isValueRevealed,
   onCancelEdit,
   onDeleteToggle,
@@ -79,6 +93,10 @@ export function SecretValueField({
   }
 
   function getDisplayValue() {
+    if (displayValue !== undefined) {
+      return displayValue
+    }
+
     if (isValueRevealed && revealedValue !== undefined) {
       return revealedValue
     }
@@ -143,18 +161,38 @@ export function SecretValueField({
   }
 
   const isEditing = draftValue !== null || !secret.hasValue
+  const isReadOnlyRevealMode = isStatic && keepInlineActionsVisibleWhenStatic
   const canOpenHistory = secret.hasValue && !isMarkedForDeletion
-  const showsHideAction = secret.hasValue && (isValueRevealed || draftValue !== null)
+  const showsHideAction =
+    secret.hasValue && (isValueRevealed || draftValue !== null)
   const groupLabel = `Value for ${secret.key}`
-  const displayAction = isValueRevealed ? handleStartEdit : handleReveal
+  const displayAriaLabel = isRevealedReadOnly
+    ? isValueRevealed
+      ? groupLabel
+      : `Reveal ${secret.key}`
+    : isValueRevealed
+    ? `Edit value for ${secret.key}`
+    : `Reveal ${secret.key}`
+  const displayAction =
+    isValueRevealed && !isRevealedReadOnly ? handleStartEdit : handleReveal
+  const staticFieldValue = getDisplayValue()
+  const isDisplayActionDisabled =
+    isSaving ||
+    isRevealing ||
+    isMarkedForDeletion ||
+    (isRevealedReadOnly && isValueRevealed)
 
   function renderActionMenu() {
+    if (hideActionMenu) {
+      return null
+    }
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <InputGroupButton
             aria-label={`Open actions for ${secret.key}`}
-            className={cn(isMarkedForDeletion && "text-muted-foreground")}
+            className={cn(isMarkedForDeletion && 'text-muted-foreground')}
             disabled={isSaving}
             size="icon-sm"
             type="button"
@@ -192,7 +230,7 @@ export function SecretValueField({
         {showsHideAction ? (
           <InputGroupButton
             aria-label={`Hide ${secret.key}`}
-            className={cn(isMarkedForDeletion && "text-muted-foreground")}
+            className={cn(isMarkedForDeletion && 'text-muted-foreground')}
             disabled={isSaving || isRevealing || isMarkedForDeletion}
             onClick={() => onReveal(secret)}
             size="icon-sm"
@@ -212,14 +250,38 @@ export function SecretValueField({
       aria-label={groupLabel}
       className={cn(
         "h-9 rounded-lg border-border/60 bg-background shadow-none transition-colors focus-within:ring-2 focus-within:ring-primary/30",
-        secret.hasValue && draftValue === null && !isMarkedForDeletion && !isValueRevealed
+        isStatic && "hover:border-border/60 hover:bg-background",
+        !isReadOnlyRevealMode &&
+          secret.hasValue &&
+          draftValue === null &&
+          !isMarkedForDeletion &&
+          !isValueRevealed
           ? "cursor-pointer hover:border-border hover:bg-muted/20"
           : null,
         isMarkedForDeletion && "bg-destructive/5 opacity-70",
       )}
-      data-disabled={isSaving || isMarkedForDeletion || isRevealing}
+      data-disabled={
+        (!isReadOnlyRevealMode && isStatic) ||
+        isSaving ||
+        isMarkedForDeletion ||
+        isRevealing
+      }
     >
-      {isEditing ? (
+      {isStatic && !isReadOnlyRevealMode ? (
+        <Input
+          aria-label="Value"
+          className={cn(
+            "h-full flex-1 rounded-none border-0 bg-transparent px-3 py-0 font-mono text-base leading-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-default disabled:opacity-100",
+            isMarkedForDeletion && "line-through",
+            !isValueRevealed && secret.hasValue && "text-muted-foreground/80",
+          )}
+          data-slot="input-group-control"
+          disabled
+          readOnly
+          type="text"
+          value={staticFieldValue}
+        />
+      ) : isEditing && !isReadOnlyRevealMode ? (
         <Input
           aria-label="Value"
           className={cn(
@@ -239,22 +301,24 @@ export function SecretValueField({
         />
       ) : (
         <button
-          aria-label={
-            isValueRevealed
-              ? `Edit value for ${secret.key}`
-              : `Reveal ${secret.key}`
-          }
+          aria-label={displayAriaLabel}
           className={cn(
             "group relative flex h-full min-w-0 flex-1 items-center gap-3 px-3 py-0 font-mono text-left outline-none",
             isMarkedForDeletion
+              ? "cursor-default"
+              : isRevealedReadOnly && isValueRevealed
               ? "cursor-default"
               : isValueRevealed
               ? "cursor-text"
               : "cursor-pointer",
           )}
-          disabled={isSaving || isRevealing || isMarkedForDeletion}
-          onClick={displayAction}
-          onKeyDown={(event) => handleDisplayKeyDown(event, displayAction)}
+          disabled={isDisplayActionDisabled}
+          onClick={isDisplayActionDisabled ? undefined : displayAction}
+          onKeyDown={
+            isDisplayActionDisabled
+              ? undefined
+              : (event) => handleDisplayKeyDown(event, displayAction)
+          }
           type="button"
         >
           <span
@@ -279,7 +343,7 @@ export function SecretValueField({
           ) : null}
         </button>
       )}
-      {renderInlineActions()}
+      {!isStatic || isReadOnlyRevealMode ? renderInlineActions() : null}
     </InputGroup>
   )
 }

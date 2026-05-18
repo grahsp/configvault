@@ -5,17 +5,21 @@ import styles from './SideWindow.module.css'
 
 export interface SideWindowProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'onClose'> {
+  bodyClassName?: string
   children: ReactNode
   description?: ReactNode
+  headerClassName?: string
   headerAction?: ReactNode
   onClose: () => void
   title: string
 }
 
 export function SideWindow({
+  bodyClassName,
   children,
   className,
   description,
+  headerClassName,
   headerAction,
   onClose,
   title,
@@ -56,6 +60,7 @@ export function SideWindow({
         <div
           className={cx(
             styles.header,
+            headerClassName,
             !description ? styles.headerCompact : undefined,
           )}
         >
@@ -72,7 +77,7 @@ export function SideWindow({
           {headerAction}
         </div>
 
-        <div className={styles.body}>{children}</div>
+        <div className={cx(styles.body, bodyClassName)}>{children}</div>
       </div>
     </div>
   )

@@ -212,20 +212,6 @@ describe('SecretsPage', () => {
 
   it('opens secret history, reveals and re-masks revision values, and preserves unsaved edits', async () => {
     const user = userEvent.setup()
-    const scrollHeightSpy = vi
-      .spyOn(HTMLTextAreaElement.prototype, 'scrollHeight', 'get')
-      .mockImplementation(function scrollHeight(this: HTMLTextAreaElement) {
-        if (this.value === 'old-secret') {
-          return 80
-        }
-
-        if (this.value === 'current-secret') {
-          return 240
-        }
-
-        return 24
-      })
-
     const fetchMock = mockFetchSequence([
       {
         path: '/projects/project-1',
@@ -289,6 +275,9 @@ describe('SecretsPage', () => {
     ).toBeInTheDocument()
     const historyDialog = screen.getByRole('dialog', { name: 'API_KEY' })
     expect(
+      within(historyDialog).getByText('Production secrets > production'),
+    ).toBeInTheDocument()
+    expect(
       within(historyDialog).queryByRole('button', { name: 'Close' }),
     ).not.toBeInTheDocument()
     expect(
@@ -311,7 +300,7 @@ describe('SecretsPage', () => {
       historyModalStyles.revisionCreator,
     )
     expect(
-      within(historyDialog).getAllByDisplayValue('************'),
+      within(historyDialog).getAllByText('••••••'),
     ).toHaveLength(2)
     expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
     expect(
@@ -323,45 +312,37 @@ describe('SecretsPage', () => {
     ).toHaveLength(0)
 
     await user.click(
-      screen.getByRole('button', { name: 'Reveal revision 2 value' }),
+      screen.getByRole('button', { name: 'Reveal Revision 2 value' }),
     )
 
-    const oldRevisionValue = await screen.findByDisplayValue('old-secret')
+    const oldRevisionValue = await screen.findByText('old-secret')
     expect(oldRevisionValue).toBeInTheDocument()
-    expect(oldRevisionValue).toHaveStyle({
-      height: '80px',
-      overflowY: 'hidden',
-    })
-    expect(screen.queryByDisplayValue('current-secret')).not.toBeInTheDocument()
+    expect(screen.queryByText('current-secret')).not.toBeInTheDocument()
 
     await user.click(
-      screen.getByRole('button', { name: 'Reveal revision 4 value' }),
+      screen.getByRole('button', { name: 'Reveal Revision 4 value' }),
     )
 
-    const currentRevisionValue = await screen.findByDisplayValue('current-secret')
+    const currentRevisionValue = await screen.findByText('current-secret')
     expect(currentRevisionValue).toBeInTheDocument()
-    expect(currentRevisionValue).toHaveStyle({
-      height: '192px',
-      overflowY: 'auto',
-    })
-    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+    expect(await screen.findByText('old-secret')).toBeInTheDocument()
 
-    const revisionTwoValue = screen.getByDisplayValue('old-secret')
+    const revisionTwoValue = screen.getByText('old-secret')
     const revisionTwoCard = revisionTwoValue.closest('article')
     expect(revisionTwoCard).not.toBeNull()
     await user.click(
       within(revisionTwoCard as HTMLElement).getByRole('button', {
-        name: 'Hide revision 2 value',
+        name: 'Hide Revision 2 value',
       }),
     )
     expect(
-      within(revisionTwoCard as HTMLElement).getByDisplayValue('************'),
+      within(revisionTwoCard as HTMLElement).getByText('••••••'),
     ).toBeInTheDocument()
 
     await user.click(
-      screen.getByRole('button', { name: 'Reveal revision 2 value' }),
+      screen.getByRole('button', { name: 'Reveal Revision 2 value' }),
     )
-    expect(await screen.findByDisplayValue('old-secret')).toBeInTheDocument()
+    expect(await screen.findByText('old-secret')).toBeInTheDocument()
 
     const revisionTwoCalls = fetchMock.mock.calls.filter(([input]) =>
       input
@@ -376,8 +357,6 @@ describe('SecretsPage', () => {
 
     expect(screen.queryByRole('heading', { name: 'API_KEY' })).not.toBeInTheDocument()
     expect(screen.getByDisplayValue('API_KEY_UPDATED')).toBeInTheDocument()
-
-    scrollHeightSpy.mockRestore()
   })
 
   it('closes secret history when clicking the backdrop', async () => {

@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef } from 'react'
 import { Button } from '../../../../components/ui/button'
 import {
   ConfirmationDialog,
@@ -9,17 +8,16 @@ import { cx } from '../../../../shared/utils/cx.ts'
 import { formatCreatedDate, getErrorMessage } from '../../domain/project.utils.ts'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
-import { EyeIcon, EyeOffIcon, UndoIcon } from './SecretRowIcons.tsx'
+import { UndoIcon } from './SecretRowIcons.tsx'
+import { SecretValueField } from './SecretValueField.tsx'
 import styles from './SecretHistoryModal.module.css'
-
-const revealedValueMaxHeightPx = 192
-const maskedRevisionValue = '************'
 
 interface SecretHistoryModalProps {
   environmentName: string
   hasUnsavedChanges: boolean
   onClose: () => void
   projectId: string
+  projectName: string
   secret: Secret
 }
 
@@ -28,6 +26,7 @@ export function SecretHistoryModal({
   hasUnsavedChanges,
   onClose,
   projectId,
+  projectName,
   secret,
 }: SecretHistoryModalProps) {
   const {
@@ -58,9 +57,18 @@ export function SecretHistoryModal({
   return (
     <>
       <SideWindow
+        bodyClassName={styles.modalBody}
+        className={styles.modalPanel}
+        description={
+          <p className={styles.headerContext}>
+            {projectName} &gt; {environmentName}
+          </p>
+        }
+        headerClassName={styles.modalHeader}
         headerAction={
           <Button
             aria-label={`Close ${secret.key}`}
+            className={styles.closeButton}
             onClick={onClose}
             type="button"
             variant="ghost"
@@ -130,43 +138,6 @@ interface HistoryListProps {
   }>
 }
 
-interface RevealedRevisionValueProps {
-  ariaLabel: string
-  value: string
-}
-
-function RevealedRevisionValue({
-  ariaLabel,
-  value,
-}: RevealedRevisionValueProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  useLayoutEffect(() => {
-    const textarea = textareaRef.current
-
-    if (!textarea) {
-      return
-    }
-
-    textarea.style.height = 'auto'
-    const scrollHeight = textarea.scrollHeight
-    textarea.style.height = `${Math.min(scrollHeight, revealedValueMaxHeightPx)}px`
-    textarea.style.overflowY =
-      scrollHeight > revealedValueMaxHeightPx ? 'auto' : 'hidden'
-  }, [value])
-
-  return (
-    <textarea
-      aria-label={ariaLabel}
-      className={styles.revealedValue}
-      readOnly
-      ref={textareaRef}
-      rows={1}
-      value={value}
-    />
-  )
-}
-
 function HistoryList({
   errorMessage,
   errorsByRevision,
@@ -211,9 +182,6 @@ function HistoryList({
 
       {revisions.map((revision) => {
         const isRevealed = revealedRevisions.includes(revision.revision)
-        const value = isRevealed
-          ? revealedValuesByRevision[revision.revision]
-          : maskedRevisionValue
         const isLoadingRevision = loadingRevisions[revision.revision] === true
         const error = errorsByRevision[revision.revision]
         const restoreDisabled =
@@ -223,26 +191,38 @@ function HistoryList({
           : restoreDisabledReason
 
         return (
-          <article className={styles.revisionRow} key={revision.revision}>
+          <article
+            aria-busy={isLoadingRevision}
+            className={styles.revisionRow}
+            key={revision.revision}
+          >
             <div className={styles.fieldRow}>
-              <RevealedRevisionValue
-                ariaLabel={`Revision ${revision.revision} value`}
-                value={value}
+              <SecretValueField
+                draftValue={null}
+                hideActionMenu
+                isMarkedForDeletion={false}
+                isRevealing={isLoadingRevision}
+                isRevealedReadOnly
+                isSaving={false}
+                isStatic
+                isValueRevealed={isRevealed}
+                keepInlineActionsVisibleWhenStatic
+                onCancelEdit={() => undefined}
+                onDeleteToggle={() => undefined}
+                onDraftValueChange={() => undefined}
+                onOpenHistory={() => undefined}
+                onReveal={() => void onToggleRevision(revision.revision)}
+                onSaveEdit={() => undefined}
+                onStartValueEdit={() => undefined}
+                revealedValue={revealedValuesByRevision[revision.revision]}
+                secret={{
+                  ...revision,
+                  id: `history-${revision.revision}`,
+                  key: `Revision ${revision.revision} value`,
+                  hasValue: true,
+                }}
               />
               <div className={styles.rowActions}>
-                <button
-                  aria-label={
-                    isRevealed
-                      ? `Hide revision ${revision.revision} value`
-                      : `Reveal revision ${revision.revision} value`
-                  }
-                  className={styles.iconButton}
-                  disabled={isLoadingRevision}
-                  onClick={() => void onToggleRevision(revision.revision)}
-                  type="button"
-                >
-                  {isRevealed ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
                 <button
                   aria-label={`Restore revision ${revision.revision}`}
                   className={styles.iconButton}
@@ -269,9 +249,9 @@ function HistoryList({
             </p>
 
             {isLoadingRevision && !isRevealed ? (
-              <p className={styles.valueHint} role="status">
+              <span className="sr-only" role="status">
                 Loading value...
-              </p>
+              </span>
             ) : null}
 
             {error ? (
@@ -280,7 +260,7 @@ function HistoryList({
               </p>
             ) : null}
 
-            {isRevealed && value.length === 0 ? (
+            {isRevealed && revealedValuesByRevision[revision.revision]?.length === 0 ? (
               <p className={styles.maskedHint}>This revision has an empty value.</p>
             ) : null}
           </article>
