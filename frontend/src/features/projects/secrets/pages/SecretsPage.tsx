@@ -16,6 +16,7 @@ export function SecretsPage() {
         environmentName={selectedEnvironmentName}
         isEnvironmentLoading={isEnvironmentLoading}
         projectId={project.id}
+        projectName={project.name}
       />
     </section>
   )

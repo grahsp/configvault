@@ -27,12 +27,14 @@ interface SecretsSectionProps {
   environmentName: string
   isEnvironmentLoading: boolean
   projectId: string
+  projectName: string
 }
 
 export function SecretsSection({
   environmentName,
   isEnvironmentLoading,
   projectId,
+  projectName,
 }: SecretsSectionProps) {
   const editor = useSecretsEditor({
     environmentName,
@@ -133,6 +135,7 @@ export function SecretsSection({
           hasUnsavedChanges={editor.hasUnsavedChanges}
           onClose={editor.onCloseHistory}
           projectId={projectId}
+          projectName={projectName}
           secret={editor.historySecret}
         />
       ) : null}
