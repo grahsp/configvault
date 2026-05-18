@@ -1,5 +1,6 @@
 import type { ProjectMember, ProjectRole } from '../domain'
 import { KebabMenuButton } from '@/shared/ui'
+import type { KebabMenuButtonItem } from '@/shared/ui'
 import { roleLabels } from '../domain'
 import {
   ManagementListCell,
@@ -32,7 +33,7 @@ export function MemberRow({
   const isOwner = member.role === 'owner'
   const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
   const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
-  const menuItems =
+  const menuItems: KebabMenuButtonItem[] =
     canManageMembers && !member.isCurrentUser
       ? [
           {

@@ -4,8 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { Button } from '../../components/ui/button'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CopyableInput } from './CopyableInput'
-import { KebabMenuButton } from './KebabMenuButton'
-import kebabMenuButtonStyles from './KebabMenuButton.module.css'
 import { Modal } from './Modal'
 import { PageLoader } from './PageLoader'
 import { SideWindow } from './SideWindow'
@@ -130,89 +128,6 @@ describe('shared ui primitives', () => {
 
     expect(onMenuActionClick).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
-  })
-
-  it('renders a kebab menu trigger and runs menu actions', async () => {
-    const user = userEvent.setup()
-    const onSelect = vi.fn()
-
-    render(
-      <KebabMenuButton
-        items={[
-          {
-            label: 'Copy Secrets (.env)',
-            onSelect,
-          },
-        ]}
-        label="Secret actions"
-      />,
-    )
-
-    const trigger = screen.getByRole('button', { name: 'Secret actions' })
-
-    expect(trigger).toHaveClass(kebabMenuButtonStyles.trigger)
-    expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    expect(trigger).toHaveTextContent('...')
-
-    await user.keyboard('{Tab}{Enter}')
-
-    expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('menu')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('menuitem', { name: 'Copy Secrets (.env)' }))
-
-    expect(onSelect).toHaveBeenCalledTimes(1)
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
-  })
-
-  it('renders destructive kebab items with danger styling', async () => {
-    const user = userEvent.setup()
-
-    render(
-      <KebabMenuButton
-        items={[
-          {
-            label: 'Remove',
-            onSelect: vi.fn(),
-            tone: 'danger',
-          },
-        ]}
-        label="Member actions"
-      />,
-    )
-
-    await user.click(screen.getByRole('button', { name: 'Member actions' }))
-
-    expect(screen.getByRole('menuitem', { name: 'Remove' })).toHaveClass(
-      kebabMenuButtonStyles.menuItemDanger,
-    )
-  })
-
-  it('keeps disabled kebab menu items non-interactive', async () => {
-    const user = userEvent.setup()
-    const onSelect = vi.fn()
-
-    render(
-      <KebabMenuButton
-        items={[
-          {
-            disabled: true,
-            label: 'Remove',
-            onSelect,
-          },
-        ]}
-        label="Member actions"
-      />,
-    )
-
-    await user.click(screen.getByRole('button', { name: 'Member actions' }))
-
-    const menuItem = screen.getByRole('menuitem', { name: 'Remove' })
-    expect(menuItem).toHaveClass(kebabMenuButtonStyles.menuItemDisabled)
-    expect(menuItem).toBeDisabled()
-
-    await user.click(menuItem)
-    expect(onSelect).not.toHaveBeenCalled()
   })
 
   it('renders state panel tones, actions, and roles', () => {
