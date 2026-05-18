@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button } from './Button'
+import { Button } from '../../components/ui/button'
 import { Modal } from './Modal'
 
 export interface ConfirmationDialogProps {
@@ -33,7 +33,7 @@ export function ConfirmationDialog({
             disabled={isPending}
             onClick={onCancel}
             type="button"
-            variant="secondary"
+            variant="outline"
           >
             {cancelLabel}
           </Button>
@@ -41,7 +41,7 @@ export function ConfirmationDialog({
             disabled={isPending}
             onClick={onConfirm}
             type="button"
-            variant="danger"
+            variant="destructive"
           >
             {isPending ? pendingConfirmLabel ?? confirmLabel : confirmLabel}
           </Button>

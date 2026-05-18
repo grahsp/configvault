@@ -1,8 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { Button } from './Button'
-import buttonStyles from './Button.module.css'
+import { Button } from '../../components/ui/button'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { CopyableInput } from './CopyableInput'
 import { KebabMenuButton } from './KebabMenuButton'
@@ -19,27 +18,30 @@ describe('shared ui primitives', () => {
   it('renders button variants and disabled state', () => {
     render(
       <>
-        <Button type="button" variant="primary">
+        <Button type="button" variant="default">
           Save
         </Button>
-        <Button disabled type="button" variant="secondary">
+        <Button disabled type="button" variant="outline">
           Cancel
         </Button>
-        <Button type="button" variant="danger">
+        <Button type="button" variant="destructive">
           Delete
         </Button>
       </>,
     )
 
-    expect(screen.getByRole('button', { name: 'Save' })).toHaveClass(
-      buttonStyles.primary,
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'data-variant',
+      'default',
     )
-    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveClass(
-      buttonStyles.secondary,
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveAttribute(
+      'data-variant',
+      'outline',
     )
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass(
-      buttonStyles.danger,
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute(
+      'data-variant',
+      'destructive',
     )
   })
 

@@ -102,15 +102,6 @@
   font-weight: var(--font-weight-extrabold);
 }
 
-.memberAction {
-  min-height: var(--input-height-lg);
-  min-width: var(--control-width-lg);
-}
-
-.memberActionSquare {
-  border-radius: var(--radius-md);
-}
-
 .memberActions {
   display: flex;
   align-items: end;

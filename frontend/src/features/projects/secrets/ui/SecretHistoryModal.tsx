@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
+import { Button } from '../../../../components/ui/button'
 import {
-  Button,
   ConfirmationDialog,
   SideWindow,
   StatePanel,
@@ -61,10 +61,9 @@ export function SecretHistoryModal({
         headerAction={
           <Button
             aria-label={`Close ${secret.key}`}
-            className={styles.headerCloseButton}
             onClick={onClose}
             type="button"
-            variant="secondary"
+            variant="ghost"
           >
             x
           </Button>

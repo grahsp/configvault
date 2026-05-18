@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Button, StatePanel } from '../../../../shared/ui'
+import { Button } from '../../../../components/ui/button'
+import { StatePanel } from '../../../../shared/ui'
 import { useInvitationAcceptanceFlow } from '../application'
 import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
@@ -32,7 +33,7 @@ export function InvitationPage() {
                 void flow.triggerLogin()
               }}
               type="button"
-              variant="secondary"
+              variant="outline"
             >
               {flow.actionLabel}
             </Button>

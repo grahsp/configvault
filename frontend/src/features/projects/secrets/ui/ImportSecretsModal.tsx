@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { Button, Modal } from '../../../../shared/ui'
+import { Button } from '../../../../components/ui/button'
+import { Modal } from '../../../../shared/ui'
 import styles from './SecretsTable.module.css'
 
 interface ImportSecretsModalProps {
@@ -43,7 +44,7 @@ export function ImportSecretsModal({
             disabled={isPending}
             onClick={onCancel}
             type="button"
-            variant="secondary"
+            variant="outline"
           >
             Cancel
           </Button>
@@ -51,7 +52,7 @@ export function ImportSecretsModal({
             disabled={isPending || trimmedContent.length === 0}
             form={formId}
             type="submit"
-            variant="primary"
+            variant="default"
           >
             {isPending ? 'Importing' : 'Import'}
           </Button>
@@ -72,21 +73,21 @@ export function ImportSecretsModal({
       title="Import .env data"
     >
       <form className={styles.configItemForm} id={formId} onSubmit={handleSubmit}>
-          <label className={styles.configItemFormField}>
-            .env content
-            <textarea
-              autoFocus
-              className={styles.configItemTextarea}
-              disabled={isPending}
-              onChange={(event) => {
-                setContent(event.target.value)
-              }}
-              placeholder="API_KEY=secret-value"
-              rows={10}
-              value={content}
-            />
-          </label>
-        </form>
+        <label className={styles.configItemFormField}>
+          .env content
+          <textarea
+            autoFocus
+            className={styles.configItemTextarea}
+            disabled={isPending}
+            onChange={(event) => {
+              setContent(event.target.value)
+            }}
+            placeholder="API_KEY=secret-value"
+            rows={10}
+            value={content}
+          />
+        </label>
+      </form>
     </Modal>
   )
 }

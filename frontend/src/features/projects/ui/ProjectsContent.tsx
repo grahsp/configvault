@@ -1,4 +1,5 @@
-import { Button, StatePanel } from '../../../shared/ui'
+import { Button } from '../../../components/ui/button'
+import { StatePanel } from '../../../shared/ui'
 import { getErrorMessage, type ProjectListItem } from '../domain'
 import { ProjectEmptyState } from './ProjectEmptyState'
 import { ProjectList } from './ProjectList'
@@ -38,7 +39,7 @@ export function ProjectsContent({
     return (
       <StatePanel
         actions={
-          <Button onClick={onRetry} type="button" variant="secondary">
+          <Button onClick={onRetry} type="button" variant="outline">
             Retry
           </Button>
         }
