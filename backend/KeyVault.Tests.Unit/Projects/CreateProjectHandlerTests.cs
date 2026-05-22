@@ -1,7 +1,7 @@
 using KeyVault.Application.Abstractions.Cryptography;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
-using KeyVault.Application.Projects.Commands.CreateProject;
+using KeyVault.Application.Projects.Commands;
 using KeyVault.Domain;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
@@ -19,9 +19,9 @@ public sealed class CreateProjectHandlerTests
 		var uow = new FakeUnitOfWork();
 		var time = new FakeTimeProvider();
 		var encryption = new FakeEnvelopeEncryptionService();
-		var sut = new Handler(user, projects, uow, time, encryption);
+		var sut = new CreateProjectCommandHandler(user, projects, uow, time, encryption);
 
-		var projectId = await sut.HandleAsync(new Command("project"), CancellationToken.None);
+		var projectId = await sut.HandleAsync(new CreateProjectCommand("project"), CancellationToken.None);
 
 		var project = Assert.IsType<Project>(projects.AddedProject);
 		Assert.Equal(project.Id, projectId);

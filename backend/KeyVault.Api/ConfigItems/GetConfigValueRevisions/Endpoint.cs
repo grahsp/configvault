@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Queries.GetConfigValueRevisions;
+using KeyVault.Application.ConfigItems.Queries;
 
 namespace KeyVault.Api.ConfigItems.GetConfigValueRevisions;
 
@@ -12,7 +12,7 @@ internal static class Endpoint
 		string environment,
 		CancellationToken ct)
 	{
-		var query = new Query(projectId, configItemId, environment);
+		var query = new GetConfigValueRevisionsQuery(projectId, configItemId, environment);
 		var revisions = await dispatcher.DispatchAsync(query, ct);
 		return Results.Ok(revisions);
 	}

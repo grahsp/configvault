@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Users.GetCurrentUser;
+using KeyVault.Application.Users.Queries;
 
 namespace KeyVault.Api.Users.GetCurrentUser;
 

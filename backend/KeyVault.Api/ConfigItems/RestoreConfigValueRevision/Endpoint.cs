@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Commands.RestoreConfigValueRevision;
+using KeyVault.Application.ConfigItems.Commands;
 
 namespace KeyVault.Api.ConfigItems.RestoreConfigValueRevision;
 
@@ -14,7 +14,7 @@ internal static class Endpoint
 		Request request,
 		CancellationToken ct)
 	{
-		var command = new Command(projectId, configItemId, environment, revision, request.ExpectedRevision);
+		var command = new RestoreConfigValueRevisionCommand(projectId, configItemId, environment, revision, request.ExpectedRevision);
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();

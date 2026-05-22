@@ -1,4 +1,4 @@
-using KeyVault.Application.ConfigItems.Queries.GetExportedValues;
+using KeyVault.Application.ConfigItems.Queries;
 
 namespace KeyVault.Infrastructure.ConfigItems.Formats;
 

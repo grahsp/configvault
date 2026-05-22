@@ -2,7 +2,7 @@ using KeyVault.Api.ConfigItems.BatchOperations.Operations;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
-using KeyVault.Application.ConfigItems.Commands.BatchOperations;
+using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 
@@ -21,7 +21,7 @@ internal static class BatchOperationsEndpoint
 		foreach (var operation in request.Operations)
 			operations.Add(MapOperation(operation));
 
-		var command = new Command(projectId, new OperationBatch(operations, request.Environment));
+		var command = new ExecuteBatchOperationsCommand(projectId, new OperationBatch(operations, request.Environment));
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();

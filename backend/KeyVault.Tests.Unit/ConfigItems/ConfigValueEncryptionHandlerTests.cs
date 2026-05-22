@@ -4,11 +4,11 @@ using KeyVault.Application.Actors;
 using KeyVault.Application.Authorization;
 using KeyVault.Application.Authorization.Capabilities;
 using KeyVault.Application.ConfigItems;
+using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Application.ConfigItems.BatchExecution;
 using KeyVault.Application.ConfigItems.BatchExecution.Planning;
 using KeyVault.Application.Exceptions;
-using GetConfigValueHandler = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Handler;
-using GetConfigValueQuery = KeyVault.Application.ConfigItems.Queries.GetConfigValue.Query;
+using KeyVault.Application.ConfigItems.Queries;
 using KeyVault.Application.Persistence;
 using KeyVault.Application.Projects;
 using KeyVault.Domain;
@@ -18,8 +18,8 @@ using KeyVault.Domain.Identity;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
-using SetConfigValueCommand = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Command;
-using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Handler;
+using GetConfigValueHandler = KeyVault.Application.ConfigItems.Queries.GetConfigValueQueryHandler;
+using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValueCommandHandler;
 
 namespace KeyVault.Tests.Unit.ConfigItems;
 

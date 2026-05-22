@@ -10,14 +10,11 @@ using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
-using AddConfigItemCommand = KeyVault.Application.ConfigItems.Commands.AddConfigItem.Command;
-using AddConfigItemHandler = KeyVault.Application.ConfigItems.Commands.AddConfigItem.Handler;
-using RemoveConfigItemCommand = KeyVault.Application.ConfigItems.Commands.RemoveConfigItem.Command;
-using RemoveConfigItemHandler = KeyVault.Application.ConfigItems.Commands.RemoveConfigItem.Handler;
-using RenameConfigItemCommand = KeyVault.Application.ConfigItems.Commands.RenameConfigItem.Command;
-using RenameConfigItemHandler = KeyVault.Application.ConfigItems.Commands.RenameConfigItem.Handler;
-using SetConfigValueCommand = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Command;
-using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValue.Handler;
+using KeyVault.Application.ConfigItems.Commands;
+using AddConfigItemHandler = KeyVault.Application.ConfigItems.Commands.AddConfigItemCommandHandler;
+using RemoveConfigItemHandler = KeyVault.Application.ConfigItems.Commands.RemoveConfigItemCommandHandler;
+using RenameConfigItemHandler = KeyVault.Application.ConfigItems.Commands.RenameConfigItemCommandHandler;
+using SetConfigValueHandler = KeyVault.Application.ConfigItems.Commands.SetConfigValueCommandHandler;
 
 namespace KeyVault.Tests.Unit.ConfigItems;
 

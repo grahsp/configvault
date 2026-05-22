@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Queries.GetExportedValues;
+using KeyVault.Application.ConfigItems.Queries;
 using KeyVault.Infrastructure.ConfigItems.Formats;
 
 namespace KeyVault.Api.ConfigItems.ExportConfig;
@@ -13,7 +13,7 @@ internal static class Endpoint
 		string environment,
 		CancellationToken ct)
 	{
-		var query = new Query(projectId, environment);
+		var query = new GetExportedValuesQuery(projectId, environment);
 		var result = await dispatcher.DispatchAsync(query, ct);
 		var formatter = formatResolver.GetExporter("text/plain");
 		var response = formatter.Export(result);

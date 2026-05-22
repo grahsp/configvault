@@ -11,8 +11,8 @@ using KeyVault.Domain.ConfigItems;
 using KeyVault.Domain.Projects;
 using KeyVault.Tests.Unit.Fakes;
 using Microsoft.Extensions.Time.Testing;
-using BatchCommand = KeyVault.Application.ConfigItems.Commands.BatchOperations.Command;
-using BatchHandler = KeyVault.Application.ConfigItems.Commands.BatchOperations.Handler;
+using BatchCommand = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperationsCommand;
+using BatchHandler = KeyVault.Application.ConfigItems.Commands.ExecuteBatchOperationsCommandHandler;
 
 namespace KeyVault.Tests.Unit.ConfigItems;
 

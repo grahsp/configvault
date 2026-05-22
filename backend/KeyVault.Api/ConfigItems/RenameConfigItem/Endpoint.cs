@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Commands.RenameConfigItem;
+using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 
@@ -12,7 +12,7 @@ internal static class Endpoint
 		if (!ConfigKey.TryParse(request.Key, out var key))
 			throw new ValidationException("Invalid key format");
 		
-		var command = new Command(projectId, configItemId, key);
+		var command = new RenameConfigItemCommand(projectId, configItemId, key);
 		await dispatcher.DispatchAsync(command, ct);
 
 		return Results.NoContent();

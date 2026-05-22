@@ -1,5 +1,5 @@
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.Projects.Queries.GetProject;
+using KeyVault.Application.Projects.Queries;
 
 namespace KeyVault.Api.Projects.GetProject;
 
@@ -10,7 +10,7 @@ internal static class Endpoint
 		Guid projectId,
 		CancellationToken ct)
 	{
-		var query = new Query(projectId);
+		var query = new GetProjectQuery(projectId);
 		var project = await dispatcher.DispatchAsync(query, ct);
 
 		if (project is null)

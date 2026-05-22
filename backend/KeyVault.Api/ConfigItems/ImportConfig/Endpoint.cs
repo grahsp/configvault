@@ -1,6 +1,6 @@
 using System.Text;
 using KeyVault.Application.Abstractions.Messaging;
-using KeyVault.Application.ConfigItems.Commands.CreateImportedItems;
+using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Infrastructure.ConfigItems.Formats;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +26,7 @@ internal static class Endpoint
 		var parser = formatResolver.GetImporter(httpRequest.ContentType);
 		var keyValues = parser.Parse(content);
 		
-		var command = new Command(projectId, environment, keyValues);
+		var command = new CreateImportedItemsCommand(projectId, environment, keyValues);
 		await dispatcher.DispatchAsync(command, ct);
 		
 		return Results.Ok();
