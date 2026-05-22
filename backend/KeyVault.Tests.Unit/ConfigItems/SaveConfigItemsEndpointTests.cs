@@ -1,5 +1,5 @@
 using System.Reflection;
-using KeyVault.Api.ConfigItems.SaveConfigItems;
+using KeyVault.Api.ConfigItems;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
@@ -21,7 +21,7 @@ public sealed class SaveConfigItemsEndpointTests
 		var projectId = Guid.NewGuid();
 		var configItemId = Guid.NewGuid();
 		var deleteId = Guid.NewGuid();
-		var request = new Request(
+		var request = new SaveConfigItemsRequest(
 			"development",
 			[
 				new ConfigItemUpdateRequest(configItemId, "RENAMED_SECRET", "secret", 4)
@@ -60,7 +60,7 @@ public sealed class SaveConfigItemsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new Request(
+		var request = new SaveConfigItemsRequest(
 			"development",
 			[
 				new ConfigItemUpdateRequest(Guid.NewGuid(), "not valid", null, null)
@@ -74,9 +74,9 @@ public sealed class SaveConfigItemsEndpointTests
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		Request request)
+		SaveConfigItemsRequest request)
 	{
-		var endpointType = typeof(Request).Assembly.GetType("KeyVault.Api.ConfigItems.SaveConfigItems.Endpoint")
+		var endpointType = typeof(SaveConfigItemsRequest).Assembly.GetType("KeyVault.Api.ConfigItems.SaveConfigItemsEndpoint")
 			?? throw new InvalidOperationException("SaveConfigItems endpoint type not found.");
 		var handle = endpointType.GetMethod(
 			"Handle",
@@ -84,7 +84,7 @@ public sealed class SaveConfigItemsEndpointTests
 			[
 				typeof(ICommandDispatcher),
 				typeof(Guid),
-				typeof(Request),
+				typeof(SaveConfigItemsRequest),
 				typeof(CancellationToken)
 			])
 			?? throw new InvalidOperationException("SaveConfigItems endpoint handler not found.");

@@ -10,28 +10,28 @@ public static class ProjectEndpoints
 			.RequireAuthorization(AuthorizationPolicies.UserOnly)
 			.WithTags("Projects");
 
-		projects.MapPost("", CreateProject.Endpoint.Handle);
-		projects.MapDelete("/{projectId}", DeleteProject.Endpoint.Handle);
+		projects.MapPost("", CreateProjectEndpoint.Handle);
+		projects.MapDelete("/{projectId}", DeleteProjectEndpoint.Handle);
 		
-		projects.MapGet("", GetProjects.Endpoint.Handle);
-		projects.MapGet("/{projectId}", GetProject.Endpoint.Handle)
-			.WithName(nameof(GetProject));
+		projects.MapGet("", GetProjectsEndpoint.Handle);
+		projects.MapGet("/{projectId}", GetProjectEndpoint.Handle)
+			.WithName("GetProject");
 
 		var members = builder.MapGroup("/projects/{projectId}/members")
 			.RequireAuthorization()
 			.WithTags("Members");
 
-		members.MapGet("", GetMembers.Endpoint.Handle);
-		members.MapPost("/{userId}", AddMember.Endpoint.Handle);
-		members.MapPut("/{userId}", SetRole.Endpoint.Handle);
-		members.MapDelete("/{userId}", RemoveMember.Endpoint.Handle);
+		members.MapGet("", GetMembersEndpoint.Handle);
+		members.MapPost("/{userId}", AddMemberEndpoint.Handle);
+		members.MapPut("/{userId}", SetRoleEndpoint.Handle);
+		members.MapDelete("/{userId}", RemoveMemberEndpoint.Handle);
 
 		var environments = builder.MapGroup("/projects/{projectId}/environments")
 			.WithTags("Environments");
 		
-		environments.MapGet("", GetEnvironments.Endpoint.Handle)
-			.WithName(nameof(GetEnvironments));
-		environments.MapPost("", AddEnvironment.Endpoint.Handle);
-		environments.MapDelete("/{environmentId}", RemoveEnvironment.Endpoint.Handle);
+		environments.MapGet("", GetEnvironmentsEndpoint.Handle)
+			.WithName("GetEnvironments");
+		environments.MapPost("", AddEnvironmentEndpoint.Handle);
+		environments.MapDelete("/{environmentId}", RemoveEnvironmentEndpoint.Handle);
 	}
 }

@@ -10,11 +10,11 @@ public static class InvitationEndpoints
 			.RequireAuthorization()
 			.WithTags("Invitations");
 
-		invitations.MapGet("", ActiveInvitations.Endpoint.Handle);
-		invitations.MapPost("", CreateInvitation.Endpoint.Handle);
-		invitations.MapPost("/revoke/{invitationId}", RevokeInvitation.Endpoint.Handle);
+		invitations.MapGet("", ActiveInvitationsEndpoint.Handle);
+		invitations.MapPost("", CreateInvitationEndpoint.Handle);
+		invitations.MapPost("/revoke/{invitationId}", RevokeInvitationEndpoint.Handle);
 
-		builder.MapGet("/invitations/accept/{token}", AcceptInvitation.Endpoint.Handle)
+		builder.MapGet("/invitations/accept/{token}", AcceptInvitationEndpoint.Handle)
 			.RequireAuthorization(AuthorizationPolicies.UserOnly)
 			.WithTags("Invitations");
 	}

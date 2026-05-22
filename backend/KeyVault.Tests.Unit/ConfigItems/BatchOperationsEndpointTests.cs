@@ -1,5 +1,5 @@
 using System.Reflection;
-using KeyVault.Api.ConfigItems.BatchOperations;
+using KeyVault.Api.ConfigItems;
 using KeyVault.Api.ConfigItems.BatchOperations.Operations;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
@@ -21,7 +21,7 @@ public sealed class BatchOperationsEndpointTests
 		var projectId = Guid.NewGuid();
 		var configItemId = Guid.NewGuid();
 		var deleteId = Guid.NewGuid();
-		var request = new Request(
+		var request = new BatchOperationsRequest(
 			"development",
 			[
 				new CreateConfigItemRequest("NEW_SECRET", "initial-secret"),
@@ -68,7 +68,7 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new Request(
+		var request = new BatchOperationsRequest(
 			"development",
 			[
 				new CreateConfigItemRequest("not valid", null),
@@ -82,7 +82,7 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidRenameKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new Request(
+		var request = new BatchOperationsRequest(
 			"development",
 			[
 				new RenameConfigItemRequest(Guid.NewGuid(), "not valid"),
@@ -95,15 +95,15 @@ public sealed class BatchOperationsEndpointTests
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		Request request)
+		BatchOperationsRequest request)
 	{
-		var endpointType = typeof(Request).Assembly.GetType("KeyVault.Api.ConfigItems.BatchOperations.BatchOperationsEndpoint")
+		var endpointType = typeof(BatchOperationsRequest).Assembly.GetType("KeyVault.Api.ConfigItems.BatchOperationsEndpoint")
 			?? throw new InvalidOperationException("BatchOperations endpoint type not found.");
 		var handle = endpointType.GetMethod(
 			"Handle",
 			BindingFlags.Static | BindingFlags.NonPublic,
 			[
-				typeof(Request),
+				typeof(BatchOperationsRequest),
 				typeof(ICommandDispatcher),
 				typeof(Guid),
 				typeof(CancellationToken)

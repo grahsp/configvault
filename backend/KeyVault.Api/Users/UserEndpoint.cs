@@ -6,7 +6,7 @@ public static class UserEndpoint
 {
 	public static void AddUserEndpoints(this IEndpointRouteBuilder builder)
 	{
-		builder.MapGet("/me", GetCurrentUser.GetCurrentUser.Handle)
+		builder.MapGet("/me", GetCurrentUserEndpoint.Handle)
 			.RequireAuthorization(AuthorizationPolicies.UserOnly);
 	}
 }
