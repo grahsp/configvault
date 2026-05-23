@@ -1,0 +1,71 @@
+import { ChevronDownIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Button } from '../ui/button'
+import { ButtonGroup, ButtonGroupSeparator } from '../ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
+
+export interface SplitActionButtonPrimaryAction {
+  label: ReactNode
+  menuLabel?: string
+  onClick: () => void
+}
+
+export interface SplitActionButtonSecondaryAction {
+  disabled?: boolean
+  label: string
+  onSelect: () => void
+  tone?: 'default' | 'danger'
+}
+
+export interface SplitActionButtonProps {
+  className?: string
+  disabled?: boolean
+  primaryAction: SplitActionButtonPrimaryAction
+  secondaryActions: SplitActionButtonSecondaryAction[]
+}
+
+export function SplitActionButton({
+  className,
+  disabled = false,
+  primaryAction,
+  secondaryActions,
+}: SplitActionButtonProps) {
+  const menuLabel =
+    primaryAction.menuLabel ??
+    (typeof primaryAction.label === 'string'
+      ? `Open ${primaryAction.label.replace(/^[+]\s*/, '').toLowerCase()} actions`
+      : 'Open actions')
+
+  return (
+    <ButtonGroup className={className}>
+      <Button disabled={disabled} onClick={primaryAction.onClick} type="button">
+        {primaryAction.label}
+      </Button>
+      <ButtonGroupSeparator />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button aria-label={menuLabel} disabled={disabled} type="button">
+            <ChevronDownIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {secondaryActions.map((action) => (
+            <DropdownMenuItem
+              disabled={action.disabled}
+              key={action.label}
+              onSelect={action.onSelect}
+              variant={action.tone === 'danger' ? 'destructive' : 'default'}
+            >
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </ButtonGroup>
+  )
+}

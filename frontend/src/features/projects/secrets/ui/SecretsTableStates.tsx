@@ -1,9 +1,5 @@
-import { ChevronDownIcon } from 'lucide-react'
+import { SplitActionButton } from '../../../../components/composed'
 import { Button } from '../../../../components/ui/button'
-import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-} from '../../../../components/ui/button-group'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,30 +72,18 @@ export function SecretsEmptyState({
           Add a secret key to start tracking values across environments.
         </p>
       </div>
-      <ButtonGroup className="overflow-hidden rounded-lg bg-primary text-primary-foreground">
-        <Button className="rounded-lg" onClick={onOpenAddSecret} type="button">
-          + Add Secret
-        </Button>
-        <ButtonGroupSeparator className="my-2 w-px shrink-0 self-stretch bg-primary-foreground/20" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              aria-label="Open add secret actions"
-              className="h-9 w-9 rounded-lg"
-              size="icon"
-              type="button"
-              variant="default"
-            >
-              <ChevronDownIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={onOpenImportModal}>
-              Import Secrets
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </ButtonGroup>
+      <SplitActionButton
+        primaryAction={{
+          label: '+ Add Secret',
+          onClick: onOpenAddSecret,
+        }}
+        secondaryActions={[
+          {
+            label: 'Import Secrets',
+            onSelect: onOpenImportModal,
+          },
+        ]}
+      />
     </div>
   )
 }
