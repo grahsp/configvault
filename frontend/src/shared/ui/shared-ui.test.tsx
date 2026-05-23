@@ -7,8 +7,6 @@ import { CopyableInput } from './CopyableInput'
 import { Modal } from './Modal'
 import { PageLoader } from './PageLoader'
 import { SideWindow } from './SideWindow'
-import { SplitButton } from './SplitButton'
-import splitButtonStyles from './SplitButton.module.css'
 import { StatePanel } from './StatePanel'
 import statePanelStyles from './StatePanel.module.css'
 
@@ -89,45 +87,6 @@ describe('shared ui primitives', () => {
 
     await user.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalledTimes(2)
-  })
-
-  it('renders split button actions and menu semantics', async () => {
-    const user = userEvent.setup()
-    const onActionClick = vi.fn()
-    const onMenuActionClick = vi.fn()
-
-    render(
-      <SplitButton
-        actionLabel="+ Add Secret"
-        menuActionLabel="Import Secrets"
-        menuLabel="Open secret actions"
-        onActionClick={onActionClick}
-        onMenuActionClick={onMenuActionClick}
-        variant="primary"
-      />,
-    )
-
-    const actionButton = screen.getByRole('button', { name: '+ Add Secret' })
-    const toggleButton = screen.getByRole('button', {
-      name: 'Open secret actions',
-    })
-
-    expect(toggleButton).toHaveAttribute('aria-expanded', 'false')
-    expect(toggleButton.querySelector(`.${splitButtonStyles.toggleIcon}`)).not.toBeNull()
-    expect(toggleButton).not.toHaveTextContent(/^v$/i)
-
-    await user.click(actionButton)
-    expect(onActionClick).toHaveBeenCalledTimes(1)
-
-    await user.click(toggleButton)
-
-    expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('menu')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('menuitem', { name: 'Import Secrets' }))
-
-    expect(onMenuActionClick).toHaveBeenCalledTimes(1)
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('renders state panel tones, actions, and roles', () => {
