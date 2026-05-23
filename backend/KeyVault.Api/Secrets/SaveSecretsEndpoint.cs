@@ -5,14 +5,14 @@ using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class SaveConfigItemsEndpoint
+internal static class SaveSecretsEndpoint
 {
 	internal static async Task<IResult> Handle(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		SaveConfigItemsRequest request,
+		SaveSecretsRequest request,
 		CancellationToken ct)
 	{
 		var operations = new List<Operation>();
@@ -46,12 +46,12 @@ internal static class SaveConfigItemsEndpoint
 	}
 }
 
-public sealed record SaveConfigItemsRequest(
+public sealed record SaveSecretsRequest(
 	string Environment,
-	IReadOnlyList<ConfigItemUpdateRequest> Updates,
+	IReadOnlyList<SaveSecretUpdateRequest> Updates,
 	IReadOnlyList<Guid> DeleteConfigItemIds);
 
-public sealed record ConfigItemUpdateRequest(
+public sealed record SaveSecretUpdateRequest(
 	Guid ConfigItemId,
 	string? Key,
 	string? Value,

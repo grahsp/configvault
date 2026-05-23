@@ -15,7 +15,7 @@ public static class ProjectEndpoints
 		
 		projects.MapGet("", GetProjectsEndpoint.Handle);
 		projects.MapGet("/{projectId}", GetProjectEndpoint.Handle)
-			.WithName("GetProject");
+			.WithName(ProjectRouteNames.GetProject);
 
 		var members = builder.MapGroup("/projects/{projectId}/members")
 			.RequireAuthorization()
@@ -30,7 +30,7 @@ public static class ProjectEndpoints
 			.WithTags("Environments");
 		
 		environments.MapGet("", GetEnvironmentsEndpoint.Handle)
-			.WithName("GetEnvironments");
+			.WithName(ProjectRouteNames.GetEnvironments);
 		environments.MapPost("", AddEnvironmentEndpoint.Handle);
 		environments.MapDelete("/{environmentId}", RemoveEnvironmentEndpoint.Handle);
 	}

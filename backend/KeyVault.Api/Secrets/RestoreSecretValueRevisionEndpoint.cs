@@ -1,9 +1,9 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.Commands;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class RestoreConfigValueRevisionEndpoint
+internal static class RestoreSecretValueRevisionEndpoint
 {
 	internal static async Task<IResult> Handle(
 		ICommandDispatcher dispatcher,
@@ -11,7 +11,7 @@ internal static class RestoreConfigValueRevisionEndpoint
 		Guid configItemId,
 		uint revision,
 		string environment,
-		RestoreConfigValueRevisionRequest request,
+		RestoreSecretValueRevisionRequest request,
 		CancellationToken ct)
 	{
 		var command = new RestoreConfigValueRevisionCommand(projectId, configItemId, environment, revision, request.ExpectedRevision);
@@ -21,4 +21,4 @@ internal static class RestoreConfigValueRevisionEndpoint
 	}
 }
 
-public sealed record RestoreConfigValueRevisionRequest(uint ExpectedRevision);
+public sealed record RestoreSecretValueRevisionRequest(uint ExpectedRevision);

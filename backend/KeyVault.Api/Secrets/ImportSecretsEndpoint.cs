@@ -4,9 +4,9 @@ using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Infrastructure.ConfigItems.Formats;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class ImportConfigEndpoint
+internal static class ImportSecretsEndpoint
 {
 	internal static async Task<IResult> Handle(
 		ICommandDispatcher dispatcher,

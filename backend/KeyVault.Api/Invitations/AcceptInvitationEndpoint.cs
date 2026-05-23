@@ -10,6 +10,8 @@ internal static class AcceptInvitationEndpoint
 		var command = new AcceptInvitationCommand(token);
 		var result = await dispatcher.DispatchAsync(command, ct);
 
-		return Results.Ok(new { projectId = result.ProjectId });
+		return Results.Ok(new AcceptInvitationResponse(result.ProjectId));
 	}
 }
+
+public sealed record AcceptInvitationResponse(Guid ProjectId);

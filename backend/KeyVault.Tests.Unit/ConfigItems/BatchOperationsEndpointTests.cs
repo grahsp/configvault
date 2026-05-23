@@ -1,6 +1,6 @@
 using System.Reflection;
-using KeyVault.Api.ConfigItems;
-using KeyVault.Api.ConfigItems.BatchOperations.Operations;
+using KeyVault.Api.Secrets;
+using KeyVault.Api.Secrets.BatchOperations.Contracts;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
@@ -21,13 +21,13 @@ public sealed class BatchOperationsEndpointTests
 		var projectId = Guid.NewGuid();
 		var configItemId = Guid.NewGuid();
 		var deleteId = Guid.NewGuid();
-		var request = new BatchOperationsRequest(
+		var request = new BatchSecretOperationsRequest(
 			"development",
 			[
-				new CreateConfigItemRequest("NEW_SECRET", "initial-secret"),
-				new RenameConfigItemRequest(configItemId, "RENAMED_SECRET"),
-				new SetConfigItemValueRequest(configItemId, "secret", 3),
-				new DeleteConfigItemRequest(deleteId),
+				new CreateSecretOperationRequest("NEW_SECRET", "initial-secret"),
+				new RenameSecretOperationRequest(configItemId, "RENAMED_SECRET"),
+				new SetSecretValueOperationRequest(configItemId, "secret", 3),
+				new DeleteSecretOperationRequest(deleteId),
 			]);
 
 		var result = await InvokeHandleAsync(dispatcher, projectId, request);
@@ -68,10 +68,10 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new BatchOperationsRequest(
+		var request = new BatchSecretOperationsRequest(
 			"development",
 			[
-				new CreateConfigItemRequest("not valid", null),
+				new CreateSecretOperationRequest("not valid", null),
 			]);
 
 		await Assert.ThrowsAsync<ValidationException>(() => InvokeHandleAsync(dispatcher, Guid.NewGuid(), request));
@@ -82,10 +82,10 @@ public sealed class BatchOperationsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidRenameKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new BatchOperationsRequest(
+		var request = new BatchSecretOperationsRequest(
 			"development",
 			[
-				new RenameConfigItemRequest(Guid.NewGuid(), "not valid"),
+				new RenameSecretOperationRequest(Guid.NewGuid(), "not valid"),
 			]);
 
 		await Assert.ThrowsAsync<ValidationException>(() => InvokeHandleAsync(dispatcher, Guid.NewGuid(), request));
@@ -95,20 +95,20 @@ public sealed class BatchOperationsEndpointTests
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		BatchOperationsRequest request)
+		BatchSecretOperationsRequest request)
 	{
-		var endpointType = typeof(BatchOperationsRequest).Assembly.GetType("KeyVault.Api.ConfigItems.BatchOperationsEndpoint")
-			?? throw new InvalidOperationException("BatchOperations endpoint type not found.");
+		var endpointType = typeof(BatchSecretOperationsRequest).Assembly.GetType("KeyVault.Api.Secrets.BatchSecretOperationsEndpoint")
+			?? throw new InvalidOperationException("BatchSecretOperations endpoint type not found.");
 		var handle = endpointType.GetMethod(
 			"Handle",
 			BindingFlags.Static | BindingFlags.NonPublic,
 			[
-				typeof(BatchOperationsRequest),
+				typeof(BatchSecretOperationsRequest),
 				typeof(ICommandDispatcher),
 				typeof(Guid),
 				typeof(CancellationToken)
 			])
-			?? throw new InvalidOperationException("BatchOperations endpoint handler not found.");
+			?? throw new InvalidOperationException("BatchSecretOperations endpoint handler not found.");
 
 		var task = (Task<IResult>)handle.Invoke(null, [request, dispatcher, projectId, CancellationToken.None])!;
 		return await task;

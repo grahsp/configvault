@@ -1,4 +1,4 @@
-using KeyVault.Api.ConfigItems.BatchOperations.Operations;
+using KeyVault.Api.Secrets.BatchOperations.Contracts;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
@@ -6,12 +6,12 @@ using KeyVault.Application.ConfigItems.Commands;
 using KeyVault.Application.Exceptions;
 using KeyVault.Domain.ConfigItems;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class BatchOperationsEndpoint
+internal static class BatchSecretOperationsEndpoint
 {
 	internal static async Task<IResult> Handle(
-		BatchOperationsRequest request,
+		BatchSecretOperationsRequest request,
 		ICommandDispatcher dispatcher,
 		Guid projectId,
 		CancellationToken ct)
@@ -28,21 +28,21 @@ internal static class BatchOperationsEndpoint
 	}
 
 	private static Operation MapOperation(
-		ConfigItemOperationRequest configItemOperationRequest)
-		=> configItemOperationRequest switch
+		SecretOperationRequest secretOperationRequest)
+		=> secretOperationRequest switch
 		{
-			CreateConfigItemRequest create => MapCreate(create),
-			SetConfigItemValueRequest setValue => new SetValue(
+			CreateSecretOperationRequest create => MapCreate(create),
+			SetSecretValueOperationRequest setValue => new SetValue(
 				setValue.ConfigItemId,
 				setValue.Value,
 				setValue.ExpectedRevision),
-			RenameConfigItemRequest rename => MapRename(rename),
-			DeleteConfigItemRequest delete => new DeleteItem(
+			RenameSecretOperationRequest rename => MapRename(rename),
+			DeleteSecretOperationRequest delete => new DeleteItem(
 				delete.ConfigItemId),
 			_ => throw new ValidationException("Unsupported batch operation."),
 		};
 
-	private static Operation MapCreate(CreateConfigItemRequest createConfig)
+	private static Operation MapCreate(CreateSecretOperationRequest createConfig)
 	{
 		if (!ConfigKey.TryParse(createConfig.Key, out var parsedKey))
 			throw new ValidationException("Invalid key format");
@@ -52,7 +52,7 @@ internal static class BatchOperationsEndpoint
 			createConfig.InitialValue);
 	}
 
-	private static Operation MapRename(RenameConfigItemRequest renameConfig)
+	private static Operation MapRename(RenameSecretOperationRequest renameConfig)
 	{
 		if (!ConfigKey.TryParse(renameConfig.Key, out var parsedKey))
 			throw new ValidationException("Invalid key format");
@@ -63,6 +63,6 @@ internal static class BatchOperationsEndpoint
 	}
 }
 
-public sealed record BatchOperationsRequest(
+public sealed record BatchSecretOperationsRequest(
 	string Environment,
-	IReadOnlyList<ConfigItemOperationRequest> Operations);
+	IReadOnlyList<SecretOperationRequest> Operations);

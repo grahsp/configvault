@@ -1,9 +1,9 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.Queries;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class GetConfigValueRevisionsEndpoint
+internal static class GetSecretValueRevisionsEndpoint
 {
 	internal static async Task<IResult> Handle(
 		IQueryDispatcher dispatcher,

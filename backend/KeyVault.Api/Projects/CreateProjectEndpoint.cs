@@ -14,10 +14,11 @@ internal static class CreateProjectEndpoint
 		var id = await dispatcher.DispatchAsync(command, ct);
 		
 		return Results.CreatedAtRoute(
-			"GetProject",
+			ProjectRouteNames.GetProject,
 			new RouteValueDictionary { ["projectId"] = id },
-			new { id });
+			new CreateProjectResponse(id));
 	}
 }
 
 public sealed record CreateProjectRequest(string Name);
+public sealed record CreateProjectResponse(Guid Id);

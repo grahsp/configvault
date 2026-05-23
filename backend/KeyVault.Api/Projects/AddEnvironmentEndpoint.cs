@@ -14,8 +14,8 @@ internal static class AddEnvironmentEndpoint
 		var command = new AddEnvironmentCommand(projectId, request.EnvironmentName);
 		var environment = await dispatcher.DispatchAsync(command, ct);
 
-		return Results.CreatedAtRoute("GetEnvironments", environment);
+		return Results.CreatedAtRoute(ProjectRouteNames.GetEnvironments, environment);
 	}
 }
 
-internal sealed record AddEnvironmentRequest(string EnvironmentName);
+public sealed record AddEnvironmentRequest(string EnvironmentName);

@@ -2,9 +2,9 @@ using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.Queries;
 using KeyVault.Infrastructure.ConfigItems.Formats;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class ExportConfigEndpoint
+internal static class ExportSecretsEndpoint
 {
 	internal static async Task<IResult> Handle(
 		IQueryDispatcher dispatcher,

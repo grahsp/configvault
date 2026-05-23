@@ -10,6 +10,8 @@ internal static class CreateInvitationEndpoint
 		var command = new CreateInvitationCommand(projectId);
 		var token = await dispatcher.DispatchAsync(command, ct);
 
-		return Results.Ok(new { token });
+		return Results.Ok(new CreateInvitationResponse(token));
 	}
 }
+
+public sealed record CreateInvitationResponse(string Token);

@@ -1,5 +1,5 @@
 using System.Reflection;
-using KeyVault.Api.ConfigItems;
+using KeyVault.Api.Secrets;
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.BatchExecution.Models;
 using KeyVault.Application.ConfigItems.BatchExecution.Operations;
@@ -21,10 +21,10 @@ public sealed class SaveConfigItemsEndpointTests
 		var projectId = Guid.NewGuid();
 		var configItemId = Guid.NewGuid();
 		var deleteId = Guid.NewGuid();
-		var request = new SaveConfigItemsRequest(
+		var request = new SaveSecretsRequest(
 			"development",
 			[
-				new ConfigItemUpdateRequest(configItemId, "RENAMED_SECRET", "secret", 4)
+				new SaveSecretUpdateRequest(configItemId, "RENAMED_SECRET", "secret", 4)
 			],
 			[deleteId]);
 
@@ -60,10 +60,10 @@ public sealed class SaveConfigItemsEndpointTests
 	public async Task Handle_ShouldThrowValidationException_ForInvalidKey()
 	{
 		var dispatcher = new CapturingCommandDispatcher();
-		var request = new SaveConfigItemsRequest(
+		var request = new SaveSecretsRequest(
 			"development",
 			[
-				new ConfigItemUpdateRequest(Guid.NewGuid(), "not valid", null, null)
+				new SaveSecretUpdateRequest(Guid.NewGuid(), "not valid", null, null)
 			],
 			[]);
 
@@ -74,20 +74,20 @@ public sealed class SaveConfigItemsEndpointTests
 	private static async Task<IResult> InvokeHandleAsync(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
-		SaveConfigItemsRequest request)
+		SaveSecretsRequest request)
 	{
-		var endpointType = typeof(SaveConfigItemsRequest).Assembly.GetType("KeyVault.Api.ConfigItems.SaveConfigItemsEndpoint")
-			?? throw new InvalidOperationException("SaveConfigItems endpoint type not found.");
+		var endpointType = typeof(SaveSecretsRequest).Assembly.GetType("KeyVault.Api.Secrets.SaveSecretsEndpoint")
+			?? throw new InvalidOperationException("SaveSecrets endpoint type not found.");
 		var handle = endpointType.GetMethod(
 			"Handle",
 			BindingFlags.Static | BindingFlags.NonPublic,
 			[
 				typeof(ICommandDispatcher),
 				typeof(Guid),
-				typeof(SaveConfigItemsRequest),
+				typeof(SaveSecretsRequest),
 				typeof(CancellationToken)
 			])
-			?? throw new InvalidOperationException("SaveConfigItems endpoint handler not found.");
+			?? throw new InvalidOperationException("SaveSecrets endpoint handler not found.");
 
 		var task = (Task<IResult>)handle.Invoke(null, [dispatcher, projectId, request, CancellationToken.None])!;
 		return await task;

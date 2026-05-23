@@ -1,16 +1,16 @@
 using KeyVault.Application.Abstractions.Messaging;
 using KeyVault.Application.ConfigItems.Commands;
 
-namespace KeyVault.Api.ConfigItems;
+namespace KeyVault.Api.Secrets;
 
-internal static class SetConfigValueEndpoint
+internal static class SetSecretValueEndpoint
 {
 	internal static async Task<IResult> Handle(
 		ICommandDispatcher dispatcher,
 		Guid projectId,
 		Guid configItemId,
 		string environment,
-		SetConfigValueRequest request,
+		SetSecretValueRequest request,
 		CancellationToken ct)
 	{
 		var command = new SetConfigValueCommand(projectId, configItemId, environment, request.Value, request.ExpectedRevision);
@@ -20,4 +20,4 @@ internal static class SetConfigValueEndpoint
 	}
 }
 
-public sealed record SetConfigValueRequest(string Value, uint ExpectedRevision);
+public sealed record SetSecretValueRequest(string Value, uint ExpectedRevision);

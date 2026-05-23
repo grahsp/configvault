@@ -2,7 +2,7 @@ using KeyVault.Api.Authorization;
 
 namespace KeyVault.Api.Users;
 
-public static class UserEndpoint
+public static class UserEndpoints
 {
 	public static void AddUserEndpoints(this IEndpointRouteBuilder builder)
 	{
