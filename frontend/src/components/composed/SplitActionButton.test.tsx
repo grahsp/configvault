@@ -36,6 +36,9 @@ describe('SplitActionButton', () => {
     await user.click(screen.getByRole('button', { name: 'Open add secret actions' }))
 
     expect(screen.getByRole('menuitem', { name: 'Import Secrets' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Import Secrets' })).toHaveClass(
+      'cursor-pointer',
+    )
     expect(screen.getByRole('menuitem', { name: 'Archive' })).toHaveAttribute(
       'data-variant',
       'destructive',
@@ -116,5 +119,32 @@ describe('SplitActionButton', () => {
     )
 
     expect(screen.getByRole('button', { name: 'Open create actions' })).toBeInTheDocument()
+  })
+
+  it('applies the shared rounding class to both the primary and secondary buttons', () => {
+    render(
+      <SplitActionButton
+        primaryAction={{
+          label: '+ Add Secret',
+          onClick: vi.fn(),
+        }}
+        secondaryActions={[
+          {
+            label: 'Import Secrets',
+            onSelect: vi.fn(),
+          },
+        ]}
+      />,
+    )
+
+    const group = screen.getByRole('group')
+    const primaryButton = screen.getByRole('button', { name: '+ Add Secret' })
+    const menuButton = screen.getByRole('button', { name: 'Open add secret actions' })
+
+    expect(group).toHaveClass('rounded-md')
+    expect(primaryButton).toHaveClass('rounded-md')
+    expect(menuButton).toHaveClass('rounded-md')
+    expect(primaryButton).not.toHaveClass('rounded-4xl')
+    expect(menuButton).not.toHaveClass('rounded-4xl')
   })
 })

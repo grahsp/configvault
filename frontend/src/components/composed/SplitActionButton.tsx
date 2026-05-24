@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { cn } from '@/lib/utils.ts'
 
 export interface SplitActionButtonPrimaryAction {
   label: ReactNode
@@ -41,21 +42,24 @@ export function SplitActionButton({
       ? `Open ${primaryAction.label.replace(/^[+]\s*/, '').toLowerCase()} actions`
       : 'Open actions')
 
+  const rounded = 'none';
+
   return (
-    <ButtonGroup className={className}>
-      <Button disabled={disabled} onClick={primaryAction.onClick} type="button">
+    <ButtonGroup className={cn('overflow-hidden', rounded, className)}>
+      <Button disabled={disabled} onClick={primaryAction.onClick} type="button" className={rounded}>
         {primaryAction.label}
       </Button>
       <ButtonGroupSeparator />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button aria-label={menuLabel} disabled={disabled} type="button">
+          <Button aria-label={menuLabel} disabled={disabled} type="button" className={rounded}>
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="p-0">
           {secondaryActions.map((action) => (
             <DropdownMenuItem
+              className="cursor-pointer"
               disabled={action.disabled}
               key={action.label}
               onSelect={action.onSelect}
