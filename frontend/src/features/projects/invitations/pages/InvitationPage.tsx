@@ -1,21 +1,20 @@
 import { Link } from 'react-router-dom'
-import { Button } from '../../../../components/ui/button'
 import { StatusPanel } from '@/components/composed'
+import { Button } from '@/components/ui/button'
 import { useInvitationAcceptanceFlow } from '../application'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
 
 export function InvitationPage() {
   const flow = useInvitationAcceptanceFlow()
 
   if (flow.errorTitle && flow.errorMessage) {
     return (
-      <main className={styles.page}>
-        <section className={styles.card}>
+      <main className="grid min-h-full place-items-center">
+        <section className="w-full rounded-lg border bg-card p-6 shadow-sm sm:p-8">
           <StatusPanel
             actions={
-              <Link className={styles.backActionLink} to="/">
-                Back to home
-              </Link>
+              <Button asChild type="button" variant="outline">
+                <Link to="/">Back to home</Link>
+              </Button>
             }
             role="alert"
             title={flow.errorTitle}
@@ -29,8 +28,8 @@ export function InvitationPage() {
   }
 
   return (
-    <main className={styles.page}>
-      <section className={styles.card}>
+    <main className="grid min-h-full place-items-center">
+      <section className="w-full rounded-lg border bg-card p-6 shadow-sm sm:p-8">
         <StatusPanel
           actions={
             flow.actionVisible ? (

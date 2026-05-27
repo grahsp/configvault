@@ -7,10 +7,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
-import { Button } from '../../../components/ui/button'
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { getErrorMessage } from '../domain'
-import styles from './ProjectDeleteDialog.module.css'
 
 interface ProjectDeleteDialogProps {
   mutation: UseMutationResult<void, Error, string>
@@ -45,7 +44,7 @@ export function ProjectDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete project</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <p className={styles.modalCopy}>
+            <p className="m-0 text-sm leading-6 text-muted-foreground">
               Delete {projectName}? This cannot be undone.
             </p>
           </AlertDialogDescription>

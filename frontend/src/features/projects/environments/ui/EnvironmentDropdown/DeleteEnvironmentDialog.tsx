@@ -6,10 +6,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../../../../components/ui/alert-dialog.tsx'
-import { Button } from '../../../../../components/ui/button.tsx'
+} from '@/components/ui/alert-dialog.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import type { Environment } from '../../domain'
-import styles from './EnvironmentDropdown.module.css'
 
 export interface EnvironmentDeleteDialogProps {
   deleteError: string
@@ -39,11 +38,11 @@ export function DeleteEnvironmentDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete environment</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div>
-              <p className={styles.modalCopy}>
+            <div className="flex flex-col gap-2 text-sm leading-6 text-muted-foreground">
+              <p className="m-0">
                 Delete this environment from the project?
               </p>
-              <p className={styles.modalCopy}>
+              <p className="m-0">
                 {environment.environmentName} and its associated configuration
                 values will be removed.
               </p>

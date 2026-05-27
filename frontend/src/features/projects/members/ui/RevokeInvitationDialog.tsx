@@ -6,9 +6,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../../../components/ui/alert-dialog'
-import { Button } from '../../../../components/ui/button'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 
 interface RevokeInvitationDialogProps {
   createdByName: string
@@ -40,9 +39,9 @@ export function RevokeInvitationDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke invitation link</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div>
-              <p className={styles.modalCopy}>Revoke this invitation link?</p>
-              <p className={styles.modalCopy}>
+            <div className="flex flex-col gap-2 text-sm leading-6 text-muted-foreground">
+              <p className="m-0">Revoke this invitation link?</p>
+              <p className="m-0">
                 Created by {createdByName}. It currently expires {expiresAt}.
               </p>
             </div>

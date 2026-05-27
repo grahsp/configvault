@@ -6,9 +6,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../../../components/ui/alert-dialog'
-import { Button } from '../../../../components/ui/button'
-import styles from '../../pages/ProjectDetailPage/ProjectDetailPage.module.css'
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 
 interface RemoveMemberDialogProps {
   displayName: string
@@ -38,11 +37,11 @@ export function RemoveMemberDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Remove member</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div>
-              <p className={styles.modalCopy}>
+            <div className="flex flex-col gap-2 text-sm leading-6 text-muted-foreground">
+              <p className="m-0">
                 Remove this member from the project?
               </p>
-              <p className={styles.modalCopy}>{displayName} will lose access.</p>
+              <p className="m-0">{displayName} will lose access.</p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -1,6 +1,7 @@
 import type { FormEvent, KeyboardEvent, RefObject } from 'react'
-import { cn } from '@/lib/utils'
-import styles from './EnvironmentDropdown.module.css'
+import { Button } from '@/components/ui/button'
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 
 export interface EnvironmentCreateSectionProps {
   createError: string
@@ -31,55 +32,61 @@ export function EnvironmentCreateSection({
 }: EnvironmentCreateSectionProps) {
   if (!isCreating) {
     return (
-      <button className={styles.addAction} onClick={onCreateStart} type="button">
+      <Button
+        className="w-full justify-start px-2.5 text-primary"
+        onClick={onCreateStart}
+        size="sm"
+        type="button"
+        variant="ghost"
+      >
         + Add environment
-      </button>
+      </Button>
     )
   }
 
   return (
-    <form className={styles.createForm} onSubmit={onSubmitCreate}>
-      <label className={styles.createLabel}>
-        Environment name
-        <input
+    <form className="flex flex-col gap-2" onSubmit={onSubmitCreate}>
+      <Field className="gap-1.5">
+        <FieldLabel className="text-xs font-semibold text-foreground" htmlFor={`${listboxId}-create-input`}>
+          Environment name
+        </FieldLabel>
+        <Input
           aria-describedby={createError ? `${listboxId}-create-error` : undefined}
           aria-invalid={Boolean(createError)}
-          className={styles.createInput}
+          className="h-9 rounded-lg border-border bg-background px-2.5 py-2 shadow-none"
           disabled={isCreatePending}
+          id={`${listboxId}-create-input`}
           onChange={(event) => onCreateInputChange(event.target.value)}
           onKeyDown={onCreateInputKeyDown}
           ref={createInputRef}
           type="text"
           value={createName}
         />
-      </label>
 
-      {createError ? (
-        <p
-          className={styles.createError}
-          id={`${listboxId}-create-error`}
-          role="alert"
-        >
-          {createError}
-        </p>
-      ) : null}
+        {createError ? (
+          <FieldDescription
+            className="text-destructive"
+            id={`${listboxId}-create-error`}
+            role="alert"
+          >
+            {createError}
+          </FieldDescription>
+        ) : null}
+      </Field>
 
-      <div className={styles.createActions}>
-        <button
-          className={cn(styles.createButton, styles.createSubmit)}
-          disabled={isCreatePending}
-          type="submit"
-        >
+      <div className="grid grid-cols-2 gap-2">
+        <Button disabled={isCreatePending} size="sm" type="submit">
           {isCreatePending ? 'Creating' : 'Create'}
-        </button>
-        <button
-          className={cn(styles.createButton, styles.createCancel)}
+        </Button>
+        <Button
           disabled={isCreatePending}
           onClick={onResetCreateState}
+          size="sm"
           type="button"
+          variant="outline"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )
