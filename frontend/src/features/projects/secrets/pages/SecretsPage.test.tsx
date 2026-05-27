@@ -6,7 +6,6 @@ import {
   mockFetchSequence,
   renderProjectDetail,
 } from '../../pages/ProjectDetailPage/ProjectDetailPage.testUtils.tsx'
-import historyModalStyles from '../ui/SecretHistoryModal.module.css'
 
 const authMocks = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
@@ -287,14 +286,10 @@ describe('SecretsPage', () => {
     expect(screen.queryByText('•')).not.toBeInTheDocument()
     const currentMetadata = screen
       .getByText('Casey Current')
-      .closest(`.${historyModalStyles.revisionMetaLine}`)
+      .closest('p')
     expect(currentMetadata).not.toBeNull()
-    expect(currentMetadata).toHaveClass(historyModalStyles.revisionMetaLine)
     expect(currentMetadata).toHaveTextContent(
       `Casey Current${formatCreatedDate('2025-02-03T15:30:00Z')}Current`,
-    )
-    expect(screen.getByText('Casey Current')).toHaveClass(
-      historyModalStyles.revisionCreator,
     )
     expect(
       within(historyDialog).getAllByText('••••••'),

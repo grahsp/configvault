@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { Button } from '../../../../components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../../../components/ui/dialog'
-import styles from './SecretsTable.module.css'
+} from '@/components/ui/dialog'
+import { Field, FieldLabel } from '@/components/ui/field'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ImportSecretsModalProps {
   hasUnsavedChanges: boolean
@@ -81,13 +82,18 @@ export function ImportSecretsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form className={styles.configItemForm} id={formId} onSubmit={handleSubmit}>
-          <label className={styles.configItemFormField}>
-            .env content
-            <textarea
+        <form
+          className="flex flex-col gap-4"
+          id={formId}
+          onSubmit={handleSubmit}
+        >
+          <Field>
+            <FieldLabel htmlFor="import-secrets-content">.env content</FieldLabel>
+            <Textarea
               autoFocus
-              className={styles.configItemTextarea}
+              className="min-h-56 resize-y rounded-lg border-border bg-muted/60 font-mono text-sm"
               disabled={isPending}
+              id="import-secrets-content"
               onChange={(event) => {
                 setContent(event.target.value)
               }}
@@ -95,7 +101,7 @@ export function ImportSecretsModal({
               rows={10}
               value={content}
             />
-          </label>
+          </Field>
         </form>
 
         <DialogFooter>

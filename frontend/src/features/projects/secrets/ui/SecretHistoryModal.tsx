@@ -16,13 +16,11 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet.tsx'
 import { StatusPanel } from '@/components/composed'
-import { cn } from '@/lib/utils'
 import { formatCreatedDate, getErrorMessage } from '@/features/projects'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
 import { UndoIcon } from './SecretRowIcons.tsx'
 import { SecretValueField } from './SecretValueField.tsx'
-import styles from './SecretHistoryModal.module.css'
 
 interface SecretHistoryModalProps {
   environmentName: string
@@ -204,15 +202,19 @@ function HistoryList({
   if (revisions.length === 0) {
     return (
       <StatusPanel role="status" title="No history yet">
-        <p>No saved revisions are available for this secret in this environment.</p>
+        <p>
+          No saved revisions are available for this secret in this environment.
+        </p>
       </StatusPanel>
     )
   }
 
   return (
-    <div className={styles.historyList}>
+    <div className="grid content-start items-start gap-6 px-1">
       {restoreDisabledReason ? (
-        <p className={styles.restoreNotice}>{restoreDisabledReason}</p>
+        <p className="m-0 text-xs text-muted-foreground">
+          {restoreDisabledReason}
+        </p>
       ) : null}
 
       {revisions.map((revision) => {
@@ -228,10 +230,10 @@ function HistoryList({
         return (
           <article
             aria-busy={isLoadingRevision}
-            className={styles.revisionRow}
+            className="grid content-start gap-1"
             key={revision.revision}
           >
-            <div className={styles.fieldRow}>
+            <div className="flex min-w-[32rem] items-center gap-3">
               <SecretValueField
                 draftValue={null}
                 hideActionMenu
@@ -257,27 +259,28 @@ function HistoryList({
                   hasValue: true,
                 }}
               />
-              <div className={styles.rowActions}>
-                <button
+              <div className="grid auto-cols-max grid-flow-col gap-2 self-center">
+                <Button
                   aria-label={`Restore revision ${revision.revision}`}
-                  className={styles.iconButton}
                   disabled={restoreDisabled}
                   onClick={() => onOpenRestoreConfirmation(revision.revision)}
+                  size="icon-lg"
                   title={restoreTitle}
                   type="button"
+                  variant="ghost"
                 >
                   <UndoIcon />
-                </button>
+                </Button>
               </div>
             </div>
 
-            <p className={styles.revisionMetaLine}>
-              <span className={styles.revisionCreator}>
+            <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">
                 {revision.createdByDisplayName}
               </span>
               <span>{formatCreatedDate(revision.modifiedAt)}</span>
               {revision.isCurrent ? (
-                <span className={cn(styles.currentBadge, styles.currentBadgeInline)}>
+                <span className="inline-flex items-center rounded-full bg-[color:var(--color-success-soft)] px-2 py-0.5 text-xs font-semibold text-success">
                   Current
                 </span>
               ) : null}
@@ -290,13 +293,16 @@ function HistoryList({
             ) : null}
 
             {error ? (
-              <p className={styles.valueError} role="alert">
+              <p className="m-0 text-xs text-destructive" role="alert">
                 {error}
               </p>
             ) : null}
 
-            {isRevealed && revealedValuesByRevision[revision.revision]?.length === 0 ? (
-              <p className={styles.maskedHint}>This revision has an empty value.</p>
+            {isRevealed &&
+            revealedValuesByRevision[revision.revision]?.length === 0 ? (
+              <p className="m-0 text-xs text-muted-foreground">
+                This revision has an empty value.
+              </p>
             ) : null}
           </article>
         )

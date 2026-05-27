@@ -1,10 +1,7 @@
-import styles from './SecretsTable.module.css'
-
 export function EyeIcon() {
   return (
     <svg
       aria-hidden="true"
-      className={styles.iconGlyph}
       fill="none"
       viewBox="0 0 24 24"
     >
@@ -30,7 +27,6 @@ export function EyeOffIcon() {
   return (
     <svg
       aria-hidden="true"
-      className={styles.iconGlyph}
       fill="none"
       viewBox="0 0 24 24"
     >
@@ -62,7 +58,6 @@ export function TrashIcon() {
   return (
     <svg
       aria-hidden="true"
-      className={styles.iconGlyph}
       fill="none"
       viewBox="0 0 24 24"
     >
@@ -99,7 +94,6 @@ export function UndoIcon() {
   return (
     <svg
       aria-hidden="true"
-      className={styles.iconGlyph}
       fill="none"
       viewBox="0 0 24 24"
     >
@@ -125,7 +119,6 @@ export function HistoryIcon() {
   return (
     <svg
       aria-hidden="true"
-      className={styles.iconGlyph}
       fill="none"
       viewBox="0 0 24 24"
     >
