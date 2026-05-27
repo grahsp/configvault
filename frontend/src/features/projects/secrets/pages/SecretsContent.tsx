@@ -1,4 +1,4 @@
-import { StatePanel } from '../../../../shared/ui'
+import { StatusPanel } from '@/components/composed'
 import type { Secret } from '../domain'
 import type { SecretRowViewModel } from '../application'
 import {
@@ -72,11 +72,11 @@ export function SecretsContent({
   if (rows.length === 0) {
     if (hasActiveSearch) {
       return (
-        <StatePanel title="No matching secrets">
+        <StatusPanel title="No matching secrets">
           <p>
             No secrets matched "{searchTerm.trim()}". Try a different search.
           </p>
-        </StatePanel>
+        </StatusPanel>
       )
     }
 

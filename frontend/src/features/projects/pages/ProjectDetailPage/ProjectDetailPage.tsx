@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { type Environment } from '../../environments'
-import { StatePanel } from '../../../../shared/ui'
+import { StatusPanel } from '@/components/composed'
 import {
   getErrorMessage,
   isAuthError,
@@ -145,12 +145,11 @@ export function ProjectDetailPage() {
     return (
       <div className="flex flex-col gap-6 pb-8 pt-3 sm:gap-7 sm:pb-10 sm:pt-0">
         <section className="max-w-3xl rounded-2xl border border-border/60 bg-background p-6">
-          <StatePanel title="Project not found">
+          <StatusPanel actions={<BackToProjectsLink />} title="Project not found">
             <p>
               Check the project link or return to your workspace.
             </p>
-            <BackToProjectsLink />
-          </StatePanel>
+          </StatusPanel>
         </section>
       </div>
     )
@@ -165,26 +164,30 @@ export function ProjectDetailPage() {
     <div className="flex flex-col gap-6 pb-8 pt-3 sm:gap-7 sm:pb-10 sm:pt-0">
       <section aria-labelledby="project-detail-title" className="flex flex-col gap-6">
         {projectQuery.isPending ? (
-          <StatePanel role="status" title="Loading project">
+          <StatusPanel role="status" title="Loading project">
             <p>
               Project details are being prepared.
             </p>
-          </StatePanel>
+          </StatusPanel>
         ) : null}
 
         {isProjectNotFound ? <ProjectNotFoundState /> : null}
 
         {isProjectAuthError ? (
-          <StatePanel role="alert" title="Project access denied" tone="error">
+          <StatusPanel
+            actions={<BackToProjectsLink />}
+            role="alert"
+            title="Project access denied"
+            tone="error"
+          >
             <p>
               Your account is not authorized to open this project.
             </p>
-            <BackToProjectsLink />
-          </StatePanel>
+          </StatusPanel>
         ) : null}
 
         {projectQuery.isError && !isProjectNotFound && !isProjectAuthError ? (
-          <StatePanel
+          <StatusPanel
             actions={
               <Button
                 onClick={() => projectQuery.refetch()}
@@ -204,7 +207,7 @@ export function ProjectDetailPage() {
                 'Something went wrong while loading the project.',
               )}
             </p>
-          </StatePanel>
+          </StatusPanel>
         ) : null}
 
         {!projectQuery.isPending && !projectQuery.isError && !project ? (
@@ -246,12 +249,11 @@ export interface ProjectLayoutContext {
 
 function ProjectNotFoundState() {
   return (
-    <StatePanel title="Project not found">
+    <StatusPanel actions={<BackToProjectsLink />} title="Project not found">
       <p>
         This project is missing or your account cannot access it.
       </p>
-      <BackToProjectsLink />
-    </StatePanel>
+    </StatusPanel>
   )
 }
 

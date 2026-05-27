@@ -1,5 +1,5 @@
 import { Button } from '../../../components/ui/button'
-import { StatePanel } from '../../../shared/ui'
+import { StatusPanel } from '@/components/composed'
 
 interface ProjectEmptyStateProps {
   onCreateProject: () => void
@@ -7,7 +7,7 @@ interface ProjectEmptyStateProps {
 
 export function ProjectEmptyState({ onCreateProject }: ProjectEmptyStateProps) {
   return (
-    <StatePanel
+    <StatusPanel
       actions={
         <Button onClick={onCreateProject} type="button" variant="outline">
           Create your first project
@@ -18,6 +18,6 @@ export function ProjectEmptyState({ onCreateProject }: ProjectEmptyStateProps) {
       <p>
         Create a project to start organizing vault entries.
       </p>
-    </StatePanel>
+    </StatusPanel>
   )
 }

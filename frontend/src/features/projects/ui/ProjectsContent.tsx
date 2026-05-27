@@ -1,5 +1,5 @@
 import { Button } from '../../../components/ui/button'
-import { StatePanel } from '../../../shared/ui'
+import { StatusPanel } from '@/components/composed'
 import { getErrorMessage, type ProjectListItem } from '../domain'
 import { ProjectEmptyState } from './ProjectEmptyState'
 import { ProjectList } from './ProjectList'
@@ -27,17 +27,17 @@ export function ProjectsContent({
 }: ProjectsContentProps) {
   if (isPending) {
     return (
-      <StatePanel role="status" title="Loading projects">
+      <StatusPanel role="status" title="Loading projects">
         <p>
           Your workspace list is being prepared.
         </p>
-      </StatePanel>
+      </StatusPanel>
     )
   }
 
   if (isError) {
     return (
-      <StatePanel
+      <StatusPanel
         actions={
           <Button onClick={onRetry} type="button" variant="outline">
             Retry
@@ -53,18 +53,18 @@ export function ProjectsContent({
             'Something went wrong while loading projects.',
           )}
         </p>
-      </StatePanel>
+      </StatusPanel>
     )
   }
 
   if (projects.length === 0) {
     if (hasActiveSearch) {
       return (
-        <StatePanel title="No matching projects">
+        <StatusPanel title="No matching projects">
           <p>
             No projects matched "{searchTerm.trim()}". Try a different search.
           </p>
-        </StatePanel>
+        </StatusPanel>
       )
     }
 

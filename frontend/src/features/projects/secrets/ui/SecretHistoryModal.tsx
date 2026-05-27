@@ -15,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet.tsx'
-import { StatePanel } from '@/shared/ui'
+import { StatusPanel } from '@/components/composed'
 import { cx } from '@/shared/utils/cx.ts'
 import { formatCreatedDate, getErrorMessage } from '@/features/projects'
 import { useSecretHistory } from '../application'
@@ -187,25 +187,25 @@ function HistoryList({
 }: HistoryListProps) {
   if (isLoading) {
     return (
-      <StatePanel role="status" title="Loading history...">
+      <StatusPanel role="status" title="Loading history...">
         <p>Revision metadata is being prepared.</p>
-      </StatePanel>
+      </StatusPanel>
     )
   }
 
   if (errorMessage) {
     return (
-      <StatePanel role="alert" title="Failed to load history." tone="error">
+      <StatusPanel role="alert" title="Failed to load history." tone="error">
         <p>{errorMessage}</p>
-      </StatePanel>
+      </StatusPanel>
     )
   }
 
   if (revisions.length === 0) {
     return (
-      <StatePanel role="status" title="No history yet">
+      <StatusPanel role="status" title="No history yet">
         <p>No saved revisions are available for this secret in this environment.</p>
-      </StatePanel>
+      </StatusPanel>
     )
   }
 

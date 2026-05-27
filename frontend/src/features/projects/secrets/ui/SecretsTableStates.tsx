@@ -1,6 +1,6 @@
 import { SplitActionButton } from '../../../../components/composed'
 import { Button } from '../../../../components/ui/button'
-import { cn } from '../../../../lib/utils'
+import { StatusPanel } from '@/components/composed'
 
 interface SecretsStateProps {
   className?: string
@@ -8,13 +8,13 @@ interface SecretsStateProps {
 
 export function SecretsLoadingState(props: SecretsStateProps) {
   return (
-    <div
-      className={cn("flex min-h-40 flex-col justify-center gap-2 py-6", props.className)}
+    <StatusPanel
+      className={props.className}
       role="status"
+      title="Loading secrets..."
     >
-      <h3 className="text-base font-semibold text-foreground">Loading secrets...</h3>
-      <p className="text-sm text-muted-foreground">Secrets are being prepared.</p>
-    </div>
+      <p>Secrets are being prepared.</p>
+    </StatusPanel>
   )
 }
 
@@ -29,20 +29,19 @@ export function SecretsErrorState({
   ...props
 }: SecretsErrorStateProps) {
   return (
-    <div
-      className={cn("flex min-h-40 flex-col justify-center gap-4 py-6", props.className)}
-      role="alert"
-    >
-      <div className="flex flex-col gap-2">
-        <h3 className="text-base font-semibold text-foreground">Failed to load secrets.</h3>
-        <p className="text-sm text-muted-foreground">{errorMessage}</p>
-      </div>
-      <div>
+    <StatusPanel
+      actions={
         <Button onClick={onRetry} type="button" variant="outline">
           Retry
         </Button>
-      </div>
-    </div>
+      }
+      className={props.className}
+      role="alert"
+      title="Failed to load secrets."
+      tone="error"
+    >
+      <p>{errorMessage}</p>
+    </StatusPanel>
   )
 }
 
@@ -57,40 +56,40 @@ export function SecretsEmptyState({
   ...props
 }: SecretsEmptyStateProps) {
   return (
-    <div
-      className={cn("flex min-h-40 flex-col justify-center gap-4 py-6", props.className)}
+    <StatusPanel
+      actions={
+        <SplitActionButton
+          primaryAction={{
+            label: '+ Add Secret',
+            onClick: onOpenAddSecret,
+          }}
+          secondaryActions={[
+            {
+              label: 'Import Secrets',
+              onSelect: onOpenImportModal,
+            },
+          ]}
+        />
+      }
+      className={props.className}
+      title="No secrets yet"
     >
-      <div className="flex flex-col gap-2">
-        <h3 className="text-base font-semibold text-foreground">No secrets yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Add a secret key to start tracking values across environments.
-        </p>
-      </div>
-      <SplitActionButton
-        primaryAction={{
-          label: '+ Add Secret',
-          onClick: onOpenAddSecret,
-        }}
-        secondaryActions={[
-          {
-            label: 'Import Secrets',
-            onSelect: onOpenImportModal,
-          },
-        ]}
-      />
-    </div>
+      <p>
+        Add a secret key to start tracking values across environments.
+      </p>
+    </StatusPanel>
   )
 }
 
 export function SecretsEnvironmentRequiredState(props: SecretsStateProps) {
   return (
-    <div
-      className={cn("flex min-h-40 flex-col justify-center gap-2 py-6", props.className)}
+    <StatusPanel
+      className={props.className}
+      title="No environment available"
     >
-      <h3 className="text-base font-semibold text-foreground">No environment available</h3>
-      <p className="text-sm text-muted-foreground">
+      <p>
         Create an environment before managing this project&apos;s secrets.
       </p>
-    </div>
+    </StatusPanel>
   )
 }

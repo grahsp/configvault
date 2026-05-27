@@ -1,10 +1,8 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Button } from '../../components/ui/button'
 import { CopyableInput } from './CopyableInput'
-import { StatePanel } from './StatePanel'
-import statePanelStyles from './StatePanel.module.css'
 
 describe('shared ui primitives', () => {
   it('renders button variants and disabled state', () => {
@@ -35,33 +33,6 @@ describe('shared ui primitives', () => {
       'data-variant',
       'destructive',
     )
-  })
-
-  it('renders state panel tones, actions, and roles', () => {
-    const { rerender } = render(
-      <StatePanel title="Nothing here yet">
-        <p>Add your first record.</p>
-      </StatePanel>,
-    )
-
-    expect(screen.getByText('Nothing here yet')).toBeInTheDocument()
-    expect(screen.getByText('Add your first record.')).toBeInTheDocument()
-
-    rerender(
-      <StatePanel
-        actions={<button type="button">Retry</button>}
-        role="alert"
-        title="Load failed"
-        tone="error"
-      >
-        <p>Try again in a moment.</p>
-      </StatePanel>,
-    )
-
-    const alert = screen.getByRole('alert')
-    expect(alert).toHaveClass(statePanelStyles.error)
-    expect(within(alert).getByText('Load failed')).toBeInTheDocument()
-    expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument()
   })
 
   it('renders a read-only copyable input and runs the copy action', async () => {

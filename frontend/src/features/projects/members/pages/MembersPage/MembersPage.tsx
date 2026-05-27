@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button.tsx'
-import { cn } from '@/lib/utils.ts'
+import { StatusPanel } from '@/components/composed'
 import {
   InviteMemberDialog,
   ManagementList,
@@ -15,42 +14,6 @@ import {
 import { formatCreatedDate, getErrorMessage } from '../../../domain'
 import { MemberRowContainer } from './MemberRowContainer'
 import { useMembersPageState } from './useMembersPageState'
-
-interface MembersStatePanelProps {
-  actions?: ReactNode
-  children: ReactNode
-  className?: string
-  role?: 'status' | 'alert'
-  title: string
-  tone?: 'default' | 'error'
-}
-
-function MembersStatePanel({
-  actions,
-  children,
-  className,
-  role,
-  title,
-  tone = 'default',
-}: MembersStatePanelProps) {
-  return (
-    <div
-      className={cn(
-        'flex min-h-[var(--panel-min-height)] flex-col justify-center gap-4 rounded-[var(--radius-md)] border border-dashed border-[color:var(--color-border-strong)] bg-[color:var(--color-surface-muted)] p-6 text-left',
-        tone === 'error' &&
-          'border-[color:var(--color-border-danger)] bg-[color:var(--color-surface-danger)]',
-        className,
-      )}
-      role={role}
-    >
-      <div className="flex flex-col gap-2">
-        <h3 className="text-base font-semibold text-foreground">{title}</h3>
-        <div className="text-sm leading-6 text-muted-foreground [&>*]:m-0">{children}</div>
-      </div>
-      {actions ? <div className="flex flex-wrap gap-3 max-sm:flex-col">{actions}</div> : null}
-    </div>
-  )
-}
 
 export function MembersPage() {
   const {
@@ -89,17 +52,17 @@ export function MembersPage() {
         />
 
         {membersQuery.isPending ? (
-          <MembersStatePanel
+          <StatusPanel
             className="min-h-[var(--panel-min-height)]"
             role="status"
             title="Loading members..."
           >
             <p>Project access details are being prepared.</p>
-          </MembersStatePanel>
+          </StatusPanel>
         ) : null}
 
         {membersQuery.isError ? (
-          <MembersStatePanel
+          <StatusPanel
             actions={
               <Button
                 onClick={() => membersQuery.refetch()}
@@ -120,16 +83,16 @@ export function MembersPage() {
                 'Something went wrong while loading project members.',
               )}
             </p>
-          </MembersStatePanel>
+          </StatusPanel>
         ) : null}
 
         {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-          <MembersStatePanel
+          <StatusPanel
             className="min-h-[var(--panel-min-height)]"
             title="No members found."
           >
             <p>Members with project access will appear here.</p>
-          </MembersStatePanel>
+          </StatusPanel>
         ) : null}
 
         {!membersQuery.isPending && !membersQuery.isError && members.length > 0 ? (
