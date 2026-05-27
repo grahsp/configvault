@@ -4,14 +4,14 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '../../components/ui/input-group'
+} from '@/components/ui/input-group'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../../components/ui/tooltip'
-import { cn } from '../../lib/utils'
+} from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils.ts'
 
 export interface CopyableInputProps {
   ariaLabel: string
@@ -62,9 +62,7 @@ export function CopyableInput({
                 <CopyIcon />
               </InputGroupButton>
             </TooltipTrigger>
-            <TooltipContent>
-              {buttonLabel}
-            </TooltipContent>
+            <TooltipContent>{buttonLabel}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </InputGroupAddon>

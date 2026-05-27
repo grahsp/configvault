@@ -1,18 +1,18 @@
 import { type FormEvent, useId, useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '../../../../components/ui/button'
+import { CopyableInput } from '@/components/composed'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../../components/ui/dialog'
-import { Input } from '../../../../components/ui/input'
-import { Label } from '../../../../components/ui/label'
-import { Separator } from '../../../../components/ui/separator'
-import { useCreateInvitation } from '../../invitations/application'
-import { CopyableInput } from '../../../../shared/ui'
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { useCreateInvitation } from '@/features/projects/invitations/application'
 
 interface InviteMemberDialogProps {
   projectId: string
