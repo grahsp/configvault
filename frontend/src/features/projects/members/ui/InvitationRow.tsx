@@ -1,4 +1,4 @@
-import { KebabMenuButton } from '@/shared/ui'
+import { ActionMenuButton } from '@/components/composed'
 import type { ActiveInvitation } from '../../invitations/domain'
 import { formatCreatedDate } from '../../domain'
 import {
@@ -31,7 +31,7 @@ export function InvitationRow({
       </ManagementListCell>
       <ManagementListCell className="w-px text-right">
         <RowActions>
-          <KebabMenuButton
+          <ActionMenuButton
             items={[
               {
                 disabled: isRevokePending,

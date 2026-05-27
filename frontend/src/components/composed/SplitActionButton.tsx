@@ -42,7 +42,7 @@ export function SplitActionButton({
       ? `Open ${primaryAction.label.replace(/^[+]\s*/, '').toLowerCase()} actions`
       : 'Open actions')
 
-  const rounded = 'none';
+  const rounded = 'rounded-md'
 
   return (
     <ButtonGroup className={cn('overflow-hidden', rounded, className)}>

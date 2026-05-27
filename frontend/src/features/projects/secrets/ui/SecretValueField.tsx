@@ -1,12 +1,6 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useRef } from 'react'
-import { MoreHorizontalIcon } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../../../../components/ui/dropdown-menu'
+import { ActionMenuButton } from '../../../../components/composed'
 import { Input } from '../../../../components/ui/input'
 import {
   InputGroup,
@@ -188,36 +182,28 @@ export function SecretValueField({
     }
 
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <InputGroupButton
-            aria-label={`Open actions for ${secret.key}`}
-            className={cn(isMarkedForDeletion && 'text-muted-foreground')}
-            disabled={isSaving}
-            size="icon-sm"
-            type="button"
-            variant="ghost"
-          >
-            <MoreHorizontalIcon className="size-4" />
-          </InputGroupButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {secret.hasValue ? (
-            <DropdownMenuItem
-              disabled={!canOpenHistory}
-              onSelect={() => onOpenHistory(secret)}
-            >
-              View history
-            </DropdownMenuItem>
-          ) : null}
-          <DropdownMenuItem
-            onSelect={() => onDeleteToggle(secret)}
-            variant={isMarkedForDeletion ? 'default' : 'destructive'}
-          >
-            {isMarkedForDeletion ? 'Undo delete' : 'Delete'}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ActionMenuButton
+        className={cn(isMarkedForDeletion && 'text-muted-foreground')}
+        disabled={isSaving}
+        items={[
+          ...(secret.hasValue
+            ? [
+                {
+                  disabled: !canOpenHistory,
+                  label: 'View history',
+                  onSelect: () => onOpenHistory(secret),
+                },
+              ]
+            : []),
+          {
+            label: isMarkedForDeletion ? 'Undo delete' : 'Delete',
+            onSelect: () => onDeleteToggle(secret),
+            tone: isMarkedForDeletion ? 'default' : 'danger',
+          },
+        ]}
+        label={`Open actions for ${secret.key}`}
+        trigger="input-group"
+      />
     )
   }
 

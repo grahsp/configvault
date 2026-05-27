@@ -1,6 +1,6 @@
 import type { ProjectMember, ProjectRole } from '../domain'
-import { KebabMenuButton } from '@/shared/ui'
-import type { KebabMenuButtonItem } from '@/shared/ui'
+import { ActionMenuButton } from '@/components/composed'
+import type { ActionMenuButtonItem } from '@/components/composed'
 import { roleLabels } from '../domain'
 import {
   ManagementListCell,
@@ -33,7 +33,7 @@ export function MemberRow({
   const isOwner = member.role === 'owner'
   const canEditRole = canManageMembers && !member.isCurrentUser && !isOwner
   const canRemoveMember = canManageMembers && !member.isCurrentUser && !isOwner
-  const menuItems: KebabMenuButtonItem[] =
+  const menuItems: ActionMenuButtonItem[] =
     canManageMembers && !member.isCurrentUser
       ? [
           {
@@ -77,7 +77,7 @@ export function MemberRow({
       <ManagementListCell className="w-px text-right">
         <RowActions>
           {menuItems.length > 0 ? (
-            <KebabMenuButton
+            <ActionMenuButton
               items={menuItems}
               label={`Member actions for ${displayName}`}
             />

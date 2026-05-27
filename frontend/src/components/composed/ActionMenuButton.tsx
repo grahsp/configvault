@@ -1,37 +1,42 @@
 import { MoreHorizontalIcon } from 'lucide-react'
-import { Button } from '../../components/ui/button'
+import { Button } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../../components/ui/dropdown-menu'
-import { cn } from '../../lib/utils'
+} from '../ui/dropdown-menu'
+import { InputGroupButton } from '../ui/input-group'
+import { cn } from '@/lib/utils.ts'
 
-export interface KebabMenuButtonItem {
+export interface ActionMenuButtonItem {
   disabled?: boolean
   label: string
   onSelect: () => void
-  tone?: 'danger' | 'default'
+  tone?: 'default' | 'danger'
 }
 
-export interface KebabMenuButtonProps {
+export interface ActionMenuButtonProps {
   className?: string
   disabled?: boolean
-  items: KebabMenuButtonItem[]
+  items: ActionMenuButtonItem[]
   label: string
+  trigger?: 'button' | 'input-group'
 }
 
-export function KebabMenuButton({
+export function ActionMenuButton({
   className,
   disabled = false,
   items,
   label,
-}: KebabMenuButtonProps) {
+  trigger = 'button',
+}: ActionMenuButtonProps) {
+  const TriggerButton = trigger === 'input-group' ? InputGroupButton : Button
+
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button
+        <TriggerButton
           aria-label={label}
           className={cn('shrink-0', className)}
           disabled={disabled}
@@ -39,8 +44,8 @@ export function KebabMenuButton({
           type="button"
           variant="ghost"
         >
-          <MoreHorizontalIcon className="size-4" />
-        </Button>
+          <MoreHorizontalIcon aria-hidden="true" />
+        </TriggerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {items.map((item) => (
