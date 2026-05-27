@@ -1,7 +1,5 @@
-export * from './ConfirmationDialog'
 export * from './CopyableInput'
 export * from './KebabMenuButton'
-export * from './Modal'
 export * from './PageLoader'
 export * from './SideWindow'
 export * from './StatePanel'

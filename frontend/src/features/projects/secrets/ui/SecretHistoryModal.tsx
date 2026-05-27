@@ -1,6 +1,14 @@
 import { Button } from '../../../../components/ui/button'
 import {
-  ConfirmationDialog,
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../../../components/ui/alert-dialog'
+import {
   SideWindow,
   StatePanel,
 } from '../../../../shared/ui'
@@ -101,20 +109,42 @@ export function SecretHistoryModal({
       </SideWindow>
 
       {pendingRestoreRevision !== null ? (
-        <ConfirmationDialog
-          confirmLabel="Restore revision"
-          errorMessage={restoreError}
-          isPending={restorePending}
-          onCancel={closeRestoreConfirmation}
-          onConfirm={() => void confirmRestore()}
-          pendingConfirmLabel="Restoring..."
-          title="Restore secret revision?"
+        <AlertDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !restorePending) {
+              closeRestoreConfirmation()
+            }
+          }}
         >
-          <p>
-            Restore revision {pendingRestoreRevision} as the current value for{' '}
-            {secret.key} in {environmentName}?
-          </p>
-        </ConfirmationDialog>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restore secret revision?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Restore revision {pendingRestoreRevision} as the current value
+                for {secret.key} in {environmentName}?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            {restoreError ? <p role="alert">{restoreError}</p> : null}
+
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={restorePending}>
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                disabled={restorePending}
+                onClick={() => {
+                  void confirmRestore()
+                }}
+                type="button"
+                variant="destructive"
+              >
+                {restorePending ? 'Restoring...' : 'Restore revision'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       ) : null}
     </>
   )

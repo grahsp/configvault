@@ -1,5 +1,14 @@
 import type { UseMutationResult } from '@tanstack/react-query'
-import { ConfirmationDialog } from '../../../shared/ui/ConfirmationDialog'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../../components/ui/alert-dialog'
+import { Button } from '../../../components/ui/button'
 import { getErrorMessage } from '../domain'
 import styles from './ProjectDeleteDialog.module.css'
 
@@ -16,26 +25,48 @@ export function ProjectDeleteDialog({
   onConfirm,
   projectName,
 }: ProjectDeleteDialogProps) {
+  const errorMessage = mutation.isError
+    ? getErrorMessage(
+        mutation.error,
+        'Something went wrong while loading projects.',
+      )
+    : undefined
+
   return (
-    <ConfirmationDialog
-      confirmLabel="Delete"
-      errorMessage={
-        mutation.isError
-          ? getErrorMessage(
-              mutation.error,
-              'Something went wrong while loading projects.',
-            )
-          : undefined
-      }
-      isPending={mutation.isPending}
-      onCancel={onCancel}
-      onConfirm={onConfirm}
-      pendingConfirmLabel="Deleting"
-      title="Delete project"
+    <AlertDialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !mutation.isPending) {
+          onCancel()
+        }
+      }}
     >
-      <p className={styles.modalCopy}>
-        Delete {projectName}? This cannot be undone.
-      </p>
-    </ConfirmationDialog>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete project</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <p className={styles.modalCopy}>
+              Delete {projectName}? This cannot be undone.
+            </p>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {errorMessage ? <p role="alert">{errorMessage}</p> : null}
+
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={mutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <Button
+            disabled={mutation.isPending}
+            onClick={onConfirm}
+            type="button"
+            variant="destructive"
+          >
+            {mutation.isPending ? 'Deleting' : 'Delete'}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
