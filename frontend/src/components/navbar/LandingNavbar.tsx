@@ -15,7 +15,7 @@ export function LandingNavbar({ onLogin, onSignup }: LandingNavbarProps) {
     <div className="flex items-center justify-between gap-4 rounded-[2rem] border border-white/10 bg-slate-950/70 px-5 py-4 shadow-[0_20px_40px_rgba(2,6,23,0.28)] backdrop-blur sm:px-6">
       <div className="flex items-center gap-3">
         <Link className="text-xl font-extrabold uppercase tracking-[0.08em] text-white" to="/">
-          KeyVault
+          ConfigVault
         </Link>
       </div>
       <nav aria-label="Account" className="flex items-center gap-3">

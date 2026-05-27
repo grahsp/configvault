@@ -12,7 +12,7 @@ describe('LandingNavbar', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('link', { name: 'KeyVault' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'ConfigVault' })).toHaveAttribute('href', '/')
     expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
   })
 

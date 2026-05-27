@@ -54,7 +54,7 @@ describe('ProtectedRoute', () => {
       </CurrentUserContext.Provider>,
     )
 
-    expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'ConfigVault' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(/loading/i)
     expect(screen.queryByText('Projects content')).not.toBeInTheDocument()

@@ -27,7 +27,7 @@ export function AppNavbar() {
             className="text-xl font-extrabold uppercase tracking-[0.08em] text-slate-950"
             to={isAuthenticated ? '/projects' : '/'}
           >
-            KeyVault
+            ConfigVault
           </Link>
           <nav aria-label="Primary" className="flex items-center gap-2 sm:gap-3">
             <NavLink

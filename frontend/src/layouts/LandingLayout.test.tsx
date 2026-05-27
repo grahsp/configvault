@@ -33,7 +33,7 @@ describe('LandingLayout', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'ConfigVault' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /get started/i })).toBeInTheDocument()
@@ -81,7 +81,7 @@ describe('LandingLayout', () => {
     )
 
     expect(screen.getByRole('status')).toHaveTextContent(/loading/i)
-    expect(screen.getByRole('link', { name: 'KeyVault' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'ConfigVault' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Projects' })).not.toBeInTheDocument()
     expect(screen.queryByText(/landing content/i)).not.toBeInTheDocument()
   })
