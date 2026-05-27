@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatCreatedDate } from '../../domain/project.utils.ts'
+import { formatCreatedDate } from '@/features/projects'
 import {
   mockFetchSequence,
   renderProjectDetail,
@@ -278,11 +278,8 @@ describe('SecretsPage', () => {
       within(historyDialog).getByText('Production secrets > production'),
     ).toBeInTheDocument()
     expect(
-      within(historyDialog).queryByRole('button', { name: 'Close' }),
-    ).not.toBeInTheDocument()
-    expect(
-      within(historyDialog).getByRole('button', { name: 'Close API_KEY' }),
-    ).toHaveTextContent('x')
+      within(historyDialog).getByRole('button', { name: 'Close' }),
+    ).toBeInTheDocument()
     expect(screen.queryByText('Revision 4')).not.toBeInTheDocument()
     expect(screen.getAllByText('Current')).not.toHaveLength(0)
     expect(screen.getByText('Casey Current')).toBeInTheDocument()
@@ -352,7 +349,7 @@ describe('SecretsPage', () => {
     expect(revisionTwoCalls).toHaveLength(1)
 
     await user.click(
-      within(historyDialog).getByRole('button', { name: 'Close API_KEY' }),
+      within(historyDialog).getByRole('button', { name: 'Close' }),
     )
 
     expect(screen.queryByRole('heading', { name: 'API_KEY' })).not.toBeInTheDocument()
@@ -390,11 +387,14 @@ describe('SecretsPage', () => {
     await openSecretRowActionsMenu(user, 'API_KEY')
     await user.click(screen.getByRole('menuitem', { name: 'View history' }))
 
-    const historyDialog = await screen.findByRole('dialog', {
+    await screen.findByRole('dialog', {
       name: 'API_KEY',
     })
+    const historyOverlay = document.querySelector('[data-slot="sheet-overlay"]')
 
-    await user.click(historyDialog.parentElement as HTMLElement)
+    expect(historyOverlay).not.toBeNull()
+
+    await user.click(historyOverlay as HTMLElement)
 
     expect(
       screen.queryByRole('heading', { name: 'API_KEY' }),

@@ -1,4 +1,4 @@
-import { Button } from '../../../../components/ui/button'
+import { Button } from '@/components/ui/button.tsx'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -7,13 +7,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../../../components/ui/alert-dialog'
+} from '@/components/ui/alert-dialog.tsx'
 import {
-  SideWindow,
-  StatePanel,
-} from '../../../../shared/ui'
-import { cx } from '../../../../shared/utils/cx.ts'
-import { formatCreatedDate, getErrorMessage } from '../../domain/project.utils.ts'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet.tsx'
+import { StatePanel } from '@/shared/ui'
+import { cx } from '@/shared/utils/cx.ts'
+import { formatCreatedDate, getErrorMessage } from '@/features/projects'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
 import { UndoIcon } from './SecretRowIcons.tsx'
@@ -64,49 +68,50 @@ export function SecretHistoryModal({
 
   return (
     <>
-      <SideWindow
-        bodyClassName={styles.modalBody}
-        className={styles.modalPanel}
-        description={
-          <p className={styles.headerContext}>
-            {projectName} &gt; {environmentName}
-          </p>
-        }
-        headerClassName={styles.modalHeader}
-        headerAction={
-          <Button
-            aria-label={`Close ${secret.key}`}
-            className={styles.closeButton}
-            onClick={onClose}
-            type="button"
-            variant="ghost"
-          >
-            x
-          </Button>
-        }
-        onClose={onClose}
-        title={secret.key}
-      >
-        <HistoryList
-          errorMessage={
-            revisionsQuery.isError
-              ? getErrorMessage(
-                  revisionsQuery.error,
-                  'Something went wrong while loading history.',
-                )
-              : undefined
+      <Sheet
+        open
+        onOpenChange={(open) => {
+          if (!open) {
+            onClose()
           }
-          errorsByRevision={errorsByRevision}
-          isLoading={revisionsQuery.isLoading}
-          loadingRevisions={loadingRevisions}
-          onOpenRestoreConfirmation={openRestoreConfirmation}
-          onToggleRevision={toggleRevision}
-          restoreDisabledReason={restoreDisabledReason}
-          revealedRevisions={revealedRevisions}
-          revealedValuesByRevision={revealedValuesByRevision}
-          revisions={revisionsQuery.data ?? []}
-        />
-      </SideWindow>
+        }}
+      >
+        <SheetContent
+          className="w-full gap-0 overflow-hidden p-0 sm:max-w-[42rem]"
+          side="right"
+        >
+          <SheetHeader className="border-b border-border px-6 py-5 pr-14">
+            <SheetTitle className="text-xl font-semibold leading-tight">
+              {secret.key}
+            </SheetTitle>
+            <SheetDescription className="text-base font-medium text-body">
+              {projectName} &gt; {environmentName}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="min-h-0 flex-1 overflow-auto p-6 pt-5">
+            <HistoryList
+              errorMessage={
+                revisionsQuery.isError
+                  ? getErrorMessage(
+                      revisionsQuery.error,
+                      'Something went wrong while loading history.',
+                    )
+                  : undefined
+              }
+              errorsByRevision={errorsByRevision}
+              isLoading={revisionsQuery.isLoading}
+              loadingRevisions={loadingRevisions}
+              onOpenRestoreConfirmation={openRestoreConfirmation}
+              onToggleRevision={toggleRevision}
+              restoreDisabledReason={restoreDisabledReason}
+              revealedRevisions={revealedRevisions}
+              revealedValuesByRevision={revealedValuesByRevision}
+              revisions={revisionsQuery.data ?? []}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {pendingRestoreRevision !== null ? (
         <AlertDialog

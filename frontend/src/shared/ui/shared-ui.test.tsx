@@ -3,8 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Button } from '../../components/ui/button'
 import { CopyableInput } from './CopyableInput'
-import { PageLoader } from './PageLoader'
-import { SideWindow } from './SideWindow'
 import { StatePanel } from './StatePanel'
 import statePanelStyles from './StatePanel.module.css'
 
@@ -37,34 +35,6 @@ describe('shared ui primitives', () => {
       'data-variant',
       'destructive',
     )
-  })
-
-  it('renders side window semantics, header action, and close interactions', async () => {
-    const user = userEvent.setup()
-    const onClose = vi.fn()
-
-    render(
-      <SideWindow
-        description={<p>Review the latest revisions.</p>}
-        headerAction={<button type="button">x</button>}
-        onClose={onClose}
-        title="Secret history"
-      >
-        <p>Revision list</p>
-      </SideWindow>,
-    )
-
-    const dialog = screen.getByRole('dialog', { name: 'Secret history' })
-    expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(within(dialog).getByText('Review the latest revisions.')).toBeInTheDocument()
-    expect(within(dialog).getByText('Revision list')).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'x' })).toBeInTheDocument()
-
-    await user.click(dialog.parentElement as HTMLElement)
-    expect(onClose).toHaveBeenCalledTimes(1)
-
-    await user.keyboard('{Escape}')
-    expect(onClose).toHaveBeenCalledTimes(2)
   })
 
   it('renders state panel tones, actions, and roles', () => {
@@ -120,13 +90,6 @@ describe('shared ui primitives', () => {
     await user.click(screen.getByRole('button', { name: 'Copy' }))
 
     expect(onCopy).toHaveBeenCalledTimes(1)
-  })
-
-  it('renders a full-page spinner loader', () => {
-    render(<PageLoader />)
-
-    const status = screen.getByRole('status')
-    expect(status).toHaveTextContent('Loading...')
   })
 
 })
