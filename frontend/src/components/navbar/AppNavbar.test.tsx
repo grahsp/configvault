@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CurrentUserContext } from '../../features/users'
 import type { CurrentUserContextValue } from '../../features/users/model/currentUserContext'
+import { ThemeProvider, THEME_STORAGE_KEY } from '@/features/theme'
 import { AppNavbar } from './AppNavbar'
 
 const useAuthMock = vi.hoisted(() => vi.fn())
@@ -15,6 +16,8 @@ vi.mock('@/features/auth/hooks', () => ({
 describe('AppNavbar', () => {
   afterEach(() => {
     useAuthMock.mockReset()
+    window.localStorage.clear()
+    document.documentElement.classList.remove('light', 'dark')
   })
 
   it('renders a single avatar trigger for authenticated users', () => {
@@ -144,6 +147,18 @@ describe('AppNavbar', () => {
     expect(screen.queryByTestId('account-menu-skeleton')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /open account menu/i })).toBeInTheDocument()
   })
+
+  it('toggles the app theme from the navbar', async () => {
+    const user = userEvent.setup()
+
+    renderNavbar()
+    await user.click(screen.getByRole('button', { name: /switch to dark theme/i }))
+
+    expect(document.documentElement).toHaveClass('dark')
+    expect(document.documentElement).not.toHaveClass('light')
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+    expect(screen.getByRole('button', { name: /switch to light theme/i })).toBeInTheDocument()
+  })
 })
 
 function renderNavbar({
@@ -158,22 +173,24 @@ function renderNavbar({
   const currentUserValue = createCurrentUserValue(currentUser)
 
   return render(
-    <CurrentUserContext.Provider value={currentUserValue}>
-      <MemoryRouter initialEntries={['/projects']}>
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <>
-                <AppNavbar />
-                <LocationDisplay />
-              </>
-            }
-          />
-          <Route path="/profile" element={<LocationDisplay />} />
-        </Routes>
-      </MemoryRouter>
-    </CurrentUserContext.Provider>,
+    <ThemeProvider>
+      <CurrentUserContext.Provider value={currentUserValue}>
+        <MemoryRouter initialEntries={['/projects']}>
+          <Routes>
+            <Route
+              path="*"
+              element={
+                <>
+                  <AppNavbar />
+                  <LocationDisplay />
+                </>
+              }
+            />
+            <Route path="/profile" element={<LocationDisplay />} />
+          </Routes>
+        </MemoryRouter>
+      </CurrentUserContext.Provider>
+    </ThemeProvider>,
   )
 }
 
