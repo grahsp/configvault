@@ -600,7 +600,7 @@ describe('ProjectDetailPage', () => {
     ).not.toBeInTheDocument()
     expect(within(dialog).queryByText(/Treat it like a password/i)).not.toBeInTheDocument()
     expect(overlay).toHaveClass('z-50')
-    expect(dialog).toHaveClass('z-[60]')
+    expect(dialog).toHaveClass('z-50')
 
     await user.click(within(userIdForm).getByRole('button', { name: 'Send invite' }))
 
