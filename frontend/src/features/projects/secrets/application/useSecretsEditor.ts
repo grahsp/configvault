@@ -15,6 +15,7 @@ import { useSecretsQuery } from './useSecretsQuery.ts'
 import { useSecretsRevealActions } from './useSecretsRevealActions.ts'
 import { useSecretsSave } from './useSecretsSave.ts'
 import { useSecretsTransferActions } from './useSecretsTransferActions.ts'
+import type { Secret } from '../domain'
 
 interface UseSecretsEditorOptions {
   environmentName: string
@@ -23,6 +24,8 @@ interface UseSecretsEditorOptions {
 }
 
 type SecretSortOptionId = 'key-asc' | 'key-desc'
+
+const EMPTY_SECRETS: Secret[] = []
 
 export function useSecretsEditor({
   environmentName,
@@ -33,7 +36,7 @@ export function useSecretsEditor({
   const [sortOptionId, setSortOptionId] = useState<SecretSortOptionId>('key-asc')
   const secretsQuery = useSecretsQuery(projectId, environmentName)
   const mutations = useSecretsMutations(projectId, environmentName)
-  const secrets = secretsQuery.data ?? []
+  const secrets = secretsQuery.data ?? EMPTY_SECRETS
   const resetImportMutation = mutations.importSecrets.reset
   const resetRevealMutation = mutations.revealSecretValue.reset
   const resetSaveMutation = mutations.saveSecrets.reset

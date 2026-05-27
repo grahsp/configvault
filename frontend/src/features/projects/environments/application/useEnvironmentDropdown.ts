@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { Environment } from '../domain'
 import type { EnvironmentDropdownProps } from '../ui/EnvironmentDropdown'
 import { useCreateEnvironment } from './useCreateEnvironment.ts'
@@ -7,6 +8,8 @@ import { useEnvironmentMenuState } from './useEnvironmentMenuState.ts'
 import { useEnvironmentSelection } from './useEnvironmentSelection.ts'
 import { useDeleteEnvironment } from './useDeleteEnvironment.ts'
 import { useEnvironments } from './useEnvironments.ts'
+
+const EMPTY_ENVIRONMENTS: Environment[] = []
 
 interface UseEnvironmentDropdownOptions {
   onEnvironmentChange: (environmentId: string) => void
@@ -23,7 +26,7 @@ export function useEnvironmentDropdown({
   const createEnvironmentMutation = useCreateEnvironment(projectId)
   const deleteEnvironmentMutation = useDeleteEnvironment(projectId)
 
-  const environments = environmentsQuery.data ?? []
+  const environments = environmentsQuery.data ?? EMPTY_ENVIRONMENTS
   const isLoading = environmentsQuery.isPending
   const hasError = environmentsQuery.isError
 
@@ -31,6 +34,14 @@ export function useEnvironmentDropdown({
     environments,
     selectedEnvironmentId,
   })
+
+  useEffect(() => {
+    if (selectedEnvironmentId || environments.length === 0) {
+      return
+    }
+
+    onEnvironmentChange(environments[0].id)
+  }, [environments, onEnvironmentChange, selectedEnvironmentId])
 
   function selectEnvironment(environment: Environment) {
     onEnvironmentChange(environment.id)

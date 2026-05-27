@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useCurrentUser } from '../../../users'
-import { useAuth } from '../../../../shared/hooks/useAuth.ts'
+import { useAuth } from '@/features/auth/hooks'
 import { getErrorMessage, isNotFoundError } from '../../domain'
 import { useAcceptInvitation } from './useAcceptInvitation.ts'
 
@@ -29,11 +29,11 @@ export function useInvitationAcceptanceFlow(): InvitationAcceptanceFlowResult {
   const hasStartedAcceptRef = useRef(false)
   const isInvalidLink = !token
 
-  async function triggerLogin() {
+  const triggerLogin = useCallback(async () => {
     await login({
       returnTo: invitePath,
     })
-  }
+  }, [invitePath, login])
 
   useEffect(() => {
     if (
@@ -49,7 +49,7 @@ export function useInvitationAcceptanceFlow(): InvitationAcceptanceFlowResult {
     triggerLogin().catch(() => {
       hasTriggeredLoginRef.current = false
     })
-  }, [invitePath, isAuthenticated, isAuthLoading, isInvalidLink, login])
+  }, [isAuthenticated, isAuthLoading, isInvalidLink, triggerLogin])
 
   useEffect(() => {
     if (

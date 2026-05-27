@@ -14,6 +14,8 @@ import { Button } from '../../../../components/ui/button'
 import { ProjectLayout } from './ProjectLayout'
 import { ProjectDeleteDialog } from '../../ui'
 
+const EMPTY_ENVIRONMENTS: Environment[] = []
+
 function resolveEnvironment(
   environments: Environment[],
   selectedEnvironmentId: string,
@@ -52,7 +54,7 @@ export function ProjectDetailPage() {
   const projectQuery = useProject(projectId ?? '')
   const project = projectQuery.data
   const environmentsQuery = useEnvironments(project?.id ?? '')
-  const environments = environmentsQuery.data ?? []
+  const environments = environmentsQuery.data ?? EMPTY_ENVIRONMENTS
   const selectedEnvironmentId = searchParams.get('environmentId') ?? ''
   const resolvedEnvironment = useMemo(
     () =>

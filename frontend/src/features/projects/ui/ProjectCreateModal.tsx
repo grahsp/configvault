@@ -81,6 +81,7 @@ export function ProjectCreateModal({
     (hasAttemptedSubmit || projectName
       ? projectNameValidationError
       : undefined)
+  const isCreateDisabled = mutation.isPending || Boolean(projectNameValidationError)
 
   return (
     <Dialog
@@ -126,6 +127,7 @@ export function ProjectCreateModal({
                 </span>
               </FieldLabel>
               <Input
+                aria-label="Project name"
                 autoFocus
                 id="project-name"
                 aria-describedby={
@@ -159,6 +161,7 @@ export function ProjectCreateModal({
                 Description
               </FieldLabel>
               <Textarea
+                aria-label="Description"
                 className="rounded-xl border-[color:var(--color-border)] bg-[color:var(--color-surface-contrast-subtle)] text-[color:var(--color-text-strong)] placeholder:text-[color:var(--color-text-subtle)]"
                 disabled={mutation.isPending}
                 id="project-description"
@@ -182,7 +185,7 @@ export function ProjectCreateModal({
 
         <DialogFooter>
           <Button
-            className="rounded-[var(--radius-md-lg)] border-[color:var(--color-border)] text-[color:var(--color-text-body-strong)]"
+            className="rounded-[var(--radius-md-lg)] border-border text-[color:var(--color-text-body-strong)]"
             disabled={mutation.isPending}
             onClick={onClose}
             size="lg"
@@ -193,7 +196,7 @@ export function ProjectCreateModal({
           </Button>
           <Button
             className="rounded-[var(--radius-md-lg)]"
-            disabled={mutation.isPending}
+            disabled={isCreateDisabled}
             form={formId}
             size="lg"
             type="submit"

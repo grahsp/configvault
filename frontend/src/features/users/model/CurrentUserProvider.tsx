@@ -5,9 +5,9 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useAuth } from '../../../shared/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks'
 import { getCurrentUser } from '../api/getCurrentUser'
-import { CurrentUserContext } from './currentUserContext'
+import { CurrentUserContext } from '@/features/users'
 import type { CurrentUser } from './currentUser.ts'
 
 export function CurrentUserProvider({ children }: PropsWithChildren) {
@@ -20,8 +20,6 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
   const refreshCurrentUser = useCallback(async () => {
     if (!isAuthenticated) {
       requestIdRef.current += 1
-      setCurrentUser(undefined)
-      setError(undefined)
       setIsLoading(false)
       return undefined
     }
@@ -64,9 +62,6 @@ export function CurrentUserProvider({ children }: PropsWithChildren) {
     }
 
     requestIdRef.current += 1
-    setCurrentUser(undefined)
-    setError(undefined)
-    setIsLoading(false)
   }, [isAuthenticated])
 
   return (
