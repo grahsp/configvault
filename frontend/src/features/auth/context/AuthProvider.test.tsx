@@ -20,7 +20,7 @@ vi.mock('@auth0/auth0-react', () => ({
   Auth0Provider: auth0ProviderMock,
 }))
 
-vi.mock('../../../shared/utils/authConfig', () => ({
+vi.mock('@/features/auth/config', () => ({
   authConfig: {
     clientId: 'client-id',
     domain: 'example.auth0.com',

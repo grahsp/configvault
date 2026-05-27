@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { getErrorMessage } from '../../domain/project.utils.ts'
 import {
   getSecretValueRevision,

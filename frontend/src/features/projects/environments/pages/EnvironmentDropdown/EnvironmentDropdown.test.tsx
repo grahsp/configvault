@@ -13,7 +13,7 @@ import { EnvironmentDropdown } from './EnvironmentDropdown.tsx'
 
 const getAccessTokenSilently = vi.fn().mockResolvedValue('test-token')
 
-vi.mock('../../../../../shared/hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks', () => ({
   useAuth: () => ({
     getAccessTokenSilently,
   }),

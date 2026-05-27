@@ -15,7 +15,7 @@ const authMocks = vi.hoisted(() => ({
 
 const refreshCurrentUser = vi.fn().mockResolvedValue(undefined)
 
-vi.mock('../../../../shared/hooks/useAuth.ts', () => ({
+vi.mock('@/features/auth/hooks', () => ({
   useAuth: () => authMocks,
 }))
 

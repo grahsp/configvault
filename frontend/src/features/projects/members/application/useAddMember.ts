@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { addMember } from '../api'
 import { projectQueryKeys } from '../../application'
 

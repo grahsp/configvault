@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { projectQueryKeys } from '../../application'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { createInvitation } from '../api/invitationsApi.ts'
 
 export function useCreateInvitation(projectId: string) {

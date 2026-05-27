@@ -8,7 +8,7 @@ import { AppNavbar } from './AppNavbar'
 
 const useAuthMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../../shared/hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks', () => ({
   useAuth: () => useAuthMock(),
 }))
 

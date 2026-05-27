@@ -16,7 +16,7 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock('../api/environmentsApi', () => apiMocks)
 
-vi.mock('../../../../shared/hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks', () => ({
   useAuth: () => ({
     getAccessTokenSilently: vi.fn().mockResolvedValue('test-token'),
   }),

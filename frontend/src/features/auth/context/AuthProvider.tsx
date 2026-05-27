@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { Auth0Provider } from '@auth0/auth0-react'
-import { authAuthorizationParams, authConfig } from '../../../shared/utils/authConfig'
+import { authAuthorizationParams, authConfig } from '@/features/auth/config'
 import {
   resolveAuthRedirectTarget,
   type AuthRedirectState,

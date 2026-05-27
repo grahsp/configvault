@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { LandingNavbar } from '../components/navbar/LandingNavbar'
 import { PageLoader } from '../components/composed/PageLoader'
-import { useAuth } from '../shared/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks'
 
 export function LandingLayout() {
   const { error, isAuthenticated, isLoading, login, signup } = useAuth()

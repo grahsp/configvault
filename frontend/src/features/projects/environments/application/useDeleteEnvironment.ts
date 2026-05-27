@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { deleteEnvironment } from '../api/environmentsApi.ts'
 import type { Environment } from '../domain'
 import { environmentQueryKeys } from './environmentQueryKeys.ts'

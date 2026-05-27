@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { getSecrets } from '../api'
 import { secretsQueryKeys } from './secretsQueryKeys.ts'
 

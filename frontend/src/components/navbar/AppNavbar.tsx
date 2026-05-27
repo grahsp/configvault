@@ -1,6 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useCurrentUser } from '../../features/users'
-import { useAuth } from '../../shared/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks'
 import { Button } from '../ui/button'
 import { Avatar, AvatarImage } from '../ui/avatar'
 import {

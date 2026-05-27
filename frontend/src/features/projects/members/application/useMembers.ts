@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { getMembers } from '../api'
 import { projectQueryKeys } from '../../application'
 

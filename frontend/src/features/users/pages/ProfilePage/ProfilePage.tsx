@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useAuth } from '../../../../shared/hooks/useAuth'
+import { useAuth } from '@/features/auth/hooks'
 import { useCurrentUser } from '../../model'
 import styles from './ProfilePage.module.css'
 

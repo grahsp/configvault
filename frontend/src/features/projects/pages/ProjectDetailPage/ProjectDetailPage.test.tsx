@@ -17,7 +17,7 @@ const memberActionsButtonName = (displayName: string) =>
 const invitationActionsButtonName = (createdByName: string) =>
   `Invitation actions for ${createdByName}`
 
-vi.mock('../../../../shared/hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks', () => ({
   useAuth: () => ({
     getAccessTokenSilently: authMocks.getAccessTokenSilently,
   }),

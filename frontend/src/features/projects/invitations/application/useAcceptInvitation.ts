@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
+import { useAuthenticatedApiClient } from '@/features/auth/api'
 import { acceptInvitation } from '../api/invitationsApi.ts'
 
 interface AcceptInvitationInput {
