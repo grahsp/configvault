@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react'
 import { useEffect, useRef } from 'react'
-import { PageLoader } from '../../../shared/ui'
-import { useAuth } from '../../../shared/hooks/useAuth'
+import { PageLoader } from '@/components/composed/PageLoader.tsx'
+import { useAuth } from '@/shared/hooks/useAuth.ts'
 
 export function ProtectedRoute({ children }: PropsWithChildren) {
   const { isAuthenticated, isLoading, login } = useAuth()
