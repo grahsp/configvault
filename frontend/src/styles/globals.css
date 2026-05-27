@@ -42,49 +42,49 @@
 .light {
   color-scheme: light;
 
-  --background: 220 14.3% 95.9%;
-  --foreground: 215 27.9% 16.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 215 27.9% 16.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 215 27.9% 16.9%;
-  --primary: 218 60% 52%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 220 13% 91%;
-  --secondary-foreground: 220.9 39.3% 11%;
-  --muted: 220 14% 93%;
-  --muted-foreground: 220 8.9% 46.1%;
-  --accent: 218.4 35.2% 92.5%;
-  --accent-foreground: 217.9 40.8% 41.8%;
-  --destructive: 0 49.1% 55.3%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 220 10% 88%;
-  --input: 220 13% 91%;
-  --ring: 218.2 35.8% 48.2%;
+  --background: 210 24% 97%;
+  --foreground: 216 32% 12%;
+  --card: 210 30% 99%;
+  --card-foreground: 216 32% 12%;
+  --popover: 210 30% 99%;
+  --popover-foreground: 216 32% 12%;
+  --primary: 205 48% 42%;
+  --primary-foreground: 180 30% 98%;
+  --secondary: 210 17% 92%;
+  --secondary-foreground: 216 30% 15%;
+  --muted: 210 18% 94%;
+  --muted-foreground: 215 10% 38%;
+  --accent: 204 52% 91%;
+  --accent-foreground: 205 56% 24%;
+  --destructive: 356 58% 46%;
+  --destructive-foreground: 180 30% 98%;
+  --border: 210 16% 84%;
+  --input: 210 16% 88%;
+  --ring: 205 48% 42%;
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: 219 40% 11%;
-  --foreground: 214 44% 93%;
-  --card: 217 38% 15%;
-  --card-foreground: 214 44% 93%;
-  --popover: 217 38% 15%;
-  --popover-foreground: 214 44% 93%;
-  --primary: 217 36% 59%;
-  --primary-foreground: 219 40% 11%;
-  --secondary: 217 29% 23%;
-  --secondary-foreground: 214 44% 93%;
-  --muted: 216 29% 20%;
-  --muted-foreground: 216 16% 70%;
-  --accent: 216 29% 20%;
-  --accent-foreground: 214 44% 93%;
-  --destructive: 0 57% 61%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 217 24% 26%;
-  --input: 217 24% 26%;
-  --ring: 217 36% 59%;
+  --background: 218 30% 10%;
+  --foreground: 210 24% 92%;
+  --card: 218 26% 13.5%;
+  --card-foreground: 210 24% 92%;
+  --popover: 218 26% 13.5%;
+  --popover-foreground: 210 24% 92%;
+  --primary: 176 52% 54%;
+  --primary-foreground: 218 35% 9%;
+  --secondary: 218 17% 19%;
+  --secondary-foreground: 210 24% 92%;
+  --muted: 218 17% 18%;
+  --muted-foreground: 213 12% 68%;
+  --accent: 176 30% 22%;
+  --accent-foreground: 176 52% 78%;
+  --destructive: 358 58% 66%;
+  --destructive-foreground: 218 35% 9%;
+  --border: 218 15% 24%;
+  --input: 218 15% 22%;
+  --ring: 176 52% 64%;
 }
 
 :root {
@@ -94,9 +94,9 @@
   --color-surface-contrast-subtle: hsl(var(--background));
   --color-surface-danger: hsl(var(--destructive) / 0.08);
   --color-danger-soft: hsl(var(--destructive) / 0.1);
-  --color-warning: hsl(36 43% 45%);
-  --color-warning-soft: hsl(36 43% 45% / 0.12);
-  --color-success-soft: hsl(135 18% 43% / 0.12);
+  --color-warning: hsl(38 52% 37%);
+  --color-warning-soft: hsl(38 52% 37% / 0.12);
+  --color-success-soft: hsl(154 30% 30% / 0.12);
   --color-primary-soft: hsl(var(--primary) / 0.1);
   --color-text: hsl(var(--foreground));
   --color-text-strong: hsl(var(--foreground));
@@ -110,10 +110,10 @@
   --color-text-danger: hsl(var(--destructive));
   --color-text-danger-strong: hsl(var(--destructive) / 0.9);
   --color-text-danger-emphasis: hsl(var(--destructive) / 0.82);
-  --color-text-success: hsl(135 18% 36%);
-  --color-text-success-strong: hsl(135 18% 31%);
-  --color-text-pink: hsl(340 22% 52%);
-  --color-text-pink-muted: hsl(340 18% 62%);
+  --color-text-success: hsl(154 30% 30%);
+  --color-text-success-strong: hsl(154 31% 25%);
+  --color-text-pink: hsl(335 30% 44%);
+  --color-text-pink-muted: hsl(335 27% 52%);
   --color-inverse: hsl(var(--foreground));
   --color-border-strong: hsl(var(--border));
   --color-border-soft: hsl(var(--border) / 0.78);
@@ -126,6 +126,16 @@
   --space-8: 40px;
   --font-size-body-md: 0.9rem;
   --shadow-panel-soft: 0 10px 24px hsl(var(--foreground) / 0.07);
+}
+
+.dark {
+  --color-warning: hsl(42 60% 72%);
+  --color-warning-soft: hsl(42 60% 72% / 0.14);
+  --color-success-soft: hsl(154 34% 70% / 0.14);
+  --color-text-success: hsl(154 34% 70%);
+  --color-text-success-strong: hsl(154 36% 78%);
+  --color-text-pink: hsl(335 35% 74%);
+  --color-text-pink-muted: hsl(335 28% 68%);
 }
 
 html {
