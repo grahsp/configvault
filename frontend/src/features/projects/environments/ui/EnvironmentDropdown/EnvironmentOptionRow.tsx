@@ -1,4 +1,4 @@
-import { cx } from '../../../../../shared/utils/cx.ts'
+import { cn } from '@/lib/utils'
 import type { Environment } from '../../domain'
 import styles from './EnvironmentDropdown.module.css'
 
@@ -27,7 +27,7 @@ export function EnvironmentOptionRow({
     <div className={styles.optionRow}>
       <button
         aria-selected={isSelected}
-        className={cx(
+        className={cn(
           styles.option,
           isActive && styles.optionActive,
           isSelected && styles.optionSelected,

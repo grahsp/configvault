@@ -1,5 +1,5 @@
 import type { FormEvent, KeyboardEvent, RefObject } from 'react'
-import { cx } from '../../../../../shared/utils/cx.ts'
+import { cn } from '@/lib/utils'
 import styles from './EnvironmentDropdown.module.css'
 
 export interface EnvironmentCreateSectionProps {
@@ -66,14 +66,14 @@ export function EnvironmentCreateSection({
 
       <div className={styles.createActions}>
         <button
-          className={cx(styles.createButton, styles.createSubmit)}
+          className={cn(styles.createButton, styles.createSubmit)}
           disabled={isCreatePending}
           type="submit"
         >
           {isCreatePending ? 'Creating' : 'Create'}
         </button>
         <button
-          className={cx(styles.createButton, styles.createCancel)}
+          className={cn(styles.createButton, styles.createCancel)}
           disabled={isCreatePending}
           onClick={onResetCreateState}
           type="button"

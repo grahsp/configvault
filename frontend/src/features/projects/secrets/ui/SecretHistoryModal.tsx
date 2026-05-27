@@ -16,7 +16,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet.tsx'
 import { StatusPanel } from '@/components/composed'
-import { cx } from '@/shared/utils/cx.ts'
+import { cn } from '@/lib/utils'
 import { formatCreatedDate, getErrorMessage } from '@/features/projects'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
@@ -277,7 +277,7 @@ function HistoryList({
               </span>
               <span>{formatCreatedDate(revision.modifiedAt)}</span>
               {revision.isCurrent ? (
-                <span className={cx(styles.currentBadge, styles.currentBadgeInline)}>
+                <span className={cn(styles.currentBadge, styles.currentBadgeInline)}>
                   Current
                 </span>
               ) : null}
