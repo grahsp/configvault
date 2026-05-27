@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useAuthenticatedApiClient } from '../../../../shared/api/useAuthenticatedApiClient.ts'
-import { useToast } from '../../../../shared/components/toast/useToast.ts'
 import { getErrorMessage } from '../../domain/project.utils.ts'
 import {
   getSecretValueRevision,
@@ -33,7 +33,6 @@ export function useSecretHistory({
 }: UseSecretHistoryOptions) {
   const client = useAuthenticatedApiClient()
   const queryClient = useQueryClient()
-  const { addToast } = useToast()
   const [revealedRevisions, setRevealedRevisions] = useState<number[]>([])
   const [revealedValuesByRevision, setRevealedValuesByRevision] = useState<
     Record<number, string>
@@ -89,10 +88,7 @@ export function useSecretHistory({
             })
           : Promise.resolve(),
       ])
-      addToast({
-        message: `${secretKey} restored`,
-        type: 'success',
-      })
+      toast.success(`${secretKey} restored`)
       setPendingRestoreRevision(null)
       onClose()
     },

@@ -1,10 +1,11 @@
+/* eslint-disable react-refresh/only-export-components */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { Navigate, createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
+import { Toaster } from '../../../../components/ui/sonner'
 import { AppLayout } from '../../../../layouts/AppLayout'
 import { CurrentUserContext } from '../../../users/model/currentUserContext'
-import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
 import { SecretsPage } from '../../secrets/pages'
 import { MembersPage } from '../../members/pages'
 import { ProjectDetailPage } from './ProjectDetailPage'
@@ -90,18 +91,17 @@ function renderProjectDetailResult(router: ReturnType<typeof createMemoryRouter>
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <CurrentUserContext.Provider
-            value={{
-              user: undefined,
-              isLoading: false,
-              error: undefined,
-              refreshCurrentUser: async () => undefined,
-            }}
-          >
-            <RouterProvider router={router} />
-          </CurrentUserContext.Provider>
-        </ToastProvider>
+        <CurrentUserContext.Provider
+          value={{
+            user: undefined,
+            isLoading: false,
+            error: undefined,
+            refreshCurrentUser: async () => undefined,
+          }}
+        >
+          <RouterProvider router={router} />
+          <Toaster />
+        </CurrentUserContext.Provider>
       </QueryClientProvider>,
     ),
     router,

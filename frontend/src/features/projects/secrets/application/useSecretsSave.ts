@@ -1,4 +1,4 @@
-import { useToast } from '../../../../shared/components/toast/useToast.ts'
+import { toast } from 'sonner'
 import type { Secret } from '../domain'
 import {
   buildSaveOperations,
@@ -22,8 +22,6 @@ export function useSecretsSave({
   secrets,
   state,
 }: UseSecretsSaveOptions) {
-  const { addToast } = useToast()
-
   async function handleSaveEdit() {
     const { invalidSecretIds, operations } = buildSaveOperations({
       secrets,
@@ -58,16 +56,10 @@ export function useSecretsSave({
         omitRevealedValues(current, affectedValueIds),
       )
 
-      addToast({
-        message: getSuccessMessage(operations),
-        type: 'success',
-      })
+      toast.success(getSuccessMessage(operations))
       handleCancelEdit()
     } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to update secret'),
-        type: 'error',
-      })
+      toast.error(getErrorMessage(error, 'Failed to update secret'))
     }
   }
 

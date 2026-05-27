@@ -2,8 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Toaster } from '../../../../components/ui/sonner.tsx'
 import { CurrentUserContext } from '../../../users/model/currentUserContext.ts'
-import { ToastProvider } from '../../../../shared/components/toast/ToastProvider.tsx'
 import { InvitationPage } from './InvitationPage.tsx'
 
 const authMocks = vi.hoisted(() => ({
@@ -68,9 +68,8 @@ function renderInvitationPage(initialPath: string) {
             user: undefined,
           }}
         >
-          <ToastProvider>
-            <RouterProvider router={router} />
-          </ToastProvider>
+          <RouterProvider router={router} />
+          <Toaster />
         </CurrentUserContext.Provider>
       </QueryClientProvider>,
     ),

@@ -1,4 +1,4 @@
-import { useToast } from '../../../../shared/components/toast/useToast.ts'
+import { toast } from 'sonner'
 import { getErrorMessage } from './secretsOperationMessages.ts'
 import type { UseSecretsMutationsResult } from './useSecretsMutations.ts'
 
@@ -15,24 +15,16 @@ export function useSecretsTransferActions({
   handleCloseImportModal,
   mutations,
 }: UseSecretsTransferActionsOptions) {
-  const { addToast } = useToast()
-
   async function handleImport(content: string) {
     try {
       await mutations.importSecrets.mutateAsync(content)
-      addToast({
-        message: 'Secrets imported',
-        type: 'success',
-      })
+      toast.success('Secrets imported')
       if (hasUnsavedChanges) {
         handleCancelEdit()
       }
       handleCloseImportModal()
     } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to import secrets'),
-        type: 'error',
-      })
+      toast.error(getErrorMessage(error, 'Failed to import secrets'))
       throw error
     }
   }
@@ -41,15 +33,9 @@ export function useSecretsTransferActions({
     try {
       const exportedSecrets = await mutations.exportSecrets.mutateAsync()
       await navigator.clipboard.writeText(exportedSecrets)
-      addToast({
-        message: 'Secrets export copied',
-        type: 'success',
-      })
+      toast.success('Secrets export copied')
     } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to copy secrets export'),
-        type: 'error',
-      })
+      toast.error(getErrorMessage(error, 'Failed to copy secrets export'))
     }
   }
 

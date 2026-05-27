@@ -1,4 +1,4 @@
-import { useToast } from '../../../../shared/components/toast/useToast.ts'
+import { toast } from 'sonner'
 import type { Secret } from '../domain'
 import { getErrorMessage } from './secretsOperationMessages.ts'
 import type { SecretsRevealController } from './secretsEditor.types.ts'
@@ -13,8 +13,6 @@ export function useSecretsRevealActions({
   mutations,
   state,
 }: UseSecretsRevealActionsOptions) {
-  const { addToast } = useToast()
-
   async function handleReveal(secret: Secret) {
     if (state.visibleRevealedValues[secret.id]) {
       state.setVisibleRevealedValues((current) => ({
@@ -50,10 +48,7 @@ export function useSecretsRevealActions({
         [secret.id]: true,
       }))
     } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to reveal secret value'),
-        type: 'error',
-      })
+      toast.error(getErrorMessage(error, 'Failed to reveal secret value'))
     } finally {
       state.setRevealingId(null)
     }
@@ -102,10 +97,7 @@ export function useSecretsRevealActions({
         },
       }))
     } catch (error) {
-      addToast({
-        message: getErrorMessage(error, 'Failed to reveal secret value'),
-        type: 'error',
-      })
+      toast.error(getErrorMessage(error, 'Failed to reveal secret value'))
     } finally {
       state.setRevealingId((current) => (current === secret.id ? null : current))
     }

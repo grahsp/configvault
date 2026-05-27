@@ -1,4 +1,5 @@
 import { type FormEvent, useId, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '../../../../components/ui/button'
 import {
   Dialog,
@@ -11,7 +12,6 @@ import { Input } from '../../../../components/ui/input'
 import { Label } from '../../../../components/ui/label'
 import { Separator } from '../../../../components/ui/separator'
 import { useCreateInvitation } from '../../invitations/application'
-import { useToast } from '../../../../shared/components/toast/useToast'
 import { CopyableInput } from '../../../../shared/ui'
 
 interface InviteMemberDialogProps {
@@ -23,7 +23,6 @@ function buildGeneratedLink(token: string) {
 }
 
 export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
-  const { addToast } = useToast()
   const createInvitationMutation = useCreateInvitation(projectId)
   const userIdInputId = useId()
   const userIdErrorId = useId()
@@ -86,20 +85,14 @@ export function InviteMemberDialog({ projectId }: InviteMemberDialogProps) {
       }
 
       await navigator.clipboard.writeText(generatedLink)
-      addToast({
-        message: 'Invitation link copied to clipboard.',
-        type: 'success',
-      })
+      toast.success('Invitation link copied to clipboard.')
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Invitation link could not be copied.'
 
-      addToast({
-        message,
-        type: 'error',
-      })
+      toast.error(message)
     }
   }
 

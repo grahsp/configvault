@@ -198,7 +198,6 @@
     --z-base: 0;
     --z-dropdown: 10;
     --z-modal: 20;
-    --z-toast: 30;
 
     /* =========================
        COMPONENT TOKENS (optional but useful)
@@ -226,7 +225,6 @@
     --table-min-width-md: 600px;
     --modal-width-sm: 440px;
     --modal-width-md: 520px;
-    --toast-width: 360px;
 
     --container-max-width: 1200px;
     --breakpoint-sm: 640px;

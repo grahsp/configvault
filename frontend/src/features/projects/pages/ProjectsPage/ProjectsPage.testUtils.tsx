@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
-import { ToastProvider } from '../../../../shared/components/toast/ToastProvider'
+import { Toaster } from '../../../../components/ui/sonner'
 
 export type MockRoute = {
   body?: unknown
@@ -59,9 +60,8 @@ export function renderWithRouter({
   return {
     ...render(
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <RouterProvider router={router} />
-        </ToastProvider>
+        <RouterProvider router={router} />
+        <Toaster />
       </QueryClientProvider>,
     ),
     router,
