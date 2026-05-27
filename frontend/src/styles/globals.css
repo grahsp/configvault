@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import './tokens.css';
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/jetbrains-mono";
 
@@ -88,6 +87,47 @@
   --ring: 217 36% 59%;
 }
 
+:root {
+  --color-surface-muted: hsl(var(--muted));
+  --color-surface-muted-hover: hsl(var(--muted) / 0.82);
+  --color-surface-contrast: hsl(var(--card));
+  --color-surface-contrast-subtle: hsl(var(--background));
+  --color-surface-danger: hsl(var(--destructive) / 0.08);
+  --color-danger-soft: hsl(var(--destructive) / 0.1);
+  --color-warning: hsl(36 43% 45%);
+  --color-warning-soft: hsl(36 43% 45% / 0.12);
+  --color-success-soft: hsl(135 18% 43% / 0.12);
+  --color-primary-soft: hsl(var(--primary) / 0.1);
+  --color-text: hsl(var(--foreground));
+  --color-text-strong: hsl(var(--foreground));
+  --color-text-body: hsl(var(--muted-foreground));
+  --color-text-body-strong: hsl(var(--foreground) / 0.86);
+  --color-text-disabled: hsl(var(--muted-foreground) / 0.72);
+  --color-text-muted: hsl(var(--muted-foreground) / 0.64);
+  --color-text-subtle: hsl(var(--muted-foreground));
+  --color-text-tertiary: hsl(var(--muted-foreground));
+  --color-text-placeholder: hsl(var(--muted-foreground) / 0.72);
+  --color-text-danger: hsl(var(--destructive));
+  --color-text-danger-strong: hsl(var(--destructive) / 0.9);
+  --color-text-danger-emphasis: hsl(var(--destructive) / 0.82);
+  --color-text-success: hsl(135 18% 36%);
+  --color-text-success-strong: hsl(135 18% 31%);
+  --color-text-pink: hsl(340 22% 52%);
+  --color-text-pink-muted: hsl(340 18% 62%);
+  --color-inverse: hsl(var(--foreground));
+  --color-border-strong: hsl(var(--border));
+  --color-border-soft: hsl(var(--border) / 0.78);
+  --color-border-danger: hsl(var(--destructive) / 0.28);
+  --radius-md: 8px;
+  --radius-md-lg: 10px;
+  --panel-min-height: 180px;
+  --table-min-width-sm: 560px;
+  --space-4: 16px;
+  --space-8: 40px;
+  --font-size-body-md: 0.9rem;
+  --shadow-panel-soft: 0 10px 24px hsl(var(--foreground) / 0.07);
+}
+
 html {
   min-height: 100%;
   background-color: hsl(var(--background));
@@ -102,7 +142,7 @@ body {
   min-width: 320px;
   margin: 0;
   font-family:
-    'Satoshi', 'Avenir Next', 'Segoe UI', ui-sans-serif, system-ui, -apple-system,
+    'Geist Variable', 'Avenir Next', 'Segoe UI', ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
