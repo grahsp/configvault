@@ -365,18 +365,18 @@ describe('EnvironmentDropdown container', () => {
     await user.click(screen.getByRole('button', { name: 'Delete Staging' }))
     await user.click(
       within(
-        screen.getByRole('dialog', { name: 'Delete environment' }),
+        screen.getByRole('alertdialog', { name: 'Delete environment' }),
       ).getByRole('button', { name: 'Delete' }),
     )
 
     await waitFor(() => {
       expect(
-        screen.queryByRole('option', { name: 'Staging' }),
-      ).not.toBeInTheDocument()
+        fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE'),
+      ).toBeDefined()
     })
     expect(handleEnvironmentChange).not.toHaveBeenCalled()
     expect(
-      fetchMock.mock.calls.find(([, init]) => init?.method === 'DELETE'),
-    ).toBeDefined()
+      screen.queryByRole('option', { name: 'Staging' }),
+    ).not.toBeInTheDocument()
   })
 })

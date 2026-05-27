@@ -384,6 +384,8 @@ describe('ProjectsPage actions', () => {
 
     const projects = await screen.findByRole('list', { name: 'Projects' })
     expect(within(projects).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('dialog', { name: 'Delete project' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('alertdialog', { name: 'Delete project' }),
+    ).not.toBeInTheDocument()
   })
 })

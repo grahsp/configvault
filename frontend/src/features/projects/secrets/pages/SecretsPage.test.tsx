@@ -519,8 +519,13 @@ describe('SecretsPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Restore secret revision?' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'API_KEY' })).toBeInTheDocument()
-    expect(screen.getAllByRole('dialog')).toHaveLength(2)
+    expect(
+      screen.getByRole('heading', { hidden: true, name: 'API_KEY' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('dialog', { hidden: true })).toHaveLength(1)
+    expect(
+      screen.getByRole('alertdialog', { name: 'Restore secret revision?' }),
+    ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Restore revision' }))
 
@@ -739,7 +744,9 @@ describe('SecretsPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Restore revision' }))
 
     expect(await screen.findByText('Revision conflict.')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'API_KEY' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { hidden: true, name: 'API_KEY' }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Restore secret revision?' }),
     ).toBeInTheDocument()

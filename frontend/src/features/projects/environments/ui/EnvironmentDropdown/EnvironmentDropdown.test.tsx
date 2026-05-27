@@ -134,7 +134,7 @@ describe('EnvironmentDropdown view', () => {
     )
 
     expect(
-      screen.getByRole('dialog', { name: 'Delete environment' }),
+      screen.getByRole('alertdialog', { name: 'Delete environment' }),
     ).toBeInTheDocument()
   })
 })

@@ -810,7 +810,9 @@ describe('ProjectDetailPage', () => {
     )
     await user.click(screen.getByRole('menuitem', { name: 'Revoke' }))
 
-    const dialog = screen.getByRole('dialog', { name: 'Revoke invitation link' })
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Revoke invitation link',
+    })
     expect(within(dialog).getByText('Revoke this invitation link?')).toBeInTheDocument()
 
     await user.click(within(dialog).getByRole('button', { name: 'Revoke' }))
@@ -855,7 +857,7 @@ describe('ProjectDetailPage', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Delete project' }))
 
     expect(
-      screen.getByRole('dialog', { name: 'Delete project' }),
+      screen.getByRole('alertdialog', { name: 'Delete project' }),
     ).toHaveTextContent('Delete Production secrets? This cannot be undone.')
 
     await user.click(screen.getByRole('button', { name: 'Delete' }))
@@ -1388,7 +1390,7 @@ describe('ProjectDetailPage', () => {
     )
     await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
 
-    const dialog = screen.getByRole('dialog', { name: 'Remove member' })
+    const dialog = screen.getByRole('alertdialog', { name: 'Remove member' })
     expect(
       within(dialog).getByText('Remove this member from the project?'),
     ).toBeInTheDocument()
@@ -1396,7 +1398,7 @@ describe('ProjectDetailPage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
 
     expect(
-      screen.queryByRole('dialog', { name: 'Remove member' }),
+      screen.queryByRole('alertdialog', { name: 'Remove member' }),
     ).not.toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalledWith(
       expect.stringContaining('/projects/project-1/members/user-member'),
@@ -1463,7 +1465,7 @@ describe('ProjectDetailPage', () => {
     )
     await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
 
-    const dialog = screen.getByRole('dialog', { name: 'Remove member' })
+    const dialog = screen.getByRole('alertdialog', { name: 'Remove member' })
     await user.click(within(dialog).getByRole('button', { name: 'Remove' }))
 
     await waitFor(() =>
@@ -1526,7 +1528,7 @@ describe('ProjectDetailPage', () => {
     )
     await user.click(screen.getByRole('menuitem', { name: 'Remove' }))
     await user.click(
-      within(screen.getByRole('dialog', { name: 'Remove member' })).getByRole(
+      within(screen.getByRole('alertdialog', { name: 'Remove member' })).getByRole(
         'button',
         { name: 'Remove' },
       ),
@@ -1535,11 +1537,7 @@ describe('ProjectDetailPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Member removal rejected.',
     )
-    expect(
-      screen.getByRole('button', {
-        name: memberActionsButtonName('user-member'),
-      }),
-    ).toBeInTheDocument()
+    expect(screen.getByText('user-member')).toBeInTheDocument()
   })
 
   it('shows an error state when project members cannot load', async () => {

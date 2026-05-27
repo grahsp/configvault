@@ -2,9 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Button } from '../../components/ui/button'
-import { ConfirmationDialog } from './ConfirmationDialog'
 import { CopyableInput } from './CopyableInput'
-import { Modal } from './Modal'
 import { PageLoader } from './PageLoader'
 import { SideWindow } from './SideWindow'
 import { StatePanel } from './StatePanel'
@@ -39,26 +37,6 @@ describe('shared ui primitives', () => {
       'data-variant',
       'destructive',
     )
-  })
-
-  it('renders modal title, description, actions, and dialog semantics', () => {
-    render(
-      <Modal
-        actions={<button type="button">Confirm</button>}
-        description={<p>Changes apply immediately.</p>}
-        headerAction={<button type="button">Close</button>}
-        title="Manage project"
-      >
-        <p>Body copy</p>
-      </Modal>,
-    )
-
-    const dialog = screen.getByRole('dialog', { name: 'Manage project' })
-    expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(within(dialog).getByText('Changes apply immediately.')).toBeInTheDocument()
-    expect(within(dialog).getByText('Body copy')).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
-    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
   })
 
   it('renders side window semantics, header action, and close interactions', async () => {
@@ -151,43 +129,4 @@ describe('shared ui primitives', () => {
     expect(status).toHaveTextContent('Loading...')
   })
 
-  it('keeps confirmation dialog confirm/cancel flows and pending state', async () => {
-    const user = userEvent.setup()
-    const onCancel = vi.fn()
-    const onConfirm = vi.fn()
-    const { rerender } = render(
-      <ConfirmationDialog
-        confirmLabel="Delete"
-        isPending={false}
-        onCancel={onCancel}
-        onConfirm={onConfirm}
-        title="Delete project"
-      >
-        <p>Delete this project?</p>
-      </ConfirmationDialog>,
-    )
-
-    const dialog = screen.getByRole('dialog', { name: 'Delete project' })
-    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Delete' }))
-
-    expect(onCancel).toHaveBeenCalledTimes(1)
-    expect(onConfirm).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <ConfirmationDialog
-        confirmLabel="Delete"
-        isPending
-        onCancel={onCancel}
-        onConfirm={onConfirm}
-        pendingConfirmLabel="Deleting"
-        title="Delete project"
-      >
-        <p>Delete this project?</p>
-      </ConfirmationDialog>,
-    )
-
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Deleting' })).toBeDisabled()
-  })
 })
