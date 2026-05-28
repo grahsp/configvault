@@ -1,4 +1,4 @@
-import { FolderIcon, KeyRoundIcon, UsersIcon } from 'lucide-react'
+import { FolderIcon, KeyRoundIcon, SettingsIcon, UsersIcon } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Sidebar,
@@ -21,6 +21,7 @@ export function AppSidebar() {
   const isProjectsActive = location.pathname === '/projects'
   const isSecretsActive = /\/projects\/[^/]+\/secrets\/?$/.test(location.pathname)
   const isMembersActive = /\/projects\/[^/]+\/members\/?$/.test(location.pathname)
+  const isSettingsActive = /\/projects\/[^/]+\/settings\/?$/.test(location.pathname)
   const closeMobileSidebar = () => {
     if (isMobile) {
       setOpenMobile(false)
@@ -92,6 +93,21 @@ export function AppSidebar() {
                     >
                       <UsersIcon aria-hidden="true" />
                       <span>Members</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isSettingsActive}>
+                    <Link
+                      aria-current={isSettingsActive ? 'page' : undefined}
+                      onClick={closeMobileSidebar}
+                      to={{
+                        pathname: `/projects/${projectId}/settings`,
+                        search: projectSearch,
+                      }}
+                    >
+                      <SettingsIcon aria-hidden="true" />
+                      <span>Settings</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

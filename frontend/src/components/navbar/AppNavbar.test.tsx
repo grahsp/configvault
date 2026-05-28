@@ -26,6 +26,7 @@ describe('AppSidebar', () => {
     const projectsLink = screen.getByRole('link', { name: /Projects/i })
     const secretsLink = screen.getByRole('link', { name: /Secrets/i })
     const membersLink = screen.getByRole('link', { name: /Members/i })
+    const settingsLink = screen.getByRole('link', { name: /Settings/i })
 
     expect(projectsLink).toHaveAttribute('href', '/projects')
     expect(secretsLink).toHaveAttribute(
@@ -45,6 +46,27 @@ describe('AppSidebar', () => {
     )
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(membersLink).toHaveAttribute('data-active', 'false')
+    expect(settingsLink).toHaveAttribute(
+      'href',
+      '/projects/project-1/settings?environmentId=env-1',
+    )
+    expect(settingsLink).not.toHaveAttribute('aria-current')
+    expect(settingsLink).toHaveAttribute('data-active', 'false')
+  })
+
+  it('marks project settings active and preserves search params', () => {
+    renderSidebar({
+      initialPath: '/projects/project-1/settings?environmentId=env-1',
+    })
+
+    const settingsLink = screen.getByRole('link', { name: /Settings/i })
+
+    expect(settingsLink).toHaveAttribute(
+      'href',
+      '/projects/project-1/settings?environmentId=env-1',
+    )
+    expect(settingsLink).toHaveAttribute('aria-current', 'page')
+    expect(settingsLink).toHaveAttribute('data-active', 'true')
   })
 
   it('renders a visible close control in the mobile sidebar', async () => {

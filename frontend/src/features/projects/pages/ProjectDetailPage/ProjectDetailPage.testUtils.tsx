@@ -8,6 +8,7 @@ import { AppLayout } from '../../../../layouts/AppLayout'
 import { CurrentUserContext } from '../../../users/model/currentUserContext'
 import { SecretsPage } from '../../secrets/pages'
 import { MembersPage } from '../../members/pages'
+import { ProjectSettingsPage } from '../ProjectSettingsPage'
 import { ProjectDetailPage } from './ProjectDetailPage'
 
 export type MockRoute = {
@@ -130,6 +131,10 @@ export function renderProjectDetail(initialPath = '/projects/project-1') {
               {
                 path: 'members',
                 element: <MembersPage />,
+              },
+              {
+                path: 'settings',
+                element: <ProjectSettingsPage />,
               },
             ],
           },

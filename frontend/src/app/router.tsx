@@ -4,7 +4,7 @@ import { LandingLayout } from '../layouts/LandingLayout'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { InvitationPage } from '../features/projects/invitations/pages'
 import { SecretsPage } from '../features/projects/secrets'
-import { MembersPage } from '../features/projects'
+import { MembersPage, ProjectSettingsPage } from '../features/projects'
 import { ProjectDetailPage } from '../features/projects'
 import { ProjectsPage } from '../features/projects'
 import { ProfilePage } from '../features/users'
@@ -56,6 +56,10 @@ export const router = createBrowserRouter([
           {
             path: 'members',
             element: <MembersPage />,
+          },
+          {
+            path: 'settings',
+            element: <ProjectSettingsPage />,
           },
         ],
       },

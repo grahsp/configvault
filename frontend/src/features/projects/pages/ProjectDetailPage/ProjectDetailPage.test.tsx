@@ -37,6 +37,10 @@ function createDeferredResponse() {
   return { response, resolve }
 }
 
+function requestUrlText(input: RequestInfo | URL) {
+  return input instanceof Request ? input.url : input.toString()
+}
+
 describe('ProjectDetailPage', () => {
   const projectDetails = {
     id: 'project-1',
@@ -181,12 +185,42 @@ describe('ProjectDetailPage', () => {
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
 
+    const projectSelector = screen.getByRole('button', { name: /Project/i })
+    const environmentSelector = screen.getByRole('button', {
+      name: /Environment/i,
+    })
     const secretsLink = screen.getByRole('link', { name: 'Secrets' })
     const membersLink = screen.getByRole('link', { name: 'Members' })
 
-    expect(secretsLink).toHaveAttribute('href', '/projects/project-1/secrets')
+    expect(projectSelector).toHaveTextContent('Production secrets')
+    expect(projectSelector).toHaveClass('font-semibold', 'text-primary')
+    expect(projectSelector).toHaveAttribute('data-size', 'sm')
+    expect(within(projectSelector).getByText('Production secrets')).toHaveClass(
+      'text-2xl',
+    )
+    expect(projectSelector).not.toHaveClass('bg-card')
+    await waitFor(() => {
+      expect(environmentSelector).toHaveTextContent('Development')
+    })
+    expect(environmentSelector).toHaveClass('font-medium')
+    expect(environmentSelector).toHaveAttribute('data-size', 'sm')
+    expect(within(environmentSelector).getByText('Development')).toHaveClass(
+      'text-2xl',
+    )
+    expect(environmentSelector).not.toHaveClass('bg-card')
+    await waitFor(() => {
+      expect(secretsLink).toHaveAttribute(
+        'href',
+        '/projects/project-1/secrets?environmentId=env-development',
+      )
+    })
     expect(secretsLink).toHaveAttribute('aria-current', 'page')
-    expect(membersLink).toHaveAttribute('href', '/projects/project-1/members')
+    await waitFor(() => {
+      expect(membersLink).toHaveAttribute(
+        'href',
+        '/projects/project-1/members?environmentId=env-development',
+      )
+    })
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(
@@ -200,10 +234,10 @@ describe('ProjectDetailPage', () => {
       screen
         .getByRole('heading', { name: 'Production secrets' })
         .closest('section'),
-    ).toContainElement(screen.getByRole('button', { name: /Environment/i }))
+    ).toContainElement(environmentSelector)
     expect(
-      screen.getByRole('button', { name: 'Actions' }),
-    ).toBeInTheDocument()
+      screen.queryByRole('button', { name: 'Actions' }),
+    ).not.toBeInTheDocument()
   })
 
   it('preserves the selected environment from the secrets route query string', async () => {
@@ -279,9 +313,11 @@ describe('ProjectDetailPage', () => {
 
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(router.state.location.search).toBe('?environmentId=env-development')
-    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
-      'Development',
-    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+        'Development',
+      )
+    })
   })
 
   it('rewrites stale environment ids to the resolved project environment before loading secrets', async () => {
@@ -315,9 +351,11 @@ describe('ProjectDetailPage', () => {
 
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(router.state.location.search).toBe('?environmentId=env-development')
-    expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
-      'Development',
-    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Environment/i })).toHaveTextContent(
+        'Development',
+      )
+    })
   })
 
   it('updates the secrets route query string when selecting an environment', async () => {
@@ -371,19 +409,10 @@ describe('ProjectDetailPage', () => {
   })
 
   it('renders the members route directly', async () => {
-    mockFetchSequence([
+    const fetchMock = mockFetchSequence([
       {
         path: '/projects/project-1',
         body: projectDetails,
-      },
-      {
-        path: '/projects/project-1/environments',
-        body: [
-          {
-            id: 'env-development',
-            environmentName: 'Development',
-          },
-        ],
       },
       {
         path: '/projects/project-1/members',
@@ -410,7 +439,63 @@ describe('ProjectDetailPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: 'Add member' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Invite Link' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Environment/i })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Production secrets/ }),
+    ).toHaveTextContent('Production secrets')
+    expect(
+      screen.queryByRole('button', { name: /Environment/i }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Project page')).toHaveTextContent('Members')
+    expect(
+      screen.queryByRole('button', { name: '+ Add Secret' }),
+    ).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        requestUrlText(input).includes('/projects/project-1/environments'),
+      ),
+    ).toBe(false)
+  })
+
+  it('renders the settings route and opens project deletion from settings', async () => {
+    const user = userEvent.setup()
+
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/settings')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Production secrets' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Project settings' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Project settings' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Project identity')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Production secrets/ }),
+    ).toHaveTextContent('Production secrets')
+    expect(
+      screen.queryByRole('button', { name: /Environment/i }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Project page')).toHaveTextContent('Settings')
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        requestUrlText(input).includes('/projects/project-1/environments'),
+      ),
+    ).toBe(false)
+
+    await user.click(screen.getByRole('button', { name: 'Delete project' }))
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'Delete project' }),
+    ).toBeInTheDocument()
   })
 
   it('filters projects and keeps the current section when switching projects', async () => {
@@ -834,7 +919,7 @@ describe('ProjectDetailPage', () => {
     expect(screen.queryByText('No active invitation links.')).not.toBeInTheDocument()
   })
 
-  it('deletes the project from the header actions menu', async () => {
+  it('deletes the project from settings', async () => {
     const user = userEvent.setup()
 
     mockFetchSequence([
@@ -843,18 +928,26 @@ describe('ProjectDetailPage', () => {
         body: projectDetails,
       },
       {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
         path: '/projects/project-1',
         method: 'DELETE',
         status: 204,
       },
     ])
 
-    const { router } = renderProjectDetail('/projects/project-1/secrets')
+    const { router } = renderProjectDetail('/projects/project-1/settings')
 
     await user.click(
-      await screen.findByRole('button', { name: 'Actions' }),
+      await screen.findByRole('button', { name: 'Delete project' }),
     )
-    await user.click(screen.getByRole('menuitem', { name: 'Delete project' }))
 
     expect(
       screen.getByRole('alertdialog', { name: 'Delete project' }),
