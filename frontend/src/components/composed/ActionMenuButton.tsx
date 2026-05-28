@@ -54,16 +54,13 @@ export function ActionMenuButton({
 
           return (
             <DropdownMenuItem
-              asChild
               disabled={item.disabled}
               key={item.label}
               onSelect={item.onSelect}
               variant={item.tone === 'danger' ? 'destructive' : 'default'}
             >
-              <button disabled={item.disabled} type="button">
-                {Icon ? <Icon aria-hidden="true" /> : null}
-                {item.label}
-              </button>
+              {Icon ? <Icon aria-hidden="true" /> : null}
+              {item.label}
             </DropdownMenuItem>
           )
         })}

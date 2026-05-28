@@ -121,7 +121,7 @@ describe('SplitActionButton', () => {
     expect(screen.getByRole('button', { name: 'Open create actions' })).toBeInTheDocument()
   })
 
-  it('applies the shared rounding class to both the primary and secondary buttons', () => {
+  it('uses the default button shape without custom rounding', () => {
     render(
       <SplitActionButton
         primaryAction={{
@@ -141,9 +141,9 @@ describe('SplitActionButton', () => {
     const primaryButton = screen.getByRole('button', { name: '+ Add Secret' })
     const menuButton = screen.getByRole('button', { name: 'Open add secret actions' })
 
-    expect(group).toHaveClass('rounded-md')
-    expect(primaryButton).toHaveClass('rounded-md')
-    expect(menuButton).toHaveClass('rounded-md')
+    expect(group).not.toHaveClass('rounded-md')
+    expect(primaryButton).toHaveClass('rounded-none')
+    expect(menuButton).toHaveClass('rounded-none')
     expect(primaryButton).not.toHaveClass('rounded-4xl')
     expect(menuButton).not.toHaveClass('rounded-4xl')
   })

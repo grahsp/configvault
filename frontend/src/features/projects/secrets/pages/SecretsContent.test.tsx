@@ -83,7 +83,7 @@ describe('SecretsContent', () => {
     render(<SecretsContent {...createProps({ rows: [] })} />)
 
     expect(screen.getByText('No secrets yet')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '+ Add Secret' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '+ New' })).toBeInTheDocument()
     expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
     expect(screen.queryByRole('list', { name: 'Project secrets' })).not.toBeInTheDocument()
   })

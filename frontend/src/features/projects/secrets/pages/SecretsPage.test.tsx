@@ -832,7 +832,7 @@ describe('SecretsPage', () => {
 
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '+ Add Secret' }))
+    await user.click(screen.getByRole('button', { name: '+ New' }))
 
     expect(screen.getByRole('textbox', { name: 'Key' })).toHaveValue('')
     expect(screen.getByRole('textbox', { name: 'Key' })).toHaveFocus()
@@ -923,7 +923,7 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: '+ Add Secret' }))
+    await user.click(await screen.findByRole('button', { name: '+ New' }))
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument()
 
     await openImportSecrets(user)
@@ -1026,7 +1026,7 @@ describe('SecretsPage', () => {
     ).not.toBeInTheDocument()
     expect(
       within(apiValueGroup).getByRole('button', { name: 'Open actions for API_KEY' }),
-    ).toBeInTheDocument()
+    ).not.toHaveClass('rounded-4xl')
     expect(
       within(apiValueGroup).getByText('Click to reveal'),
     ).toHaveClass('group-hover:opacity-100', 'group-focus-visible:opacity-100')
@@ -1142,7 +1142,7 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: '+ Add Secret' }))
+    await user.click(await screen.findByRole('button', { name: '+ New' }))
     const keyInput = screen.getByRole('textbox', { name: 'Key' })
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
@@ -1183,7 +1183,7 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: '+ Add Secret' }))
+    await user.click(await screen.findByRole('button', { name: '+ New' }))
     await user.type(screen.getByRole('textbox', { name: 'Key' }), 'API_KEY')
     await user.click(screen.getByRole('button', { name: 'Save Changes' }))
 
@@ -1269,7 +1269,7 @@ describe('SecretsPage', () => {
     const keyInput = await screen.findByRole('textbox', { name: 'Key' })
     await user.clear(keyInput)
     await user.type(keyInput, 'PUBLIC_KEY')
-    await user.click(screen.getByRole('button', { name: '+ Add Secret' }))
+    await user.click(screen.getByRole('button', { name: '+ New' }))
 
     const keyInputs = screen.getAllByRole('textbox', { name: 'Key' })
     expect(keyInputs[0]).toHaveValue('')
@@ -1300,7 +1300,7 @@ describe('SecretsPage', () => {
 
     renderProjectDetail('/projects/project-1/secrets')
 
-    await user.click(await screen.findByRole('button', { name: '+ Add Secret' }))
+    await user.click(await screen.findByRole('button', { name: '+ New' }))
 
     const keyInputs = screen.getAllByRole('textbox', { name: 'Key' })
     expect(keyInputs[0]).toHaveValue('')

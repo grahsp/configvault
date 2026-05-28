@@ -60,7 +60,8 @@ export function SecretsEmptyState({
       actions={
         <SplitActionButton
           primaryAction={{
-            label: '+ Add Secret',
+            label: '+ New',
+            menuLabel: 'Open add secret actions',
             onClick: onOpenAddSecret,
           }}
           secondaryActions={[

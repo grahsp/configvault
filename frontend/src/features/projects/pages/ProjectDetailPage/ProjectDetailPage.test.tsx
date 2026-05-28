@@ -224,7 +224,7 @@ describe('ProjectDetailPage', () => {
     expect(membersLink).not.toHaveAttribute('aria-current')
     expect(await screen.findByText('No secrets yet')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: '+ Add Secret' }),
+      screen.getByRole('button', { name: '+ New' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'Delete project' }),
@@ -447,7 +447,7 @@ describe('ProjectDetailPage', () => {
     ).not.toBeInTheDocument()
     expect(screen.getByLabelText('Project page')).toHaveTextContent('Members')
     expect(
-      screen.queryByRole('button', { name: '+ Add Secret' }),
+      screen.queryByRole('button', { name: '+ New' }),
     ).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) =>
@@ -1280,9 +1280,9 @@ describe('ProjectDetailPage', () => {
         name: memberActionsButtonName('Oscar Owner'),
       }),
     )
-    expect(
-      screen.getByRole('menuitem', { name: 'Remove' }),
-    ).toBeDisabled()
+    expect(screen.getByRole('menuitem', { name: 'Remove' })).toHaveAttribute(
+      'data-disabled',
+    )
     expect(
       within(adminRow).getByRole('button', {
         name: roleButtonName('Alex Admin'),
@@ -1917,7 +1917,7 @@ describe('ProjectDetailPage', () => {
     expect(screen.queryByText('Loading secrets...')).not.toBeInTheDocument()
     expect(router.state.location.search).toBe('')
     expect(
-      screen.queryByRole('button', { name: '+ Add Secret' }),
+      screen.queryByRole('button', { name: '+ New' }),
     ).not.toBeInTheDocument()
   })
 

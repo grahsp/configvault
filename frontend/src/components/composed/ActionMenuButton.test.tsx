@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Trash2Icon } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 import { ActionMenuButton } from './ActionMenuButton.tsx'
 
@@ -50,17 +51,25 @@ describe('ActionMenuButton', () => {
 
     render(
       <ActionMenuButton
-        items={[{ label: 'Remove', onSelect: vi.fn(), tone: 'danger' }]}
+        items={[
+          {
+            icon: Trash2Icon,
+            label: 'Remove',
+            onSelect: vi.fn(),
+            tone: 'danger',
+          },
+        ]}
         label="Open row actions"
       />,
     )
 
     await user.click(screen.getByRole('button', { name: 'Open row actions' }))
 
-    expect(screen.getByRole('menuitem', { name: 'Remove' })).toHaveAttribute(
-      'data-variant',
-      'destructive',
-    )
+    const menuItem = screen.getByRole('menuitem', { name: 'Remove' })
+
+    expect(menuItem).toHaveAttribute('data-variant', 'destructive')
+    expect(menuItem).toHaveAttribute('data-slot', 'dropdown-menu-item')
+    expect(menuItem.querySelector('svg')).toBeInTheDocument()
   })
 
   it('disables the trigger and disabled menu items', async () => {

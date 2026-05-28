@@ -29,7 +29,8 @@ export function SecretsTableHeaderActions({
     <div className="flex items-center gap-1.5">
       <SplitActionButton
         primaryAction={{
-          label: '+ Add Secret',
+          label: '+ New',
+          menuLabel: 'Open add secret actions',
           onClick: onOpenAddSecret,
         }}
         secondaryActions={[

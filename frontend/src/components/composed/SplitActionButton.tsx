@@ -42,17 +42,15 @@ export function SplitActionButton({
       ? `Open ${primaryAction.label.replace(/^[+]\s*/, '').toLowerCase()} actions`
       : 'Open actions')
 
-  const rounded = 'rounded-md'
-
   return (
-    <ButtonGroup className={cn('overflow-hidden', rounded, className)}>
-      <Button disabled={disabled} onClick={primaryAction.onClick} type="button" className={rounded}>
+    <ButtonGroup className={cn('overflow-hidden', className)}>
+      <Button disabled={disabled} onClick={primaryAction.onClick} type="button">
         {primaryAction.label}
       </Button>
       <ButtonGroupSeparator />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button aria-label={menuLabel} disabled={disabled} type="button" className={rounded}>
+          <Button aria-label={menuLabel} disabled={disabled} type="button">
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>

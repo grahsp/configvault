@@ -202,7 +202,6 @@ export function SecretValueField({
           },
         ]}
         label={`Open actions for ${secret.key}`}
-        trigger="input-group"
       />
     )
   }
