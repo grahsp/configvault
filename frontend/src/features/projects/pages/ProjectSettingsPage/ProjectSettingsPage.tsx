@@ -2,12 +2,16 @@ import { Trash2Icon } from 'lucide-react'
 import { useOutletContext } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import type { ProjectLayoutContext } from '@/features/projects/pages/ProjectDetailPage/ProjectDetailPage'
+import { ProjectSettingsEnvironmentsSection } from '@/features/projects/pages/ProjectSettingsPage/ProjectSettingsEnvironmentsSection'
 
 export function ProjectSettingsPage() {
-  const { onOpenProjectDeleteDialog } = useOutletContext<ProjectLayoutContext>()
+  const { onOpenProjectDeleteDialog, project } =
+    useOutletContext<ProjectLayoutContext>()
 
   return (
     <section aria-label="Project settings" className="grid gap-6">
+      <ProjectSettingsEnvironmentsSection project={project} />
+
       <section
         aria-labelledby="project-danger-title"
         className="rounded-md border border-destructive/25 bg-destructive/5 p-4"
