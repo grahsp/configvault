@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { StatusPanel } from '@/components/composed'
+import type { Environment } from '@/features/projects/environments'
 import {
   getErrorMessage,
   isAuthError,
@@ -140,7 +141,11 @@ export function ProjectDetailPage() {
 }
 
 export interface ProjectLayoutContext {
+  isEnvironmentLoading: boolean
+  onOpenProjectDeleteDialog: () => void
   project: ProjectDetails
+  selectedEnvironment: Environment | null
+  selectedEnvironmentName: string
 }
 
 function ProjectNotFoundState() {
