@@ -443,7 +443,7 @@ describe('ProjectDetailPage', () => {
       screen.getByRole('button', { name: /Production secrets/ }),
     ).toHaveTextContent('Production secrets')
     expect(
-      screen.queryByRole('button', { name: /Environment/i }),
+      screen.queryByRole('button', { name: /^Environment/i }),
     ).not.toBeInTheDocument()
     expect(screen.getByLabelText('Project page')).toHaveTextContent('Members')
     expect(
@@ -464,6 +464,15 @@ describe('ProjectDetailPage', () => {
         path: '/projects/project-1',
         body: projectDetails,
       },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
     ])
 
     renderProjectDetail('/projects/project-1/settings')
@@ -482,20 +491,194 @@ describe('ProjectDetailPage', () => {
       screen.getByRole('button', { name: /Production secrets/ }),
     ).toHaveTextContent('Production secrets')
     expect(
-      screen.queryByRole('button', { name: /Environment/i }),
+      screen.queryByRole('button', { name: /^Environment/i }),
     ).not.toBeInTheDocument()
     expect(screen.getByLabelText('Project page')).toHaveTextContent('Settings')
-    expect(
-      fetchMock.mock.calls.some(([input]) =>
-        requestUrlText(input).includes('/projects/project-1/environments'),
-      ),
-    ).toBe(false)
+    expect(await screen.findByText('Environments')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([input]) =>
+          requestUrlText(input).includes('/projects/project-1/environments'),
+        ),
+      ).toBe(true),
+    )
 
     await user.click(screen.getByRole('button', { name: 'Delete project' }))
 
     expect(
       screen.getByRole('alertdialog', { name: 'Delete project' }),
     ).toBeInTheDocument()
+  })
+
+  it('lists settings environments and prevents deleting the final one', async () => {
+    const user = userEvent.setup()
+
+    mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: {
+          ...projectDetails,
+          defaultEnvironmentId: 'env-development',
+        },
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/settings')
+
+    expect(await screen.findByText('Development')).toBeInTheDocument()
+    expect(screen.getByText('Default')).toBeInTheDocument()
+    expect(
+      screen.getByText('At least one environment is required.'),
+    ).toBeInTheDocument()
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Environment actions for Development',
+      }),
+    )
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(
+      'data-disabled',
+    )
+  })
+
+  it('validates and creates environments from settings', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+        ],
+      },
+      {
+        method: 'POST',
+        path: '/projects/project-1/environments',
+        body: {
+          id: 'env-qa',
+          environmentName: 'qa',
+        },
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/settings')
+
+    const createButton = await screen.findByRole('button', { name: '+ New' })
+    expect(createButton).toHaveAttribute('data-variant', 'outline')
+
+    await user.click(createButton)
+    const dialog = screen.getByRole('dialog', { name: 'Add environment' })
+    const input = within(dialog).getByLabelText('Environment name')
+
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Add environment' }),
+    )
+
+    expect(
+      await within(dialog).findByText('Enter an environment name.'),
+    ).toBeInTheDocument()
+
+    await user.type(input, 'DEVELOPMENT')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Add environment' }),
+    )
+
+    expect(
+      await within(dialog).findByText('Environment already exists.'),
+    ).toBeInTheDocument()
+
+    await user.clear(input)
+    await user.type(input, 'QA')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Add environment' }),
+    )
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/projects/project-1/environments'),
+        expect.objectContaining({
+          body: JSON.stringify({ environmentName: 'qa' }),
+          method: 'POST',
+        }),
+      ),
+    )
+    expect(await screen.findByText('qa')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Add environment' }),
+      ).not.toBeInTheDocument(),
+    )
+  })
+
+  it('deletes environments from settings after confirmation', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockFetchSequence([
+      {
+        path: '/projects/project-1',
+        body: projectDetails,
+      },
+      {
+        path: '/projects/project-1/environments',
+        body: [
+          {
+            id: 'env-development',
+            environmentName: 'Development',
+          },
+          {
+            id: 'env-staging',
+            environmentName: 'Staging',
+          },
+        ],
+      },
+      {
+        method: 'DELETE',
+        path: '/projects/project-1/environments/env-staging',
+        status: 204,
+      },
+    ])
+
+    renderProjectDetail('/projects/project-1/settings')
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Environment actions for Staging',
+      }),
+    )
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'Delete environment' }),
+    ).toHaveTextContent(
+      'Delete Staging? Secrets scoped to this environment will be removed.',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '/projects/project-1/environments/env-staging',
+        ),
+        expect.objectContaining({ method: 'DELETE' }),
+      ),
+    )
+    await waitFor(() =>
+      expect(screen.queryByText('Staging')).not.toBeInTheDocument(),
+    )
   })
 
   it('filters projects and keeps the current section when switching projects', async () => {
