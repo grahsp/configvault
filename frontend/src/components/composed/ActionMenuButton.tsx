@@ -1,16 +1,17 @@
-import { MoreHorizontalIcon } from 'lucide-react'
-import { Button } from '../ui/button'
+import { MoreHorizontalIcon, type LucideIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
-import { InputGroupButton } from '../ui/input-group'
+} from '@/components/ui/dropdown-menu'
+import { InputGroupButton } from '@/components/ui/input-group'
 import { cn } from '@/lib/utils.ts'
 
 export interface ActionMenuButtonItem {
   disabled?: boolean
+  icon?: LucideIcon
   label: string
   onSelect: () => void
   tone?: 'default' | 'danger'
@@ -48,19 +49,24 @@ export function ActionMenuButton({
         </TriggerButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {items.map((item) => (
-          <DropdownMenuItem
-            asChild
-            disabled={item.disabled}
-            key={item.label}
-            onSelect={item.onSelect}
-            variant={item.tone === 'danger' ? 'destructive' : 'default'}
-          >
-            <button disabled={item.disabled} type="button">
-              {item.label}
-            </button>
-          </DropdownMenuItem>
-        ))}
+        {items.map((item) => {
+          const Icon = item.icon
+
+          return (
+            <DropdownMenuItem
+              asChild
+              disabled={item.disabled}
+              key={item.label}
+              onSelect={item.onSelect}
+              variant={item.tone === 'danger' ? 'destructive' : 'default'}
+            >
+              <button disabled={item.disabled} type="button">
+                {Icon ? <Icon aria-hidden="true" /> : null}
+                {item.label}
+              </button>
+            </DropdownMenuItem>
+          )
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   )
