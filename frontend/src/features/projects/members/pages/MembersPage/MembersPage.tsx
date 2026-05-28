@@ -45,7 +45,7 @@ export function MembersPage() {
         <SectionHeader
           actions={canManageMembers ? <InviteMemberDialog projectId={projectId} /> : undefined}
           title={
-            <h2 className="m-0 text-xl font-semibold tracking-tight text-foreground">
+            <h2 className="m-0 text-lg font-semibold tracking-tight text-foreground">
               Members ({members.length})
             </h2>
           }

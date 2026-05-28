@@ -35,7 +35,7 @@ export function AppLayout() {
           <SidebarInset>
             <AppTopBar />
             <div className="flex flex-1 bg-background px-4 sm:px-6 lg:px-8">
-              <div className="mx-auto flex min-h-full w-full max-w-[68rem] flex-1 flex-col bg-background px-2 py-8 sm:px-4 sm:py-10 sm:pb-20 lg:px-8 lg:py-12">
+              <div className="mx-auto flex min-h-full w-full max-w-[68rem] flex-1 flex-col bg-background px-2 pb-8 pt-5 sm:px-4 sm:pb-20 sm:pt-6 lg:px-8 lg:pt-8">
                 <Outlet />
               </div>
             </div>

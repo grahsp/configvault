@@ -1,6 +1,6 @@
 import { CheckIcon, ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '../../../../components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -8,13 +8,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '../../../../components/ui/command'
+} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '../../../../components/ui/popover'
-import { cn } from '../../../../lib/utils'
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 interface PathSegmentOption {
   label: string
@@ -69,22 +69,22 @@ export function PathSegmentSelector({
         <Button
           aria-busy={loading}
           className={cn(
-            'h-auto cursor-pointer rounded-xl px-3 py-1.5 text-left shadow-none transition-colors hover:bg-muted/40 sm:px-3.5',
+            'h-auto min-w-0 max-w-full cursor-pointer items-center justify-start gap-1.5 whitespace-normal rounded-md px-1.5 py-1.5 text-left leading-tight shadow-none transition-colors hover:bg-muted/55 focus-visible:bg-muted/55 has-data-[icon=inline-end]:pr-1.5 sm:px-2 sm:has-data-[icon=inline-end]:pr-2',
             tone === 'primary' &&
-              'text-lg font-bold text-foreground hover:text-foreground sm:text-xl',
+              'font-semibold text-primary hover:text-primary',
             tone === 'secondary' &&
-              'text-base font-medium text-muted-foreground hover:text-foreground sm:text-lg',
-            !loading && 'data-[state=open]:bg-muted/40',
+              'font-medium text-muted-foreground hover:text-foreground',
+            !loading && 'data-[state=open]:bg-muted/55',
           )}
           size="sm"
           variant="ghost"
         >
           <span className="sr-only">{label}</span>
-          <span className="truncate">{currentLabel}</span>
+          <span className="min-w-0 break-words text-2xl">{currentLabel}</span>
           <ChevronDownIcon
             className={cn(
-              'ml-1.5 size-4 shrink-0 transition-transform group-aria-expanded/button:rotate-180 sm:ml-2',
-              tone === 'primary' ? 'text-foreground/70' : 'text-muted-foreground',
+              '-mr-1 size-5 shrink-0 self-center transition-transform group-aria-expanded/button:rotate-180',
+              tone === 'primary' ? 'text-foreground/65' : 'text-muted-foreground/80',
             )}
             data-icon="inline-end"
           />
@@ -92,7 +92,7 @@ export function PathSegmentSelector({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[min(22rem,calc(100vw-2rem))] overflow-hidden border border-border p-0 ring-0"
+        className="w-[var(--radix-popover-trigger-width)] min-w-[16rem] max-w-[min(22rem,calc(100vw-2rem))] overflow-hidden border border-border p-0 ring-0"
       >
         <Command
           className="rounded-none border-0 bg-transparent"

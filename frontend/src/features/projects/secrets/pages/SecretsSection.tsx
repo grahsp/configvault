@@ -49,7 +49,7 @@ export function SecretsSection({
       {!editor.isLoading && !editor.isError && hasRows ? (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center">
-            <h2 className="text-[1.45rem] font-bold leading-[0.98] tracking-[-0.015em] text-foreground/85">
+            <h2 className="text-lg font-semibold leading-tight text-foreground">
               Secrets ({editor.totalRowCount})
             </h2>
           </div>
