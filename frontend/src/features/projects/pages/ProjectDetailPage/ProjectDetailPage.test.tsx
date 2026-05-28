@@ -72,7 +72,7 @@ describe('ProjectDetailPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Production secrets' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Project/i })).toHaveTextContent(
+    expect(await screen.findByRole('button', { name: /Project/i })).toHaveTextContent(
       'Production secrets',
     )
     expect(screen.queryByText('Credentials for production services')).not.toBeInTheDocument()
@@ -410,7 +410,7 @@ describe('ProjectDetailPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: 'Add member' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Invite Link' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Environment/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Environment/i })).not.toBeInTheDocument()
   })
 
   it('filters projects and keeps the current section when switching projects', async () => {

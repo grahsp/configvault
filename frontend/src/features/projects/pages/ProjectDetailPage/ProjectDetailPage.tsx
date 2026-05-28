@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { type Environment } from '../../environments'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { StatusPanel } from '@/components/composed'
 import {
   getErrorMessage,
@@ -9,115 +8,18 @@ import {
   type ProjectDetails,
 } from '../../domain'
 import { useDeleteProject, useProject } from '../../application'
-import { useEnvironments } from '../../environments/application/useEnvironments'
 import { Button } from '../../../../components/ui/button'
 import { ProjectLayout } from './ProjectLayout'
 import { ProjectDeleteDialog } from '../../ui'
 
-const EMPTY_ENVIRONMENTS: Environment[] = []
-
-function resolveEnvironment(
-  environments: Environment[],
-  selectedEnvironmentId: string,
-  defaultEnvironmentId?: string,
-) {
-  if (selectedEnvironmentId) {
-    const selectedEnvironment = environments.find(
-      (environment) => environment.id === selectedEnvironmentId,
-    )
-
-    if (selectedEnvironment) {
-      return selectedEnvironment
-    }
-  }
-
-  if (defaultEnvironmentId) {
-    const defaultEnvironment = environments.find(
-      (environment) => environment.id === defaultEnvironmentId,
-    )
-
-    if (defaultEnvironment) {
-      return defaultEnvironment
-    }
-  }
-
-  return environments[0] ?? null
-}
-
 export function ProjectDetailPage() {
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
   const { projectId } = useParams()
   const deleteProjectMutation = useDeleteProject()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const projectQuery = useProject(projectId ?? '')
   const project = projectQuery.data
-  const environmentsQuery = useEnvironments(project?.id ?? '')
-  const environments = environmentsQuery.data ?? EMPTY_ENVIRONMENTS
-  const selectedEnvironmentId = searchParams.get('environmentId') ?? ''
-  const resolvedEnvironment = useMemo(
-    () =>
-      resolveEnvironment(
-        environments,
-        selectedEnvironmentId,
-        project?.defaultEnvironmentId,
-      ),
-    [environments, project?.defaultEnvironmentId, selectedEnvironmentId],
-  )
-  const selectedEnvironmentName = resolvedEnvironment?.environmentName ?? ''
-  const resolvedEnvironmentId = resolvedEnvironment?.id ?? ''
-
-  useEffect(() => {
-    if (
-      !projectId ||
-      projectQuery.isPending ||
-      projectQuery.isError ||
-      environmentsQuery.isPending ||
-      environmentsQuery.isError
-    ) {
-      return
-    }
-
-    if (selectedEnvironmentId === resolvedEnvironmentId) {
-      return
-    }
-
-    setSearchParams((currentParams) => {
-      const nextParams = new URLSearchParams(currentParams)
-
-      if (resolvedEnvironmentId) {
-        nextParams.set('environmentId', resolvedEnvironmentId)
-      } else {
-        nextParams.delete('environmentId')
-      }
-
-      return nextParams
-    }, { replace: true })
-  }, [
-    environmentsQuery.isError,
-    environmentsQuery.isPending,
-    projectId,
-    projectQuery.isError,
-    projectQuery.isPending,
-    resolvedEnvironmentId,
-    selectedEnvironmentId,
-    setSearchParams,
-  ])
-
-  function handleEnvironmentChange(environmentId: string) {
-    setSearchParams((currentParams) => {
-      const nextParams = new URLSearchParams(currentParams)
-
-      if (environmentId) {
-        nextParams.set('environmentId', environmentId)
-      } else {
-        nextParams.delete('environmentId')
-      }
-
-      return nextParams
-    })
-  }
 
   function openDeleteDialog() {
     deleteProjectMutation.reset()
@@ -219,13 +121,8 @@ export function ProjectDetailPage() {
         {!projectQuery.isPending && !projectQuery.isError && project ? (
           <>
             <ProjectLayout
-              environments={environments}
-              environmentsQuery={environmentsQuery}
-              onEnvironmentChange={handleEnvironmentChange}
               onOpenProjectDeleteDialog={openDeleteDialog}
               project={project}
-              selectedEnvironmentId={resolvedEnvironmentId}
-              selectedEnvironmentName={selectedEnvironmentName}
             />
             {isDeleteDialogOpen ? (
               <ProjectDeleteDialog
@@ -243,10 +140,7 @@ export function ProjectDetailPage() {
 }
 
 export interface ProjectLayoutContext {
-  hasSelectedEnvironment: boolean
-  isEnvironmentLoading: boolean
   project: ProjectDetails
-  selectedEnvironmentName: string
 }
 
 function ProjectNotFoundState() {
