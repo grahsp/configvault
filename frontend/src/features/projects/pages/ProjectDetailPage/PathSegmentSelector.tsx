@@ -69,7 +69,7 @@ export function PathSegmentSelector({
         <Button
           aria-busy={loading}
           className={cn(
-            'h-auto min-w-0 max-w-full cursor-pointer items-center justify-start gap-1.5 whitespace-normal rounded-md px-1.5 py-1.5 text-left leading-tight shadow-none transition-colors hover:bg-muted/55 focus-visible:bg-muted/55 has-data-[icon=inline-end]:pr-1.5 sm:px-2 sm:has-data-[icon=inline-end]:pr-2',
+            'h-auto min-w-0 max-w-full cursor-pointer items-center justify-start gap-1.5 whitespace-normal rounded-md px-1.5 py-1 text-left leading-tight shadow-none transition-colors hover:bg-muted/55 focus-visible:bg-muted/55 has-data-[icon=inline-end]:pr-1.5 sm:px-2 sm:has-data-[icon=inline-end]:pr-2',
             tone === 'primary' &&
               'font-semibold text-primary hover:text-primary',
             tone === 'secondary' &&

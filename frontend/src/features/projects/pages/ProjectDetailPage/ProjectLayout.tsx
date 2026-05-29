@@ -116,7 +116,7 @@ export function ProjectLayout({
 
   return (
     <>
-      <div className="mb-6 flex min-w-0 flex-wrap items-baseline gap-x-0.5 gap-y-2">
+      <div className="mb-5 flex min-w-0 flex-wrap items-baseline gap-x-0.5 gap-y-2">
         <h1 className="sr-only" id="project-detail-title">
           {project.name}
         </h1>
@@ -160,7 +160,7 @@ export function ProjectLayout({
         ) : (
           <span
             aria-label="Project page"
-            className="inline-flex min-w-0 items-baseline px-1.5 text-2xl font-medium leading-tight text-muted-foreground sm:px-2"
+            className="inline-flex min-w-0 items-baseline px-1.5 py-1 text-2xl font-medium leading-tight text-muted-foreground sm:px-2"
           >
             <span className="break-words">{pageLabel}</span>
           </span>
