@@ -1,4 +1,4 @@
-function requireEnvValue(name: 'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID') {
+function requireEnvValue(name: 'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID' | 'VITE_AUTH0_LOGOUT_URI') {
   const value = import.meta.env[name]?.trim()
 
   if (!value) {
@@ -13,11 +13,10 @@ const audience = import.meta.env.VITE_AUTH0_AUDIENCE?.trim()
 export const authConfig = {
   domain: requireEnvValue('VITE_AUTH0_DOMAIN'),
   clientId: requireEnvValue('VITE_AUTH0_CLIENT_ID'),
-  audience: audience || undefined,
-  redirectUri: window.location.origin,
+  logoutUri: requireEnvValue('VITE_AUTH0_LOGOUT_URI')
 }
 
-export const authAuthorizationParams = {
-  redirect_uri: authConfig.redirectUri,
-  ...(authConfig.audience ? { audience: authConfig.audience } : {}),
+export const authorizationParams = {
+  redirect_uri: window.location.origin,
+  ...(audience ? { audience } : {}),
 }

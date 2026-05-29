@@ -32,11 +32,25 @@ services:
         VITE_AUTH0_DOMAIN: ${IDP_DOMAIN}
         VITE_AUTH0_CLIENT_ID: ${IDP_CLIENT_ID}
         VITE_AUTH0_AUDIENCE: ${IDP_AUDIENCE}
+        VITE_AUTH0_LOGOUT_URI: http://localhost:3001
     image: keyvault-web
     ports:
       - "3000:80"
     depends_on:
       - api
+        
+  landing:
+    build:
+      context: ./landing
+      dockerfile: Dockerfile
+      args:
+        VITE_APPLICATION_URL: http://localhost:3000
+        VITE_REPOSITORY_URL: ${REPOSITORY_URL}
+        VITE_LINKEDIN_URL: ${LINKEDIN_URL}
+        VITE_GITHUB_URL: ${GITHUB_URL}
+    image: keyvault-landing
+    ports:
+      - "3001:80"
 
   db:
     image: postgres:16

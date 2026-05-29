@@ -151,7 +151,7 @@ const technicalDecisions: readonly TechnicalDecision[] = [
 
 function App() {
   const applicationUrl = import.meta.env.VITE_APPLICATION_URL
-  const sourceUrl = import.meta.env.VITE_SOURCE_URL
+  const repositoryUrl = import.meta.env.VITE_REPOSITORY_URL
   const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL
   const githubUrl = import.meta.env.VITE_GITHUB_URL
 
@@ -166,9 +166,9 @@ function App() {
             <a href="#architecture">Architecture</a>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <a href={sourceUrl} target="_blank">
+            <a href={repositoryUrl} target="_blank">
               <Code2Icon data-icon="inline-start" />
-              GitHub
+              GitHub Repository
             </a>
           </Button>
         </nav>
@@ -194,7 +194,7 @@ function App() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href={sourceUrl}>
+              <a href={repositoryUrl}>
                 <Code2Icon data-icon="inline-end" />
                 View Source
               </a>

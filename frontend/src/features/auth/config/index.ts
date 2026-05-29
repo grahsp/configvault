@@ -1,1 +1,1 @@
-export { authAuthorizationParams, authConfig } from './authConfig.ts'
+export { authorizationParams, authConfig } from './authConfig.ts'

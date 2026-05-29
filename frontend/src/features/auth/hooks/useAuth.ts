@@ -38,7 +38,7 @@ export function useAuth() {
 
   const logout = () =>
     auth.logout({
-      logoutParams: { returnTo: authConfig.redirectUri },
+      logoutParams: { returnTo: authConfig.logoutUri },
     })
 
   return {
