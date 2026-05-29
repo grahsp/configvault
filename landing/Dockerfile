@@ -1,0 +1,28 @@
+FROM node:25-alpine AS build
+
+WORKDIR /app
+
+ARG VITE_APPLICATION_URL
+ARG VITE_SOURCE_URL
+ARG VITE_LINKEDIN_URL
+ARG VITE_GITHUB_URL
+
+ENV VITE_APPLICATION_URL=$VITE_APPLICATION_URL
+ENV VITE_SOURCE_URL=$VITE_SOURCE_URL
+ENV VITE_LINKEDIN_URL=$VITE_LINKEDIN_URL
+ENV VITE_GITHUB_URL=$VITE_GITHUB_URL
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
