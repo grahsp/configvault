@@ -1,49 +1,37 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
-import { AppLayout } from '../layouts/AppLayout'
-import { LandingLayout } from '../layouts/LandingLayout'
-import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
-import { InvitationPage } from '../features/projects/invitations/pages'
-import { SecretsPage } from '../features/projects/secrets'
-import { MembersPage, ProjectSettingsPage } from '../features/projects'
-import { ProjectDetailPage } from '../features/projects'
-import { ProjectsPage } from '../features/projects'
-import { ProfilePage } from '../features/users'
-import { LandingPage } from '../pages/LandingPage'
+import { AppLayout } from '@/layouts/AppLayout'
+import { ProtectedRoute } from '@/features/auth'
+import { InvitationPage } from '@/features/projects/invitations/pages'
+import { SecretsPage } from '@/features/projects/secrets'
+import { MembersPage, ProjectSettingsPage } from '@/features/projects'
+import { ProjectDetailPage } from '@/features/projects'
+import { ProjectsPage } from '@/features/projects'
+import { ProfilePage } from '@/features/users'
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <LandingLayout />,
+    element: (
+        <ProtectedRoute>
+          <AppLayout />
+        </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
-        element: <LandingPage />,
+        element: <Navigate to="/projects" replace />,
       },
-    ],
-  },
-  {
-    path: '/',
-    element: <AppLayout />,
-    children: [
       {
         path: 'invitations/:token',
         element: <InvitationPage />,
       },
       {
         path: 'projects',
-        element: (
-          <ProtectedRoute>
-            <ProjectsPage />
-          </ProtectedRoute>
-        ),
+        element: <ProjectsPage />,
       },
       {
         path: 'projects/:projectId',
-        element: (
-          <ProtectedRoute>
-            <ProjectDetailPage />
-          </ProtectedRoute>
-        ),
+        element: <ProjectDetailPage />,
         children: [
           {
             index: true,
@@ -65,11 +53,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'profile',
-        element: (
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        ),
+        element: <ProfilePage />,
       },
     ],
   },
