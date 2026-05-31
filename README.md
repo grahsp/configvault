@@ -15,19 +15,25 @@ For additional information about the project's motivation, architecture, and des
 ## Features
 
 -   Project-based secret management
-    
 -   Environment-specific configuration
-    
 -   Team collaboration through project memberships
-    
 -   Invitation-based project access
-    
 -   Role-based authorization
-    
 -   Secure secret storage with encryption at rest
-    
 -   Import and export support
-	
+
+## Running Locally
+
+### Prerequisites
+
+-   Docker
+-   Docker Compose    
+
+### Start the application
+
+```bash
+docker compose up --build
+```
 
 ## Architecture  
   
@@ -49,20 +55,3 @@ The frontend communicates with the API, which handles authentication, authorizat
 | Authentication | Auth0, OAuth 2.0, OpenID Connect |  
 | Infrastructure | Docker, Render, Cloudflare |
 
-## Running Locally
-
-### Prerequisites
-
--   Docker
--   Docker Compose    
-
-### Start the application
-
-```bash
-docker compose up --build
-```
-
-The application consists of:
--   React frontend
--   ASP.NET Core API
--   PostgreSQL database
