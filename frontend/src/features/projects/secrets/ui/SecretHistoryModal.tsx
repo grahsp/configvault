@@ -79,7 +79,7 @@ export function SecretHistoryModal({
           side="right"
           width="wide"
         >
-          <SheetHeader className="border-b border-border px-6 py-5 pr-14">
+          <SheetHeader className="px-6 py-5 pr-14">
             <SheetTitle className="text-xl font-semibold leading-tight">
               {secret.key}
             </SheetTitle>
