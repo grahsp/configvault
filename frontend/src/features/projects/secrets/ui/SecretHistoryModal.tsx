@@ -75,8 +75,9 @@ export function SecretHistoryModal({
         }}
       >
         <SheetContent
-          className="w-full gap-0 overflow-hidden p-0 sm:max-w-[42rem]"
+          className="gap-0 overflow-hidden p-0"
           side="right"
+          width="wide"
         >
           <SheetHeader className="border-b border-border px-6 py-5 pr-14">
             <SheetTitle className="text-xl font-semibold leading-tight">
