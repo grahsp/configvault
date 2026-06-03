@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/alert-dialog.tsx'
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/sheet.tsx'
 import { StatusPanel } from '@/components/composed'
 import { formatCreatedDate, getErrorMessage } from '@/features/projects'
+import { ChevronRightIcon, XIcon } from 'lucide-react'
 import { useSecretHistory } from '../application'
 import type { Secret } from '../domain'
 import { UndoIcon } from './SecretRowIcons.tsx'
@@ -76,16 +78,54 @@ export function SecretHistoryModal({
       >
         <SheetContent
           className="gap-0 overflow-hidden p-0"
+          showCloseButton={false}
           side="right"
           width="wide"
         >
-          <SheetHeader className="px-6 py-5 pr-14">
-            <SheetTitle className="text-xl font-semibold leading-tight">
-              {secret.key}
-            </SheetTitle>
-            <SheetDescription className="text-base font-medium text-body">
-              {projectName} &gt; {environmentName}
-            </SheetDescription>
+          <SheetHeader className="relative border-b border-border/70 bg-background px-5 py-4 pr-14">
+            <div className="flex min-w-0 flex-col gap-2.5">
+              <SheetTitle className="sr-only">
+                {secret.key} revisions
+              </SheetTitle>
+
+              <div
+                aria-hidden
+                className="flex min-w-0 items-center gap-2 text-lg leading-tight"
+              >
+                <span className="shrink-0 font-medium text-muted-foreground">
+                  Revision history
+                </span>
+                <span className="size-1 shrink-0 rounded-full bg-border" />
+                <span className="truncate font-mono font-semibold text-foreground">
+                  {secret.key}
+                </span>
+              </div>
+
+              <SheetDescription asChild>
+                <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+                  <span className="truncate">{projectName}</span>
+                  <ChevronRightIcon
+                    aria-hidden
+                    className="size-3.5 shrink-0 text-muted-foreground/70"
+                  />
+                  <span className="truncate font-medium text-foreground">
+                    {environmentName}
+                  </span>
+                </div>
+              </SheetDescription>
+            </div>
+
+            <SheetClose asChild>
+              <Button
+                aria-label="Close"
+                className="absolute top-4 right-4 border-border/70 bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                size="icon-sm"
+                type="button"
+                variant="outline"
+              >
+                <XIcon className="size-4" />
+              </Button>
+            </SheetClose>
           </SheetHeader>
 
           <div className="min-h-0 flex-1 overflow-auto p-6 pt-5">
