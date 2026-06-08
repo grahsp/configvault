@@ -26,7 +26,7 @@ vi.mock('@/features/auth/config', () => ({
     domain: 'example.auth0.com',
     redirectUri: 'http://localhost:3000',
   },
-  authAuthorizationParams: {
+  authorizationParams: {
     redirect_uri: 'http://localhost:3000',
   },
 }))
