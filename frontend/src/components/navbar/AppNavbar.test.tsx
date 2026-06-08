@@ -155,4 +155,17 @@ function setViewportWidth(width: number) {
     configurable: true,
     value: width,
   })
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    value: (query: string): MediaQueryList => ({
+      addEventListener: () => undefined,
+      addListener: () => undefined,
+      dispatchEvent: () => false,
+      matches: query === '(max-width: 767px)' ? width < 768 : false,
+      media: query,
+      onchange: null,
+      removeEventListener: () => undefined,
+      removeListener: () => undefined,
+    }),
+  })
 }

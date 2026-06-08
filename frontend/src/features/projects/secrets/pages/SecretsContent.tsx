@@ -1,13 +1,13 @@
 import { StatusPanel } from '@/components/composed'
 import type { Secret } from '../domain'
-import type { SecretRowViewModel } from '../application'
+import type { SecretRowViewModel } from '@/features/projects/secrets'
 import {
   SecretsEmptyState,
   SecretsEnvironmentRequiredState,
   SecretsErrorState,
   SecretsLoadingState,
-  SecretsTable,
-} from '../ui'
+} from '../ui/SecretsTableStates.tsx'
+import { SecretsTable } from '../ui/SecretsTable.tsx'
 
 export interface SecretsContentProps {
   hasActiveSearch: boolean

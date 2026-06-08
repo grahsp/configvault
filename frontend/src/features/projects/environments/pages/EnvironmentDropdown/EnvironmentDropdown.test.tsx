@@ -151,7 +151,7 @@ describe('EnvironmentDropdown container', () => {
 
     const requestedUrl = fetchMock.mock.calls[0][0]?.toString()
 
-    expect(new URL(requestedUrl ?? '').pathname).toBe(
+    expect(new URL(requestedUrl ?? '', 'http://localhost').pathname).toBe(
       '/projects/project-1/environments',
     )
   })
